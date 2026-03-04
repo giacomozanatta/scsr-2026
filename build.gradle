@@ -1,0 +1,22 @@
+plugins {
+    id 'java-library'
+   	id 'eclipse'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.github.lisa-analyzer:lisa-sdk:0.2'
+    implementation 'io.github.lisa-analyzer:lisa-analyses:0.2'
+    implementation 'io.github.lisa-analyzer:lisa-imp:0.2'
+    testImplementation 'junit:junit:4.12'
+}
+
+test {
+    testLogging {
+        outputs.upToDateWhen {false}
+        showStandardStreams = true
+    }
+}

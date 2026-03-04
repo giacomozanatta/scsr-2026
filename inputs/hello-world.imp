@@ -1,0 +1,7 @@
+class helloworld {
+
+	f0() {
+		def x = 0;
+		return;
+	}
+}

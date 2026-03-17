@@ -1,7 +1,12 @@
 class helloworld {
 
-	f0() {
+	f0(b) {
 		def x = 0;
-		return;
+		if (b == true) {
+		    x = 5;
+		} else {
+		    x = 7;
+		}
+		return x;
 	}
 }

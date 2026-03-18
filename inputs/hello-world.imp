@@ -4,4 +4,14 @@ class helloworld {
 		def x = 0;
 		return;
 	}
+
+    f1(b) {
+        def x = 0;
+        if (b == true) {
+            x = 5;
+        } else {
+            x = 7;
+        }
+        return x;
+    }
 }

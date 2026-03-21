@@ -4,4 +4,14 @@ class helloworld {
 		def x = 0;
 		return;
 	}
+
+	f1(a,b){
+	    def x = a+b;
+	    def y = a*b;
+	    while (y > a+b){
+	        a = a+1;
+	        x = a+b;
+	    }
+	    return x;
+	}
 }

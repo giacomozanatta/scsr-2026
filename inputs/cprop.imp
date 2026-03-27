@@ -1,0 +1,29 @@
+class cprop {
+    f0() {
+        def x = 10;
+        def y = 5;
+        def add = x + y;
+        def sub = x - y;
+        def mult = x * y;
+        def div = x / y;
+
+        return;
+    }
+
+    f1(){
+        def x = 10;
+        def zero = 0;
+        def div_by_zero = 0;
+        div_by_zero = x / zero;
+        return div_by_zero;
+    }
+
+    f2(){
+        def x = 2;
+        def y = 3;
+        def z = 4;
+
+        return x + y + z - z;
+    }
+
+}

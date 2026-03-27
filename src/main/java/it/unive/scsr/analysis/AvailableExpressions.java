@@ -65,9 +65,7 @@ public class AvailableExpressions
             return false;
         if (expression instanceof Skip)
             return false;
-        if (expression instanceof PushAny)
-            return false;
-        return true;
+        return !(expression instanceof PushAny);
     }
 
     @Override

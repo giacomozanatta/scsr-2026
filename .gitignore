@@ -227,3 +227,8 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,eclipse,intellij
 
 /outputs/
+
+
+# Ignore my tests
+inputs/barbtest.*
+src/test/java/it/unive/scsr/Barb*.java

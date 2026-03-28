@@ -1,6 +1,115 @@
 package it.unive.scsr.analysis;
 
-public class CProp /* extends ... */{
+import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.analysis.dataflow.DataflowDomain;
+import it.unive.lisa.analysis.dataflow.DefiniteSet;
+import it.unive.lisa.analysis.dataflow.PossibleSet;
+import it.unive.lisa.program.cfg.ProgramPoint;
+import it.unive.lisa.symbolic.value.*;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetElem> {
+
+    private Integer eval(ValueExpression expr, DefiniteSet<CPropSetElem> state) {
+
+        if (expr instanceof Constant c) {
+            Object v = c.getValue();
+            if (v instanceof Integer)
+                return (Integer) v;
+            return null;
+        }
+
+        if (expr instanceof Identifier id) {
+            for (CPropSetElem e : state.getDataflowElements()) {
+                if (e.getId().equals(id))
+                    return e.getConstant();
+            }
+            return null;
+        }
+
+        if (expr instanceof BinaryExpression bin) {
+            Integer left = eval((ValueExpression) bin.getLeft(), state);
+            Integer right = eval((ValueExpression) bin.getRight(), state);
+
+            if (left == null || right == null)
+                return null;
+
+            String op = bin.getOperator().toString();
+
+            switch (op) {
+                case "+":
+                    return left + right;
+                case "-":
+                    return left - right;
+                case "*":
+                    return left * right;
+                case "/":
+                    if (right == 0)
+                        return null;
+                    return left / right;
+                default:
+                    return null;
+            }
+        }
+
+        if (expr instanceof UnaryExpression un) {
+            Integer val = eval((ValueExpression) un.getExpression(), state);
+
+            if (val == null)
+                return null;
+
+            String op = un.getOperator().toString();
+
+            if (op.equals("-"))
+                return -val;
+        }
+
+        return null;
+    }
+
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> state, Identifier id, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        Set<CPropSetElem> result = new HashSet<>();
+
+        Integer value = eval(expression, state);
+
+        if (value != null)
+            result.add(new CPropSetElem(id, value));
+
+        return result;
+
+    }
+
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> state, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> state, Identifier id, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+
+        Set<CPropSetElem> result = new HashSet<>();
+
+        for (CPropSetElem e : state.getDataflowElements()) {
+            if (e.getId().equals(id))
+                result.add(e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> state, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public DefiniteSet<CPropSetElem> makeLattice() {
+        return new DefiniteSet<>();
+    }
 
     // IMPLEMENTATION NOTE:
 

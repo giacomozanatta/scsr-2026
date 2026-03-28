@@ -1,6 +1,51 @@
 package it.unive.scsr.analysis;
 
-public class CProp /* extends ... */{
+import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.analysis.dataflow.DataflowDomain;
+import it.unive.lisa.analysis.dataflow.DefiniteSet;
+import it.unive.lisa.program.cfg.ProgramPoint;
+import it.unive.lisa.symbolic.value.Identifier;
+import it.unive.lisa.symbolic.value.ValueExpression;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetElem> {
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> cPropSetElems, Identifier identifier, ValueExpression valueExpression, ProgramPoint programPoint) throws SemanticException {
+        Integer value = CPropSetElem.eval(valueExpression, cPropSetElems.getDataflowElements());
+        if (value != null) {
+            CPropSetElem elem = new CPropSetElem(identifier, value);
+            return Set.of(elem);
+        }
+        return Set.of();
+    }
+
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> cPropSetElems, ValueExpression valueExpression, ProgramPoint programPoint) throws SemanticException {
+        return Set.of();
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> cPropSetElems, Identifier identifier, ValueExpression valueExpression, ProgramPoint programPoint) throws SemanticException {
+        Set<CPropSetElem> killSet = new HashSet<>();
+        for (CPropSetElem elem : cPropSetElems.getDataflowElements()) {
+            if(elem.getId() != null && elem.getId().equals(identifier)) {
+                killSet.add(elem);
+            }
+        }
+        return killSet;
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> cPropSetElems, ValueExpression valueExpression, ProgramPoint programPoint) throws SemanticException {
+        return Set.of();
+    }
+
+    @Override
+    public DefiniteSet<CPropSetElem> makeLattice() {
+        return new DefiniteSet<>(new CPropSetElem());
+    }
 
     // IMPLEMENTATION NOTE:
 

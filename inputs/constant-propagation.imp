@@ -1,0 +1,49 @@
+class constantPropagation{
+	test1() {
+        def x = 10;
+        def y = 5;
+
+        def a = x + y;
+        def b = x - y;
+        def c = x * y;
+        def d = x / y;
+
+        def e = -x;
+        def f = -(y + 3);
+
+        def g = a + b;
+        def h = g * 2;
+
+        if (1)
+        {
+            def i = h + 10;
+        }
+        else
+        {
+            def i = 0;
+        }
+
+        def temp = 0;
+        def k = 100;
+        while (temp < 3)
+        {
+            k = 100;
+            temp = temp + 1;
+        }
+
+
+        k = 7;
+
+
+
+        def p = (2 + 3) * (4 - 1);
+
+
+        def q = 5;
+        q = q + 3;
+        q = q * 2;
+
+
+        def result = a + b + c + d + e + f + g + h + k + p + q;
+	}
+}

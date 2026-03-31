@@ -1,4 +1,4 @@
-class ae {
+class helloCProp {
 
 	f0() {
 		def x = 0;

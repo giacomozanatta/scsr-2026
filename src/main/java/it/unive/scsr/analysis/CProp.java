@@ -1,12 +1,124 @@
 package it.unive.scsr.analysis;
 
-public class CProp /* extends ... */{
+import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.analysis.dataflow.DataflowDomain;
+import it.unive.lisa.analysis.dataflow.DefiniteSet;
+import it.unive.lisa.program.cfg.ProgramPoint;
+import it.unive.lisa.symbolic.SymbolicExpression;
+import it.unive.lisa.symbolic.value.BinaryExpression;
+import it.unive.lisa.symbolic.value.Constant;
+import it.unive.lisa.symbolic.value.Identifier;
+import it.unive.lisa.symbolic.value.ValueExpression;
+import it.unive.lisa.symbolic.value.operator.AdditionOperator;
+import it.unive.lisa.symbolic.value.operator.DivisionOperator;
+import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
+import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class CProp
+    extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetElem> {
+
+    @Override
+    public DefiniteSet<CPropSetElem> makeLattice() { return new DefiniteSet<>(); }
+
+    private Object evaluate (ValueExpression expression, DefiniteSet<CPropSetElem> state) throws SemanticException {
+        // Constant
+        if (expression instanceof Constant) {
+            Object value = ((Constant) expression).getValue();
+            if (value instanceof Integer) {
+                return value;
+            }
+        }
+
+        // Expression
+        if (expression instanceof BinaryExpression) {
+            SymbolicExpression l = ((BinaryExpression) expression).getLeft();
+            SymbolicExpression r = ((BinaryExpression) expression).getRight();
+            Object value_l = new Object();
+            Object value_r = new Object();
+            if (l instanceof ValueExpression) {
+                value_l = evaluate(((ValueExpression) l), state);
+            }
+            if (r instanceof ValueExpression) {
+                value_r = evaluate(((ValueExpression) r), state);
+            }
+
+            BinaryOperator op = ((BinaryExpression) expression).getOperator();
+            if (op instanceof AdditionOperator) {
+                if (value_l instanceof Integer && value_r instanceof Integer) {
+                    return (Integer) value_l + (Integer) value_r;
+                }
+                throw new SemanticException();
+            } else if (op instanceof MultiplicationOperator) {
+                if ((value_l instanceof Integer) && (value_r instanceof Integer)) {
+                    return (Integer) value_l * (Integer) value_r;
+                }
+                throw new SemanticException();
+            } else if (op instanceof DivisionOperator) {
+                if (value_l instanceof Integer && value_r instanceof Integer) {
+                    if ((Integer) value_r == 0) {
+                        throw new ArithmeticException();
+                    }
+                    return (Integer) value_l / (Integer) value_r;
+                }
+                throw new SemanticException();
+            }
+        }
+
+        // Identifier
+        if (expression instanceof Identifier id) {
+            if (state.knowsIdentifier(id)) {
+                for (CPropSetElem c : state.getDataflowElements()) {
+                    if (c.getId().equals(id)) {
+                        return c.getValue();
+                    }
+                }
+            }
+        }
+
+        return new Object();
+    }
+
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> state, Identifier id, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        Set<CPropSetElem> output = new HashSet<>();
+        Object evaluation = evaluate(expression, state);
+        if (evaluation instanceof Integer) {
+            CPropSetElem e = new CPropSetElem(id, (Integer) evaluation);
+            output.add(e);
+        }
+        return output;
+    }
+
+    @Override
+    public Set<CPropSetElem> gen(DefiniteSet<CPropSetElem> state, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        return Set.of();
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> state, Identifier id, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        if (state.knowsIdentifier(id)) {
+            for (CPropSetElem c : state.getDataflowElements()) {
+                if (c.getId().equals(id)) {
+                    return Set.of(c);
+                }
+            }
+        }
+        return Set.of();
+    }
+
+    @Override
+    public Set<CPropSetElem> kill(DefiniteSet<CPropSetElem> state, ValueExpression expression, ProgramPoint pp) throws SemanticException {
+        return Set.of();
+    }
 
     // IMPLEMENTATION NOTE:
 
     // - Implement your solution using the DefiniteSet.
     //   - What would happen if you used a PossibleSet instead? Think about it (or try it), but remember to deliver the Definite version.
-    // - Keep it simple: track only integer values. Any non-integer values should be ignored.
+    // - Keep it simple: track only integer values. Any noninteger values should be ignored.
     // - To test your implementation, you can use the inputs/cprop.imp file or define your own test cases.
     // - Refer to the Java test methods discussed in class and adjust them accordingly to work with your domain.
     // - Constant is subclass of ValueExpression

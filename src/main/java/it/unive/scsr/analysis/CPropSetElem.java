@@ -1,7 +1,6 @@
 package it.unive.scsr.analysis;
 
 import it.unive.lisa.analysis.ScopeToken;
-import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.dataflow.DataflowElement;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.Identifier;
@@ -60,12 +59,12 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
     }
 
     @Override
-    public CPropSetElem pushScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
+    public CPropSetElem pushScope(ScopeToken token, ProgramPoint pp) {
         return null;
     }
 
     @Override
-    public CPropSetElem popScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
+    public CPropSetElem popScope(ScopeToken token, ProgramPoint pp) {
         return null;
     }
 }

@@ -44,7 +44,7 @@ public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetEle
 
     @Override
     public DefiniteSet<CPropSetElem> makeLattice() {
-        return new DefiniteSet<>(new CPropSetElem());
+        return new DefiniteSet<>();
     }
 
     // IMPLEMENTATION NOTE:

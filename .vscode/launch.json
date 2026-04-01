@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Java App (Gradle)",
+            "request": "launch",
+            "mainClass": "",
+            "projectName": "scsr-2026",
+            "vmArgs": "-XX:+ShowCodeDetailsInExceptionMessages",
+            "encoding": "UTF-8"
+        },
+        {
+            "type": "java",
+            "name": "Debug Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        }
+    ]
+}

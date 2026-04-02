@@ -38,6 +38,8 @@ class constantPropagation{
 
         def p = (2 + 3) * (4 - 1);
 
+        def z = -(-2);
+
 
         def q = 5;
         q = q + 3;

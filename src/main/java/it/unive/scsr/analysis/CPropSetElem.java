@@ -5,46 +5,49 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.dataflow.DataflowElement;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.Identifier;
+import it.unive.lisa.util.representation.ListRepresentation;
+import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 
+//Work done by Elia Stevanato 895598 & Francesco Pasqualato 897778
 public class CPropSetElem implements DataflowElement<CPropSetElem> {
 
     private Identifier id;
 
-    private Integer costant;
+    private Integer constant;
 
     public Identifier getId() {
         return id;
     }
 
-    public Integer getCostant() {
-        return costant;
+    public Integer getConstant() {
+        return constant;
     }
 
-    public CPropSetElem(Identifier id, Integer costant) {
+    public CPropSetElem(Identifier id, Integer constant) {
         this.id = id;
-        this.costant = costant;
+        this.constant = constant;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         CPropSetElem that = (CPropSetElem) o;
-        return Objects.equals(id, that.id) && Objects.equals(costant, that.costant);
+        return Objects.equals(id, that.id) && Objects.equals(constant, that.constant);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, costant);
+        return Objects.hash(id, constant);
     }
 
     @Override
     public Collection<Identifier> getInvolvedIdentifiers() {
-        return List.of();
+        return Collections.singleton(this.id);
     }
 
     @Override
@@ -54,25 +57,17 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
 
     @Override
     public CPropSetElem pushScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
-        return null;
+        return this;
     }
 
     @Override
     public CPropSetElem popScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
-        return null;
+        return this;
     }
 
     @Override
     public StructuredRepresentation representation() {
-        return null;
+        return new ListRepresentation(new StringRepresentation(this.id), new StringRepresentation(this.constant));
     }
-    /**
-     * IMPLEMENT THIS CLASS
-     * the code below is outside of the scope of the course.
-     * You can uncomment it to get your code to compile.
-     * Be aware that the code is written expecting that a field named "id"
-     * and a field named "constant" exist in this class.
-     */
-
 
 }

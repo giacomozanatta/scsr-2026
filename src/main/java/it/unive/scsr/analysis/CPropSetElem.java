@@ -63,10 +63,9 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof CPropSetElem)) {
+        if (!(other instanceof CPropSetElem o)) {
             return false;
         }
-        CPropSetElem o = (CPropSetElem) other;
         return this.id.equals(o.id) && this.constant.equals(o.constant);
     }
 

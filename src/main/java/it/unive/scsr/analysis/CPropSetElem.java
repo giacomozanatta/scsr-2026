@@ -2,9 +2,7 @@ package it.unive.scsr.analysis;
 
 import it.unive.lisa.analysis.ScopeToken;
 import it.unive.lisa.analysis.SemanticException;
-import it.unive.lisa.analysis.dataflow.DataflowDomain;
 import it.unive.lisa.analysis.dataflow.DataflowElement;
-import it.unive.lisa.analysis.dataflow.DefiniteSet;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.util.representation.ListRepresentation;

@@ -1,0 +1,53 @@
+class cp {
+
+    f0() {
+        def x = 1;
+        def y = x + 2;
+
+        return;
+    }
+
+    f1() {
+        def x = 5;
+        def y = x;
+        def z = y;
+
+        return;
+    }
+
+    f2() {
+        def x = 1;
+        def y = x + 2;
+        def z = y + 3;
+        def w = z;
+
+        return;
+    }
+
+    f3() {
+        def x = 1;
+        def y = 0;
+
+        if (x == 1) {
+            y = 5;
+        } else {
+            y = 10;
+        }
+        def z = y;
+
+        return;
+    }
+
+    f4() {
+        def x = 0;
+        def y = 10;
+        while (x < 3) {
+            x = x + 1;
+        }
+        def z = y;
+        def w = z;
+
+        return;
+    }
+
+}

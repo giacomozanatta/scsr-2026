@@ -17,16 +17,15 @@ import java.util.Objects;
 public class ReachingDefinitionSet implements DataflowElement<ReachingDefinitionSet> {
 
     private Identifier id;
-
     private CodeLocation location;
 
     public Identifier getId() {
         return id;
     }
-
     public CodeLocation getLocation() {
         return location;
     }
+    
     public ReachingDefinitionSet(Identifier id, CodeLocation location) {
         this.id = id;
         this.location = location;

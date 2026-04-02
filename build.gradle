@@ -7,6 +7,10 @@ repositories {
     mavenCentral()
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:all'
+}
+
 dependencies {
     implementation 'io.github.lisa-analyzer:lisa-sdk:0.2'
     implementation 'io.github.lisa-analyzer:lisa-analyses:0.2'

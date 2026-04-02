@@ -14,6 +14,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Alan Dal Col 895879
+ * @author Mattia Acquilesi 896827
+ */
 public class CPropSetElem implements DataflowElement<CPropSetElem> {
 
     /**

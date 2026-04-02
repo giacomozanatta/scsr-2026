@@ -11,6 +11,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @author Alan Dal Col 895879
+ * @author Mattia Acquilesi 896827
+ */
 public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetElem> {
 
     private Integer eval(ValueExpression expr, DefiniteSet<CPropSetElem> state) {

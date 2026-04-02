@@ -14,6 +14,10 @@ import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
+/**
+ * @author Alan Dal Col 895879
+ * @author Mattia Acquilesi 896827
+ */
 public class ConstantPropagationAnalysisTest {
 
     @Test

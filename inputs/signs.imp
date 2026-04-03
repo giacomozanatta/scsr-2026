@@ -26,6 +26,7 @@ class signs {
            	x = -7;
 		def y = x / x;
     }
+
 	
 	setSpeed(n){
 		// do something about speed

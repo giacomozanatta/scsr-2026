@@ -17,13 +17,7 @@ import it.unive.lisa.symbolic.value.operator.ModuloOperator;
 import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.RemainderOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
-import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonEq;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonGe;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonGt;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonLe;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonLt;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonNe;
+import it.unive.lisa.symbolic.value.operator.binary.*;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
@@ -115,8 +109,46 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.TOP;		
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			// TODO: homework
+			if(left == SignLattice.POS && right == SignLattice.POS
+					|| left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.TOP;
+			if(left == SignLattice.POS && (right == SignLattice.NEG || right == SignLattice.ZERO)
+					|| (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.NEG)
+				return SignLattice.POS;
+			if(left == SignLattice.NEG && (right == SignLattice.POS || right == SignLattice.ZERO)
+					|| (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.POS)
+				return SignLattice.NEG;
+			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
+			SignLattice TOP = SignLattice.TOP;
+			SignLattice BOT = SignLattice.BOTTOM;
+			SignLattice P = SignLattice.POS;
+			SignLattice N = SignLattice.NEG;
+			SignLattice Z = SignLattice.ZERO;
 			// TODO: homework
+			// TOP/(+-) = (0+-)/TOP = TOP ]] +/- = -/+ = - ]] +/+ = + = -/- = + ]] 0/(+-) = 0 ]] */0 = bot = BOT/* = */BOT
+			if(right == Z || left == BOT || right == BOT){
+				return SignLattice.BOTTOM;
+			}
+			else if(left == TOP || right == TOP){
+				return SignLattice.TOP;
+			}
+			else if( (left == P && right == N) || (right == P && left == N) ){
+				return SignLattice.NEG;
+			}
+			else if( (left == P && right == P) || (right == N && left == N) ){
+				return SignLattice.POS;
+			}
+			else if(left == Z){
+				return SignLattice.ZERO;
+			}
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

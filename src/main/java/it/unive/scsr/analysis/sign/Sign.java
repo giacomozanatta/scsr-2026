@@ -114,9 +114,39 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
             else if(left == SignLattice.TOP || right == SignLattice.TOP)
                 return SignLattice.TOP;
         } else if (expression.getOperator() instanceof SubtractionOperator) {
-            // TODO: homework
+            if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) return SignLattice.BOTTOM;
+
+            // POS - NEG = POS
+            if (left == SignLattice.POS && right == SignLattice.NEG) return SignLattice.POS;
+            // NEG - POS = NEG
+            if (left == SignLattice.NEG && right == SignLattice.POS) return SignLattice.NEG;
+            // ZERO - x = -x
+            if (left == SignLattice.ZERO){
+                if(right == SignLattice.POS)
+                    return SignLattice.NEG;
+                else if (right == SignLattice.NEG)
+                    return SignLattice.POS;
+                else
+                    return SignLattice.ZERO;
+            }
+            // x - ZERO = x
+            if (right == SignLattice.ZERO)
+                return left;
+            // POS - POS o NEG - NEG
+            return SignLattice.TOP;
         } else if (expression.getOperator() instanceof DivisionOperator) {
-            // TODO: homework
+            if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) return SignLattice.BOTTOM;
+            if (right == SignLattice.ZERO) return SignLattice.BOTTOM; // Division by zero is undefined
+            if (left == SignLattice.ZERO) return SignLattice.ZERO;
+
+            if (right == SignLattice.TOP) return SignLattice.TOP;
+
+            if ((left == SignLattice.POS && right == SignLattice.POS) || (left == SignLattice.NEG && right == SignLattice.NEG))
+                return SignLattice.POS;
+            if ((left == SignLattice.NEG && right == SignLattice.POS) || (left == SignLattice.POS && right == SignLattice.NEG))
+                return SignLattice.NEG;
+
+            return SignLattice.TOP;
         } else if (expression.getOperator() instanceof ModuloOperator)
             return right;
         else if (expression.getOperator() instanceof RemainderOperator)

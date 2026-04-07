@@ -72,17 +72,30 @@ public class SignLattice
 
 	    @Override
 	    public SignLattice lubAux(SignLattice other) throws SemanticException {
-	    	if(this == SignLattice.POS &&
-	    			other == SignLattice.ZERO)
+			/*
+			if (this.equals(other))
+				return this;
+			else if (this == SignLattice.TOP || other == SignLattice.TOP)
+				return SignLattice.TOP;
+	    	else if ((this == SignLattice.POS || this == SignLattice.ZERO || this == SignLattice.NEG)
+					&&
+					(other == SignLattice.POS || other == SignLattice.ZERO || other == SignLattice.NEG))
 	    		return SignLattice.TOP;
-	    	// in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP	
-	    	return SignLattice.TOP;
+			else if (this == SignLattice.BOTTOM && (other == SignLattice.POS || other == SignLattice.ZERO || other == SignLattice.NEG))
+				return other;
+			else if (other == SignLattice.BOTTOM && (this == SignLattice.POS || this == SignLattice.ZERO || this == SignLattice.NEG))
+				return this;
+			else if (this == SignLattice.BOTTOM && other == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			else
+				return SignLattice.TOP;
+			*/
+			return SignLattice.TOP; // as before, the logic is already there, so if the 2 compared things are different, it's top
 	    }
 
 	    @Override
 	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
+	    	return false; // same as before
 	    }
 
 		// For glb in this case we use default LiSA implementation

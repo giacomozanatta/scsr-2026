@@ -115,8 +115,29 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.TOP;		
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			// TODO: homework
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if (right == SignLattice.ZERO || left == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			else if (left == SignLattice.POS && right == SignLattice.POS || left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.POS;
+			else if (left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.NEG;
+			else
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof DivisionOperator) {
 			// TODO: homework
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			else if (left == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			else if (left == SignLattice.POS && right == SignLattice.POS || left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.POS;
+			else if (left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.NEG;
+			else
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

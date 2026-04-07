@@ -6,10 +6,7 @@ import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
 import it.unive.lisa.symbolic.value.UnaryExpression;
-import it.unive.lisa.symbolic.value.operator.AdditionOperator;
-import it.unive.lisa.symbolic.value.operator.ModuloOperator;
-import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
-import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
+import it.unive.lisa.symbolic.value.operator.*;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.symbolic.value.operator.unary.UnaryOperator;
 import it.unive.scsr.analysis.sign.SignLattice;
@@ -66,7 +63,7 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
             else
                 return ParityLattice.getODD();
         }
-        else if(expression.getOperator() instanceof ModuloOperator){
+        else if(expression.getOperator() instanceof ModuloOperator || expression.getOperator() instanceof RemainderOperator){
             if(right == ParityLattice.getEVEN())
                 return left;
             else

@@ -85,14 +85,14 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 
     @Override
     public ParityLattice lubAux(ParityLattice other) throws SemanticException {
-        if(this.isTop() || other.isTop() || (this == EVEN && other == ODD) || (this == ODD && other == EVEN))
+       /* if(this.isTop() || other.isTop() || (this == EVEN && other == ODD) || (this == ODD && other == EVEN))
             return TOP;
         else if(this.equals(other))
             return this;
         else if(this.isBottom())
             return other;
         else if(other.isBottom())
-            return this;
+            return this;*/
         return TOP;
     }
 

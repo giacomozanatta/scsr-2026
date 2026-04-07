@@ -1,0 +1,43 @@
+class parity {
+	oddOperations() {
+		def a = 21;
+		def b = 7;
+
+		def add = a+b;
+		def subtract = b-a;
+		def multiply = b*a;
+		def divide = a/b;
+    }
+
+	evenOperations() {
+        def a = 26;
+        def b = 4;
+
+        def add = a+b;
+        def subtract = b-a;
+        def multiply = b*a;
+        def divide = a/b;
+	}
+
+	evenOddOperations() {
+        def a = 3;
+        def b = 4;
+
+        def add = a+b;
+        def subtract = b-a;
+        def multiply = b*a;
+        def divide = a/b;
+    }
+
+    f1(){
+        def a = 3;
+        def b = 4;
+        if (a < b){
+            b = b*a;
+        }
+        else {
+            a = a+2;
+        }
+        return a+b;
+    }
+}

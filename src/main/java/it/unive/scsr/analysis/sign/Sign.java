@@ -39,8 +39,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	}
 
 	@Override
-	public SignLattice 
-	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+	public SignLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		
 		if(constant.getValue() instanceof Integer) {
@@ -97,7 +96,6 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.BOTTOM;
 			if(left == SignLattice.TOP || right == SignLattice.TOP)
 				return SignLattice.TOP;
-			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			if(left == SignLattice.POS && right == SignLattice.POS)
 				return SignLattice.POS;
@@ -115,8 +113,58 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.TOP;		
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			// TODO: homework
+			if(left == SignLattice.POS && right == SignLattice.POS
+				|| left == SignLattice.NEG && right == SignLattice.NEG)
+				// POS - POS or NEG - NEG => unknown (T)
+				return SignLattice.TOP;
+
+			else if(left == SignLattice.POS && right == SignLattice.NEG
+					|| left == SignLattice.ZERO && right == SignLattice.NEG)
+				// POS - NEG or 0 - NEG => POS
+				return SignLattice.POS;
+
+			else if(left == SignLattice.NEG && right == SignLattice.POS
+					|| left == SignLattice.ZERO && right == SignLattice.POS)
+				// NEG - POS or 0 - POS => NEG
+				return  SignLattice.NEG;
+
+			else if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				// error state anywhere propagates
+				return SignLattice.BOTTOM;
+
+			else if(right == SignLattice.ZERO)
+				// x - 0 => x
+				return left;
+
+			// unknown - unknown
+			return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
 			// TODO: homework
+			if((left == SignLattice.POS && right == SignLattice.NEG)
+				|| (left == SignLattice.NEG && right == SignLattice.POS))
+				// + / - or - / + => -
+				return SignLattice.NEG;
+
+			else if((left == SignLattice.POS  && right == SignLattice.POS)
+					|| (left == SignLattice.NEG  && right == SignLattice.NEG))
+				// + / + or - / - => +
+				return  SignLattice.POS;
+
+			else if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+
+			else if(right == SignLattice.ZERO)
+				// division by zero => error state
+				return SignLattice.BOTTOM;
+
+			else if (left == SignLattice.ZERO)
+				// zero divided (after error states / division by zero were tested) => zero
+				return SignLattice.ZERO;
+
+			// unknown in the division (after error states / zero cases were tested) => unknown
+			return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

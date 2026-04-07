@@ -9,8 +9,7 @@ import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
-public class SignLattice 
-		implements BaseLattice<SignLattice>{
+public class SignLattice implements BaseLattice<SignLattice>{
 	
 	private int element;
 	

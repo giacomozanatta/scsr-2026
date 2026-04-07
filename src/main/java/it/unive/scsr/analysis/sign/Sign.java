@@ -39,12 +39,12 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	}
 
 	@Override
-	public SignLattice 
+	public SignLattice
 	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
-		
+
 		if(constant.getValue() instanceof Integer) {
-			//I needt to check the integer value to 
+			//I needt to check the integer value to
 			// assign the right approx value
 			Integer n = (Integer) constant.getValue();
 			if(n == 0)
@@ -53,14 +53,14 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.POS;
 			return SignLattice.NEG;
 		}
-			
+
 		return SignLattice.TOP;
 	}
 
 	@Override
 	public SignLattice evalUnaryExpression(UnaryExpression expression, SignLattice arg, ProgramPoint pp,
-			SemanticOracle oracle) throws SemanticException {
-		
+										   SemanticOracle oracle) throws SemanticException {
+
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
 			if(arg == SignLattice.NEG)
 				return SignLattice.POS;
@@ -73,13 +73,13 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			else if(arg == SignLattice.BOTTOM)
 				return SignLattice.BOTTOM;
 		}
-	
+
 		return SignLattice.TOP;
 	}
 
 	@Override
 	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right,
-			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+											ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
 		if(expression.getOperator() instanceof AdditionOperator) {
 			if(left == SignLattice.POS && right == SignLattice.NEG
@@ -97,7 +97,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.BOTTOM;
 			if(left == SignLattice.TOP || right == SignLattice.TOP)
 				return SignLattice.TOP;
-			
+
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			if(left == SignLattice.POS && right == SignLattice.POS)
 				return SignLattice.POS;
@@ -112,23 +112,53 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) return SignLattice.BOTTOM;
+
+			// POS - NEG = POS
+			if (left == SignLattice.POS && right == SignLattice.NEG) return SignLattice.POS;
+			// NEG - POS = NEG
+			if (left == SignLattice.NEG && right == SignLattice.POS) return SignLattice.NEG;
+			// ZERO - x = -x
+			if (left == SignLattice.ZERO){
+				if(right == SignLattice.POS)
+					return SignLattice.NEG;
+				else if (right == SignLattice.NEG)
+					return SignLattice.POS;
+				else
+					return SignLattice.ZERO;
+			}
+			// x - ZERO = x
+			if (right == SignLattice.ZERO)
+				return left;
+			// POS - POS o NEG - NEG
+			return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) return SignLattice.BOTTOM;
+			if (right == SignLattice.ZERO) return SignLattice.BOTTOM; // Division by zero is undefined
+			if (left == SignLattice.ZERO) return SignLattice.ZERO;
+
+			if (right == SignLattice.TOP) return SignLattice.TOP;
+
+			if ((left == SignLattice.POS && right == SignLattice.POS) || (left == SignLattice.NEG && right == SignLattice.NEG))
+				return SignLattice.POS;
+			if ((left == SignLattice.NEG && right == SignLattice.POS) || (left == SignLattice.POS && right == SignLattice.NEG))
+				return SignLattice.NEG;
+
+			return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)
 			return left;
-		
+
 		return SignLattice.TOP;
 	}
-	
+
 	// Some information can be inferred also checking boolean expression and guards!
-	// a = T, b = +; b < a means that  a = + 
+	// a = T, b = +; b < a means that  a = +
 	// These behaviors can be handeled with the following implementations
-	
+
 	@Override
 	public Satisfiability satisfiesBinaryExpression(
 			BinaryExpression expression,

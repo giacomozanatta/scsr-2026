@@ -11,7 +11,7 @@ class signs {
 		def i = 2; // i = +
 		def j = -10; // j = -
 		def a = i + j; // a = + ADD - = TOP
-		def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before
+		def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before 
 		def m = i * j;
 		def d = i / j;
 	}
@@ -26,26 +26,26 @@ class signs {
            	x = -7;
 		def y = x / x;
     }
-
+	
 	setSpeed(n){
 		// do something about speed
 	}
-
+	
 	moveForward1() {
 		def n = 10;
 		this.setSpeed(n); // ok, we are
 	}
-
+	
 	moveForward2() {
 		def n = -10;
 		this.setSpeed(n); // we have a problem here!
 	}
-
+	
 	moveForward3(b) {
 		def n = -1;
 		if (b)
            	n = 1;
-
+		
 		this.setSpeed(n); // we may have a problem here! n may be negative depending on b that is statically unknow
     }
 }

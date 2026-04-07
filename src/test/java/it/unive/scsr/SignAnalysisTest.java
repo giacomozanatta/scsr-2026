@@ -36,9 +36,9 @@ public class SignAnalysisTest {
 
         // added checker to the analysis
         conf.semanticChecks.add(new NonNegativeSpeedInMoveForwardChecker<>());
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
-
+        
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 

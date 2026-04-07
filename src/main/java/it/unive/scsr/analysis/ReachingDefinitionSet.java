@@ -15,7 +15,9 @@ import java.util.Collections;
 import java.util.Objects;
 
 public class ReachingDefinitionSet implements DataflowElement<ReachingDefinitionSet> {
+
     private Identifier id;
+
     private CodeLocation location;
 
     public Identifier getId() {
@@ -25,7 +27,6 @@ public class ReachingDefinitionSet implements DataflowElement<ReachingDefinition
     public CodeLocation getLocation() {
         return location;
     }
-
     public ReachingDefinitionSet(Identifier id, CodeLocation location) {
         this.id = id;
         this.location = location;
@@ -53,18 +54,18 @@ public class ReachingDefinitionSet implements DataflowElement<ReachingDefinition
 
     @Override
     public StructuredRepresentation representation() {
-        return new ListRepresentation(new StringRepresentation(this.id), new StringRepresentation(this.location));
+        return new ListRepresentation(new StringRepresentation(id), new StringRepresentation(location));
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || this.getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         ReachingDefinitionSet that = (ReachingDefinitionSet) o;
-        return Objects.equals(this.id,that.id) && Objects.equals(this.location,that.location);
+        return Objects.equals(id, that.id) && Objects.equals(location, that.location);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id, this.location);
+        return Objects.hash(id, location);
     }
 }

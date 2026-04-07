@@ -7,6 +7,7 @@ import it.unive.scsr.analysis.ReachingDefinitions;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.outputs.HtmlInputs;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.program.Program;
 import org.junit.Test;
@@ -16,7 +17,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 public class ReachingDefinitionTest {
 
     @Test
-    public void testReachingDefinition() throws ParsingException, AnalysisException {
+    public void testReachingDefinitions() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile("inputs/reaching-definitions.imp");
 

@@ -112,11 +112,34 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			if(left == SignLattice.POS && right == SignLattice.POS || left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.TOP;
+			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if((left == SignLattice.POS || left == SignLattice.ZERO) && (right == SignLattice.NEG || right == SignLattice.ZERO))
+				return SignLattice.POS;
+			if((left == SignLattice.NEG || left == SignLattice.ZERO) && (right == SignLattice.POS || right == SignLattice.ZERO))
+				return SignLattice.NEG;
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM || right == SignLattice.ZERO)
+				return SignLattice.BOTTOM;
+			if(left == SignLattice.POS && right == SignLattice.POS || left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.POS;
+			if(left == SignLattice.NEG && right == SignLattice.POS || left == SignLattice.POS && right == SignLattice.NEG)
+				return SignLattice.NEG;
+			if(left == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

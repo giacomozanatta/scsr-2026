@@ -34,9 +34,9 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
     public ParityLattice evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
         if(left.isTop() || right.isTop())
             return top();
-        if(left.isBottom() || right.isBottom())
+        else if(left.isBottom() || right.isBottom())
             return bottom();
-        if(expression.getOperator() instanceof AdditionOperator || expression.getOperator() instanceof SubtractionOperator) {
+        else if(expression.getOperator() instanceof AdditionOperator || expression.getOperator() instanceof SubtractionOperator) {
             if(right.equals(left))
                 return ParityLattice.getEVEN();
             else
@@ -48,10 +48,11 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
             else
                 return ParityLattice.getODD();
         }
-        else if(expression.getOperator() instanceof ModuloOperator){
+        else if(expression.getOperator() instanceof ModuloOperator || expression.getOperator() instanceof RemainderOperator) {
             if(right == ParityLattice.getEVEN())
                 return left;
-            return top();
+            else
+                return top();
         }
         return top();
     }

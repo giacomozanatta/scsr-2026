@@ -94,7 +94,9 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice> {
             else if(left == SignLattice.TOP || right == SignLattice.TOP)
                 return SignLattice.TOP;
         } else if (expression.getOperator() instanceof SubtractionOperator) {
-            if(left == SignLattice.POS && right == SignLattice.NEG)
+            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            else if(left == SignLattice.POS && right == SignLattice.NEG)
                 return SignLattice.POS;
             else if(left == SignLattice.NEG && right == SignLattice.POS)
                 return SignLattice.NEG;
@@ -109,7 +111,9 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice> {
             else
                 return SignLattice.TOP;
         } else if (expression.getOperator() instanceof DivisionOperator) {
-            if(right == SignLattice.ZERO)
+            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            else if(right == SignLattice.ZERO)
                 return SignLattice.BOTTOM;
             else if(left == SignLattice.ZERO)
                 return SignLattice.ZERO;
@@ -122,19 +126,9 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice> {
             else
                 return SignLattice.TOP;
         } else if (expression.getOperator() instanceof ModuloOperator){
-            if(right == SignLattice.ZERO)
-                return SignLattice.BOTTOM;
-            else if(left == SignLattice.ZERO)
-                return SignLattice.ZERO;
-            else
-                return SignLattice.TOP;
+            return right;
         } else if(expression.getOperator() instanceof RemainderOperator){
-            if(right == SignLattice.ZERO)
-                return SignLattice.BOTTOM;
-            else if(left == SignLattice.ZERO)
-                return SignLattice.ZERO;
-            else
-                return SignLattice.TOP;
+            return left;
         }
 
         return SignLattice.TOP;

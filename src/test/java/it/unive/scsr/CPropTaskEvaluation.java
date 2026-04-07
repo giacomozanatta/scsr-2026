@@ -13,6 +13,7 @@ import it.unive.lisa.outputs.compare.ResultComparer;
 import it.unive.lisa.outputs.json.JsonReport;
 import it.unive.lisa.program.Program;
 import it.unive.scsr.analysis.CProp;
+import it.unive.scsr.analysis.CPropSolution;
 import org.junit.Test;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class CPropTaskEvaluation {
         conf.outputs.add(new JSONResults<>());
         conf.outputs.add(new JSONReportDumper());
 
-        conf.analysis = simpleDomain(defaultHeapDomain(), new CProp(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new CPropSolution(), defaultTypeDomain());
         LiSA lisa = new LiSA(conf);
         lisa.run(program);
 

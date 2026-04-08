@@ -12,7 +12,6 @@ import it.unive.lisa.symbolic.value.UnaryExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.operator.AdditionOperator;
-import it.unive.lisa.symbolic.value.operator.DivisionOperator;
 import it.unive.lisa.symbolic.value.operator.ModuloOperator;
 import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.RemainderOperator;

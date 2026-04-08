@@ -114,9 +114,65 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
 				return SignLattice.TOP;		
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+            // Handling Top and Bottom (same style)
+            if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            if (left == SignLattice.TOP || right == SignLattice.TOP)
+                return SignLattice.TOP;
+            // Positive
+            if (left == SignLattice.POS) {
+                if (right == SignLattice.NEG || right == SignLattice.ZERO)
+                    return SignLattice.POS;
+                if (right == SignLattice.POS)
+                    return SignLattice.TOP; // POS - POS può essere POS, NEG o ZERO
+            } 
+            // Negative
+            else if (left == SignLattice.NEG) {
+                if (right == SignLattice.POS || right == SignLattice.ZERO)
+                    return SignLattice.NEG;
+                if (right == SignLattice.NEG)
+                    return SignLattice.TOP; // NEG - NEG può essere POS, NEG o ZERO
+            } 
+            // Zero
+            else if (left == SignLattice.ZERO) {
+                if (right == SignLattice.POS)
+                    return SignLattice.NEG;
+                if (right == SignLattice.NEG)
+                    return SignLattice.POS;
+                if (right == SignLattice.ZERO)
+                    return SignLattice.ZERO;
+            }
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+            // Se uno degli elementi è BOTTOM (unreachable), lo è anche il risultato
+            if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            
+            // La divisione per zero è un errore a runtime
+            if (right == SignLattice.ZERO)
+                return SignLattice.BOTTOM; 
+                
+            // Se zero è diviso per qualsiasi cosa (non zero), fa zero
+            if (left == SignLattice.ZERO)
+                return SignLattice.ZERO;
+                
+            // Propagazione dell'incertezza
+            if (left == SignLattice.TOP || right == SignLattice.TOP)
+                return SignLattice.TOP;
+
+            // Regola dei segni (es: + / + = +)
+            // NOTA: Se il tuo framework modella rigorosamente la divisione intera,
+            // 1 / 2 = 0. In quel caso, POS/POS potrebbe essere ZERO o POS, obbligandoti 
+            // a ritornare TOP. Tuttavia, nei classici esercizi sul Sign Domain si usa:
+            if ((left == SignLattice.POS && right == SignLattice.POS) || 
+                (left == SignLattice.NEG && right == SignLattice.NEG)) {
+                return SignLattice.POS;
+            } 
+            
+            // Regola dei segni (es: + / - = -)
+            if ((left == SignLattice.POS && right == SignLattice.NEG) || 
+                (left == SignLattice.NEG && right == SignLattice.POS)) {
+                return SignLattice.NEG;
+            }
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

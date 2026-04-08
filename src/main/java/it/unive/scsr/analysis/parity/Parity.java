@@ -7,13 +7,13 @@ public class Parity implements
 
 	@Override
 	    public ParityLattice top() {
-			// TODO: homework
+			// TODO: make top
 			return null;
 	    }
 
 	    @Override
 	    public ParityLattice bottom() {
-	    	// TODO: homework
+	    	// TODO: make bottom
 			return null;
 	    }
 

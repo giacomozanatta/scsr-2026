@@ -7,14 +7,12 @@ public class Parity implements
 
 	@Override
 	    public ParityLattice top() {
-			// TODO: make top
-			return null;
+			return ParityLattice.TOP;
 	    }
 
 	    @Override
 	    public ParityLattice bottom() {
-	    	// TODO: make bottom
-			return null;
+			return ParityLattice.BOTTOM;
 	    }
 
 	    //TODO add missing components

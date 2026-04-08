@@ -1,0 +1,48 @@
+class parity {
+
+    basic() {
+        def a = 4;
+        def b = 3;
+
+        def c = a + b;
+        def d = a + a;
+        def e = b + b;
+
+        def f = a * b;
+        def g = b * b;
+
+        def h = a % 2;
+        def i = b % 2;
+
+        def j = a - b;
+        def k = a - a;
+        def l = b - b;
+        def m = b - a;
+
+        def n = -a;
+        def o = -b;
+
+        def p = a % 3;
+        def q = b % 3;
+
+        return;
+    }
+
+    eq_branch(x) {
+        if (x == 4) {
+            def y = x + 1;
+        } else {
+            def y = x + 1;
+        }
+        return;
+    }
+
+    ne_branch(x) {
+        if (x != 3) {
+            def y = x + 2;
+        } else {
+            def y = x + 2;
+        }
+        return;
+    }
+}

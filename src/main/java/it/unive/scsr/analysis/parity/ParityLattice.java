@@ -17,7 +17,7 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
     public static final ParityLattice ODD = new ParityLattice(2);
     public static final ParityLattice BOTTOM = new ParityLattice(3);
 
-    public ParityLattice(int e) {
+    private ParityLattice(int e) {
         element = e;
     }
 

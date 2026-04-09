@@ -9,7 +9,6 @@ import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.symbolic.value.operator.*;
 import it.unive.lisa.symbolic.value.operator.binary.*;
-import it.unive.scsr.analysis.parity.ParityLattice;
 
 public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {

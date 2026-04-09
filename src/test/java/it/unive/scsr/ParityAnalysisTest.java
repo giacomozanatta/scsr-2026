@@ -10,8 +10,6 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.scsr.analysis.parity.Parity;
-import it.unive.scsr.analysis.sign.NonNegativeSpeedInMoveForwardChecker;
-import it.unive.scsr.analysis.sign.Sign;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;

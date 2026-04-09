@@ -86,8 +86,7 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 		return ParityLattice.TOP;
 	}
 
-	// glbAux uses default implementation, as the cases are guaranteed again
-	//     by the BaseLattice interface
+	// glbAux uses default implementation, as the cases are guaranteed again by the BaseLattice interface
 
 	@Override
 	public boolean lessOrEqualAux(ParityLattice other) throws SemanticException {

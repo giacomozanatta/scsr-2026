@@ -34,7 +34,8 @@ public class ParityAnalysisTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Parity(), defaultTypeDomain());
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
+        // A report file (.json) containing the warning triggered by the analysis
+        //     can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
         
         // we instantiate LiSA with our configuration

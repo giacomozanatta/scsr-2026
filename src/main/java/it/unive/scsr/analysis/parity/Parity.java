@@ -46,7 +46,6 @@ public class Parity implements
 											  ParityLattice left,
 											  ParityLattice right,
 	                                          ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
-		System.out.println(expression);
 		if (expression.getOperator() instanceof AdditionOperator ||
 			expression.getOperator() instanceof SubtractionOperator) {
 			if (left == ParityLattice.TOP || right == ParityLattice.TOP) {

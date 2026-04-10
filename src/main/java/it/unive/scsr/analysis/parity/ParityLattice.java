@@ -99,7 +99,7 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 	@Override
 	public boolean lessOrEqualAux(ParityLattice other) throws SemanticException {
 
-		return this.equals(other);
+		return false;
 	}
 
 

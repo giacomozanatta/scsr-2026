@@ -47,10 +47,10 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
 
 	@Override
 	public ParityLattice evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right, ProgramPoint pp, SemanticOracle oracle){
-		if(left.isTop() || right.isTop())
-			return ParityLattice.getTOP();
 		if(left.isBottom() || right.isBottom())
 			return ParityLattice.getBOTTOM();
+		if(left.isTop() || right.isTop())
+			return ParityLattice.getTOP();
 		if(expression.getOperator() instanceof AdditionOperator || expression.getOperator() instanceof SubtractionOperator){
 			if(right.equals(left))
 				return ParityLattice.getEVEN();

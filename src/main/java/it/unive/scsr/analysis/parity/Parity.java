@@ -50,12 +50,18 @@ public class Parity implements
 		BinaryOperator operator = expression.getOperator();
 		if(left == ParityLattice.BTM || right == ParityLattice.BTM)
 			return ParityLattice.BTM;
+		else if (operator instanceof MultiplicationOperator) {
+			if (left == ParityLattice.EVEN || right == ParityLattice.EVEN)
+				return ParityLattice.EVEN;
+			else if (left == ParityLattice.TOP || right == ParityLattice.TOP)
+				return ParityLattice.TOP;
+			else
+				return ParityLattice.ODD;
+		}
 		else if (left == ParityLattice.TOP || right == ParityLattice.TOP)
 			return ParityLattice.TOP;
 		else if (operator instanceof AdditionOperator || operator instanceof SubtractionOperator)
 			return left.equals(right) ? ParityLattice.EVEN : ParityLattice.ODD;
-		else if (operator instanceof MultiplicationOperator)
-			return left == ParityLattice.EVEN || right == ParityLattice.EVEN ? ParityLattice.EVEN : ParityLattice.ODD;
 		else
 			return ParityLattice.TOP;
 	}

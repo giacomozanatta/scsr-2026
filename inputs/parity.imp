@@ -1,0 +1,180 @@
+class parity {
+
+    // -------------------------------------------------------
+    // CONSTANTS
+    // Expected: even=EVEN, odd=ODD
+    // -------------------------------------------------------
+    constants() {
+        def even = 4;    // EVEN
+        def odd  = 3;    // ODD
+        def zero = 0;    // EVEN (0 is even)
+        def neg_even = -2;  // EVEN
+        def neg_odd  = -7;  // ODD
+    }
+
+    // -------------------------------------------------------
+    // ADDITION
+    // EVEN + EVEN = EVEN
+    // ODD  + ODD  = EVEN
+    // EVEN + ODD  = ODD
+    // ODD  + EVEN = ODD
+    // -------------------------------------------------------
+    addition() {
+        def a = 4;        // EVEN
+        def b = 2;        // EVEN
+        def ee = a + b;   // EVEN + EVEN = EVEN (6)
+
+        def c = 3;        // ODD
+        def d = 5;        // ODD
+        def oo = c + d;   // ODD  + ODD  = EVEN (8)
+
+        def eo = a + c;   // EVEN + ODD  = ODD  (7)
+        def oe = c + a;   // ODD  + EVEN = ODD  (7)
+
+        def top = 0;              // EVEN
+        def unknown = top + top;  // EVEN + EVEN = EVEN — but if top were TOP: TOP+TOP=TOP
+    }
+
+    // -------------------------------------------------------
+    // SUBTRACTION
+    // Same table as addition because -b has same parity as b
+    // EVEN - EVEN = EVEN
+    // ODD  - ODD  = EVEN
+    // EVEN - ODD  = ODD
+    // ODD  - EVEN = ODD
+    // -------------------------------------------------------
+    subtraction() {
+        def a = 8;         // EVEN
+        def b = 4;         // EVEN
+        def ee = a - b;    // EVEN - EVEN = EVEN (4)
+
+        def c = 7;         // ODD
+        def d = 3;         // ODD
+        def oo = c - d;    // ODD  - ODD  = EVEN (4)
+
+        def eo = a - c;    // EVEN - ODD  = ODD  (1)
+        def oe = c - a;    // ODD  - EVEN = ODD  (-1)
+
+        def neg = -c;      // negation: ODD -> ODD (-7)
+        def neg2 = -a;     // negation: EVEN -> EVEN (-8)
+    }
+
+    // -------------------------------------------------------
+    // MULTIPLICATION
+    // EVEN * EVEN = EVEN
+    // EVEN * ODD  = EVEN
+    // ODD  * EVEN = EVEN
+    // ODD  * ODD  = ODD
+    // -------------------------------------------------------
+    multiplication() {
+        def a = 4;          // EVEN
+        def b = 2;          // EVEN
+        def ee = a * b;     // EVEN * EVEN = EVEN (8)
+
+        def c = 3;          // ODD
+        def eo = a * c;     // EVEN * ODD  = EVEN (12)
+        def oe = c * a;     // ODD  * EVEN = EVEN (12)
+        def oo = c * c;     // ODD  * ODD  = ODD  (9)
+
+        def neg_odd = -3;   // ODD
+        def neg_even = -4;  // EVEN
+        def r1 = neg_odd * neg_odd;   // ODD  * ODD  = ODD  (9)
+        def r2 = neg_even * neg_odd;  // EVEN * ODD  = EVEN (12)
+    }
+
+    // -------------------------------------------------------
+    // REMAINDER
+    // EVEN rem EVEN = EVEN
+    // ODD  rem EVEN = ODD
+    // EVEN rem ODD  = TOP  (cannot determine)
+    // ODD  rem ODD  = TOP  (cannot determine)
+    // -------------------------------------------------------
+    remainder() {
+        def a = 10;          // EVEN
+        def b = 4;           // EVEN
+        def ee = a % b;      // EVEN rem EVEN = EVEN (2)
+
+        def c = 7;           // ODD
+        def oe = c % b;      // ODD  rem EVEN = ODD  (3)
+
+        def d = 3;           // ODD
+        def eo = a % d;      // EVEN rem ODD  = TOP  (10%3=1 ODD, but 10%5=0 EVEN)
+        def oo = c % d;      // ODD  rem ODD  = TOP  (7%3=1 ODD, but 9%3=0 EVEN)
+
+        // negative dividends — parity of result unchanged
+        def neg_a = -10;     // EVEN
+        def neg_c = -7;      // ODD
+        def r1 = neg_a % b;  // EVEN rem EVEN = EVEN (-2)
+        def r2 = neg_c % b;  // ODD  rem EVEN = ODD  (-3)
+    }
+
+    // -------------------------------------------------------
+    // BRANCHES
+    // After a branch the two abstract values are joined (lub)
+    // EVEN lub ODD = TOP
+    // EVEN lub EVEN = EVEN
+    // -------------------------------------------------------
+    branches() {
+        def a = 3;    // ODD
+        def b = 5;    // ODD
+        def x = 0;    // EVEN
+
+        if (a > b)
+            x = 2;    // EVEN
+        else
+            x = 4;    // EVEN
+        // after branch: EVEN lub EVEN = EVEN
+        def after_ee = x;   // EVEN
+
+        def y = 0;    // EVEN
+        if (a > b)
+            y = 2;    // EVEN
+        else
+            y = 3;    // ODD
+        // after branch: EVEN lub ODD = TOP
+        def after_eo = y;   // TOP
+    }
+
+    // -------------------------------------------------------
+    // LOOP
+    // Each iteration adds ODD (1) to the accumulator.
+    // After the join at loop head: EVEN lub ODD = TOP
+    // So b becomes TOP inside the loop.
+    // -------------------------------------------------------
+    loop() {
+        def b = 0;    // EVEN at start
+        def c = 1;    // ODD  (step)
+        while (b < 10)
+            b = b + c;
+        // b after loop: TOP (we lost parity info across iterations)
+        return b;
+    }
+
+    // -------------------------------------------------------
+    // LOOP — parity preserved
+    // Each iteration adds EVEN (2), so parity is preserved.
+    // -------------------------------------------------------
+    loop_even_step() {
+        def b = 0;    // EVEN at start
+        def c = 2;    // EVEN (step)
+        while (b < 10)
+            b = b + c;
+        // b stays EVEN throughout
+        return b;
+    }
+
+    // -------------------------------------------------------
+    // DIVISION — always TOP (parity not preserved)
+    // 6/2=3 ODD, 4/2=2 EVEN — no way to know
+    // -------------------------------------------------------
+    division() {
+        def a = 10;       // EVEN
+        def b = 2;        // EVEN
+        def d1 = a / b;   // TOP (10/2=5 ODD)
+
+        def c = 9;        // ODD
+        def d2 = c / b;   // TOP (9/2=4 EVEN in integer division)
+
+        def d3 = c / c;   // TOP (9/9=1 ODD, but 15/5=3 ODD... not always)
+    }
+}

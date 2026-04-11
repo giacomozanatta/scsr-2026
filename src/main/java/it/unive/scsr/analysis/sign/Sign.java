@@ -77,6 +77,10 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 		return SignLattice.TOP;
 	}
 
+	/**
+	 * @author Mattia Acquilesi 896827
+	 * @author Alan Dal Col 895879
+	 */
 	@Override
 	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right,
 			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
@@ -112,11 +116,37 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if (left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+			if (right == SignLattice.ZERO)
+				return left;
+			if (left == SignLattice.ZERO) {
+				if (right == SignLattice.POS) return SignLattice.NEG;
+				if (right == SignLattice.NEG) return SignLattice.POS;
+			}
+			if (left == right)
+				return SignLattice.TOP;
+			if (left == SignLattice.POS && right == SignLattice.NEG) return SignLattice.POS;
+			if (left == SignLattice.NEG && right == SignLattice.POS) return SignLattice.NEG;
+			return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if (right == SignLattice.ZERO)
+				return SignLattice.BOTTOM;
+			if (left == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if (left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+
+			if (left == right)
+				return SignLattice.POS;
+			return SignLattice.NEG;
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

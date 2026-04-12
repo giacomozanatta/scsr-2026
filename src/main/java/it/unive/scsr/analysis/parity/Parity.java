@@ -48,9 +48,21 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
 	public ParityLattice evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right,
 			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
-		if (left.isTop() || right.isTop()) {
-			return top();
+		if (expression.getOperator() instanceof MultiplicationOperator) {
+			// EVEN * anything = EVEN (even TOP), ODD * ODD = ODD, otherwise TOP
+			if (left.equals(ParityLattice.EVEN) || right.equals(ParityLattice.EVEN)) {
+				return ParityLattice.EVEN;
+
+			}
+			if (left.isTop() || right.isTop()) {
+				return top();
+
+			}
+			return ParityLattice.ODD;
 		}
+
+		if (left.isTop() || right.isTop())
+			return top();
 
 		if (expression.getOperator() instanceof AdditionOperator
 				|| expression.getOperator() instanceof SubtractionOperator) {
@@ -58,14 +70,7 @@ public class Parity implements BaseNonRelationalValueDomain<ParityLattice> {
 			return left.equals(right) ? ParityLattice.EVEN : ParityLattice.ODD;
 		}
 
-		if (expression.getOperator() instanceof MultiplicationOperator) {
-			// EVEN * anything = EVEN, ODD * ODD = ODD
-			if (left.equals(ParityLattice.EVEN) || right.equals(ParityLattice.EVEN)) {
-				return ParityLattice.EVEN;
-			}
-			return ParityLattice.ODD;
-		}
-		//division is more complex, we return top since we cannot be sure of the result
-        return top();
+		// division: result parity is unknown
+		return top();
 	}
 }

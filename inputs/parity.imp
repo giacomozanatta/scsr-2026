@@ -1,0 +1,114 @@
+class parity {
+
+    // costanti: verifica che i valori letterali vengano astratti correttamente
+    constants() {
+        def zero = 0;       // EVEN (lo zero è pari)
+        def pos_even = 6;   // EVEN
+        def pos_odd  = 7;   // ODD
+        def neg_even = -4;  // EVEN
+        def neg_odd  = -3;  // ODD
+    }
+
+    // addizione e sottrazione: stessa tabella di parità
+    // EVEN +- EVEN = EVEN
+    // ODD  +- ODD  = EVEN
+    // EVEN +- ODD  = ODD
+    // ODD  +- EVEN = ODD
+    addition_subtraction() {
+        def a = 6;            // EVEN
+        def b = 2;            // EVEN
+        def ee_add = a + b;   // EVEN + EVEN = EVEN (8)
+        def ee_sub = a - b;   // EVEN - EVEN = EVEN (4)
+
+        def c = 5;            // ODD
+        def d = 3;            // ODD
+        def oo_add = c + d;   // ODD  + ODD  = EVEN (8)
+        def oo_sub = c - d;   // ODD  - ODD  = EVEN (2)
+
+        def eo_add = a + c;   // EVEN + ODD  = ODD  (11)
+        def eo_sub = a - c;   // EVEN - ODD  = ODD  (1)
+        def oe_add = c + a;   // ODD  + EVEN = ODD  (11)
+        def oe_sub = c - a;   // ODD  - EVEN = ODD  (-1)
+    }
+
+    // negazione: la parità si conserva
+    negation() {
+        def a = 8;        // EVEN
+        def b = 5;        // ODD
+        def na = -a;      // -EVEN = EVEN (-8)
+        def nb = -b;      // -ODD  = ODD  (-5)
+    }
+
+    // moltiplicazione
+    // EVEN * qualsiasi = EVEN
+    // ODD  * ODD       = ODD
+    // TOP  * ODD       = TOP (non si sa)
+    multiplication() {
+        def a = 4;           // EVEN
+        def b = 9;           // ODD
+        def ee = a * a;      // EVEN * EVEN = EVEN (16)
+        def eo = a * b;      // EVEN * ODD  = EVEN (36)
+        def oe = b * a;      // ODD  * EVEN = EVEN (36)
+        def oo = b * b;      // ODD  * ODD  = ODD  (81)
+    }
+
+    // modulo: EVEN % EVEN preserva la parità del dividendo
+    modulo() {
+        def a = 10;          // EVEN
+        def b = 4;           // EVEN
+        def c = 7;           // ODD
+
+        def ee = a % b;      // EVEN % EVEN = EVEN (2)
+        def oe = c % b;      // ODD  % EVEN = ODD  (3)
+        def eo = a % c;      // EVEN % ODD  = TOP  (es. 10%3=1 ODD, ma 10%5=0 EVEN)
+        def oo = c % c;      // ODD  % ODD  = TOP  (es. 7%3=1 ODD, ma 9%3=0 EVEN)
+    }
+
+    // divisione: non si può dire nulla sulla parità del risultato
+    // es. 6/2=3 (ODD), 4/2=2 (EVEN) -> TOP
+    division() {
+        def a = 10;          // EVEN
+        def b = 4;           // EVEN
+        def c = 7;           // ODD
+        def d1 = a / b;      // TOP (10/4=2 EVEN, ma 6/2=3 ODD)
+        def d2 = c / b;      // TOP (7/4=1 ODD in integer division)
+        def d3 = a / c;      // TOP
+    }
+
+    // rami: dopo un if-else si fa il join (lub) dei due rami
+    // EVEN lub EVEN = EVEN
+    // EVEN lub ODD  = TOP
+    branches(p) {
+        def x = 0;    // EVEN
+        if (p > 0)
+            x = 8;    // EVEN
+        else
+            x = 2;    // EVEN
+        def after_ee = x;   // EVEN lub EVEN = EVEN
+
+        def y = 0;    // EVEN
+        if (p > 0)
+            y = 6;    // EVEN
+        else
+            y = 3;    // ODD
+        def after_eo = y;   // EVEN lub ODD = TOP
+    }
+
+    // loop con incremento dispari: la parità si perde dopo il join al loop header
+    // EVEN lub ODD = TOP -> b diventa TOP all'interno del loop
+    loop_odd_step() {
+        def b = 0;    // EVEN
+        while (b < 20)
+            b = b + 1;   // b: EVEN + ODD = ODD -> join(EVEN, ODD) = TOP
+        return b;
+    }
+
+    // loop con incremento pari: la parità si conserva
+    // b rimane EVEN ad ogni iterazione -> join(EVEN, EVEN) = EVEN
+    loop_even_step() {
+        def b = 0;    // EVEN
+        while (b < 20)
+            b = b + 2;   // b: EVEN + EVEN = EVEN -> join(EVEN, EVEN) = EVEN
+        return b;
+    }
+}

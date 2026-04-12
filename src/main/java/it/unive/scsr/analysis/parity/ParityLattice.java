@@ -76,9 +76,17 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 	@Override
 	public ParityLattice lubAux(ParityLattice other) throws SemanticException {
 		// TODO: homework
-		// lub(x,x) = x; lub(⊥,x) = x; lub(x, T) = T already handled by LiSA
+		// lub(x,x) = x; lub(⊥,x) = lub(x,⊥) = x; lub(x, T) = lub(T,x) = T already handled by LiSA
 		// remaining case : lub(E,O) = lub(O,E) = T
 		return ParityLattice.TOP;
+	}
+
+	public ParityLattice glbAux(ParityLattice other) throws SemanticException {
+		// glb(x,x) = x; glb(⊥,x) = glb(x,⊥) = ⊥; glb(x, T) = glb(T,x) = x already handled by LiSA
+		// example : if x = TOP and expr = EVEN -> we now know x is even too -> glb(T,x) = x in this case
+
+		// remaining case : glb(E,O) = glb(O,E) = bottom
+		return ParityLattice.BOTTOM;
 	}
 
 	@Override

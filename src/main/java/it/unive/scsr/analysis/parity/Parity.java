@@ -9,21 +9,22 @@ import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.symbolic.value.operator.*;
 import it.unive.lisa.symbolic.value.operator.binary.*;
+import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
 
 	@Override
-	    public ParityLattice top() {
-			// TODO: homework
-			return ParityLattice.TOP;
-	    }
+	public ParityLattice top() {
+		// TODO: homework
+		return ParityLattice.TOP;
+	}
 
-	    @Override
-	    public ParityLattice bottom() {
-	    	// TODO: homework
-			return ParityLattice.BOTTOM;
-	    }
+	@Override
+	public ParityLattice bottom() {
+		// TODO: homework
+		return ParityLattice.BOTTOM;
+	}
 
 
 	@Override
@@ -40,7 +41,11 @@ public class Parity implements
 	public ParityLattice evalUnaryExpression(UnaryExpression expression, ParityLattice arg, ProgramPoint pp,
 										   SemanticOracle oracle) throws SemanticException {
 
-		return arg; // sign change but no change of parity
+		if(expression.getOperator() == NumericNegation.INSTANCE) {
+			return arg; // sign change but no change of parity
+		}
+
+		return ParityLattice.TOP;
 	}
 
 	@Override
@@ -85,14 +90,13 @@ public class Parity implements
 			// division doesn't preserve parity in any predictable way
 			return ParityLattice.TOP;
 
-		} else if (expression.getOperator() instanceof ModuloOperator) {
-			// modulo parity is unpredictable in general
-			return ParityLattice.TOP;
+		} else if (expression.getOperator() instanceof ModuloOperator || expression.getOperator() instanceof RemainderOperator) {
+			if(right == ParityLattice.EVEN){
+				return left; // if divider is EVEN => result has the same parity as the dividend
+			}
+			return ParityLattice.TOP; // otherwise, unpredictable
 		}
-		else if (expression.getOperator() instanceof RemainderOperator) {
-			// remainder parity is unpredictable in general
-			return ParityLattice.TOP;
-		}
+
 		return ParityLattice.TOP;
 	}
 
@@ -159,9 +163,6 @@ public class Parity implements
 			if (evalRight.isBottom() || current.isBottom())
 				return environment.bottom();
 
-			// glb: if x = TOP and expr = EVEN -> we now know x is even too
-			// if x = EVEN and expr = even -> stays EVEN
-			// if x = even and expr = odd -> return bottom (error state)
 			ParityLattice update = current.glb(evalRight);
 
 			if (update.isBottom())

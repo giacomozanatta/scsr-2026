@@ -50,6 +50,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
+			// -[l,u] = [-u, -l]
 			MathNumber u = arg.i.getHigh();
 			MathNumber l = arg.i.getLow();
 			
@@ -67,7 +68,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
+			// [l1,u1] + [l2,u2] = [l1+l2, u1+u2]
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
 			
@@ -78,10 +79,53 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			// TODO: homework
+			// [l1,u1] * [l2,u2] = [min(l1*l2, l1*u2, u1*l2, u1*u2), max(l1*l2, l1*u2, u1*l2, u1*u2)]
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			MathNumber l1l2 = l1.multiply(l2);
+			MathNumber l1u2 = l1.multiply(u2);
+			MathNumber u1l2 = u1.multiply(l2);
+			MathNumber u1u2 = u1.multiply(u2);
+
+			return new IntervalLattice(l1l2.min(l1u2).min(u1l2).min(u1u2), l1l2.max(l1u2).max(u1l2).max(u1u2));
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			// TODO: homework
+			// [l1,u1] - [l2,u2] = [l1,u1] + (-[l2,u2]) = [l1,u1] + [-u2,-l2] = [l1-u2, u1-l2]
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			return new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
 			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			// if 0 in [l2, u2] -> return [-inf, +inf] = TOP
+			if(l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+				return IntervalLattice.TOP;
+			}
+
+			// if 0 not in [l2, u2] :
+			// [l1, u1] / [l2, u2] = [l1, u1] * [1/l2 , 1/u2]
+			// = [min(l1/l2, l1/u2, u1/l2, u1/u2), max(l1/l2, l1/u2, u1/l2, u1/u2)]
+			MathNumber l1l2 = l1.divide(l2);
+			MathNumber l1u2 = l1.divide(u2);
+			MathNumber u1l2 = u1.divide(l2);
+			MathNumber u1u2 = u1.divide(u2);
+
+			return new IntervalLattice(l1l2.min(l1u2).min(u1l2).min(u1u2), l1l2.max(l1u2).max(u1l2).max(u1u2));
 		}
 		
 		return IntervalLattice.TOP;

@@ -8,6 +8,15 @@ class parity {
         return c;
     }
 
+    check2() {
+        def c = 1;
+        def b = 2;
+        if(b != 10) {
+            return b;
+        }
+        return c;
+    }
+
 	loop() {
 		def c = 1;
 		def b = 0;

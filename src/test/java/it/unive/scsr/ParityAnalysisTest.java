@@ -17,7 +17,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 public class ParityAnalysisTest {
 
     @Test
-    public void testSignAnalysis() throws ParsingException, AnalysisException {
+    public void testParityAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile("inputs/parity.imp");
 

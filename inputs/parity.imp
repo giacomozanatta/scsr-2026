@@ -13,16 +13,23 @@ class parity {
 		def b = 0;
    		while (b < 10)
         	b = b + c;
+        b = 0;
+        while (b < 10)
+            b = b + 1;
+        b = 0;
+        while (b < 10)
+            b = b + 2;
    		return b;
     }
 
 	basic() {
-		def i = 2; // i = +
-		def j = -10; // j = -
-		def a = i + j; // a = + ADD - = TOP
-		def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before
+		def i = 2;
+		def j = -10;
+		def a = i + j;
+		def s = i - j;
 		def m = i * j;
 		def d = i / j;
+		def h = j % i;
 	}
 
 	branches() {

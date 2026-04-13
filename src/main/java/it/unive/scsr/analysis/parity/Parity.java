@@ -69,6 +69,12 @@ public class Parity implements
 				return ParityLattice.BOTTOM;
 			}
 			return ParityLattice.TOP;
+		} else if (expression.getOperator() instanceof ModuloOperator ||
+				   expression.getOperator() instanceof RemainderOperator) {
+			if (left == ParityLattice.EVEN && right == ParityLattice.EVEN) {
+				return ParityLattice.EVEN;
+			}
+			return ParityLattice.TOP;
 		}
 
 		return ParityLattice.TOP;

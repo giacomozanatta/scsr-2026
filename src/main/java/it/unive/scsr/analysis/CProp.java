@@ -25,61 +25,12 @@ public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetEle
         if (valueExpression == null)
             return result;
 
-        //Costant
-        if(valueExpression instanceof Constant) {
-            if(((Constant) valueExpression).getValue() instanceof Integer) {
-                result.add(new CPropSetElem(identifier, (Constant) valueExpression));
-            }
-        //Identifier
-        }else if(valueExpression instanceof Identifier) {
-            Set<CPropSetElem> currentSet = cPropSetElems.getDataflowElements();
-            for(CPropSetElem r : currentSet){
-                if(r.getId().equals(valueExpression)){
-                    result.add(new CPropSetElem(identifier, r.getConstant()));
-                    break;
-                }
-            }
-        //Unary Expression x=-y
-        }else if (valueExpression instanceof UnaryExpression unary){
-            if (unary.getOperator() instanceof NumericNegation) {
-                ValueExpression innerExpr = (ValueExpression) unary.getExpression();
-                Integer innerValue = evaluateToInteger(innerExpr, cPropSetElems); // Reuse the logic again!
-                if (innerValue != null) {
-                    int resultValue = -innerValue;
-                    Constant newConstant = new Constant(unary.getStaticType(), resultValue, programPoint.getLocation());
-                    result.add(new CPropSetElem(identifier, newConstant));
-                }
-            }
-        //Binary Expression
-        }else if (valueExpression instanceof BinaryExpression binary) {
-            ValueExpression leftExpr = (ValueExpression) binary.getLeft();
-            ValueExpression rightExpr = (ValueExpression) binary.getRight();
-            Integer leftValue = evaluateToInteger(leftExpr, cPropSetElems);
-            Integer rightValue = evaluateToInteger(rightExpr, cPropSetElems);
-            if (leftValue != null && rightValue != null) {
-                int resultValue = 0;
-                boolean mathSuccessful = true;
-                String opSymbol = binary.getOperator().toString();
-                if (opSymbol.equals("+")) {
-                    resultValue = leftValue + rightValue;
-                } else if (opSymbol.equals("-")) {
-                    resultValue = leftValue - rightValue;
-                } else if (opSymbol.equals("*")) {
-                    resultValue = leftValue * rightValue;
-                } else if (opSymbol.equals("/")) {
-                    if (rightValue != 0) {
-                        resultValue = leftValue / rightValue;
-                    } else {
-                        mathSuccessful = false;
-                    }
-                } else {
-                    mathSuccessful = false;
-                }
-                if (mathSuccessful) {
-                    Constant newConstant = new Constant(binary.getStaticType(), resultValue, programPoint.getLocation());
-                    result.add(new CPropSetElem(identifier, newConstant));
-                }
-            }
+        Integer finalValue = evaluateToInteger(valueExpression, cPropSetElems);
+
+        // If the engine successfully boiled it down to a single number, save it!
+        if (finalValue != null) {
+            Constant newConstant = new Constant(valueExpression.getStaticType(), finalValue, programPoint.getLocation());
+            result.add(new CPropSetElem(identifier, newConstant));
         }
 
         return result;
@@ -128,6 +79,34 @@ public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetEle
                     if (val instanceof Integer) {
                         return (Integer) val;
                     }
+                }
+            }
+        }
+        //Case 3: unary expression (like -y)
+        else if (expr instanceof UnaryExpression unary) {
+            Integer innerValue = evaluateToInteger((ValueExpression) unary.getExpression(), CPropSetElems);
+            if (innerValue != null && unary.getOperator() instanceof NumericNegation) {
+                return -innerValue;
+            }
+        }
+        //Case 4: binary expression
+        else if (expr instanceof BinaryExpression) {
+            BinaryExpression binary = (BinaryExpression) expr;
+
+            Integer leftValue = evaluateToInteger((ValueExpression) binary.getLeft(), CPropSetElems);
+            Integer rightValue = evaluateToInteger((ValueExpression) binary.getRight(), CPropSetElems);
+
+            // If both sides successfully boiled down to integers, do the math!
+            if (leftValue != null && rightValue != null) {
+                String opSymbol = binary.getOperator().toString();
+                if (opSymbol.equals("+")) {
+                    return leftValue + rightValue;
+                }else if (opSymbol.equals("-")) {
+                    return leftValue - rightValue;
+                } else if (opSymbol.equals("*")) {
+                    return leftValue * rightValue;
+                } else if (opSymbol.equals("/")) {
+                    if (rightValue != 0) return leftValue / rightValue;
                 }
             }
         }

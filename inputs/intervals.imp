@@ -5,9 +5,10 @@ class intervals {
 		def j = -10;
 		def a = i + j;
 		def s = i - j;
-//		def m = i * j;
-//		def d = i / j;
-//      def l = -i;
+		def m = i * j;
+		def d = i / j;
+		def banana = 2/d;
+        def l = -i;
 	}
 
 	branches(b) {
@@ -22,10 +23,37 @@ class intervals {
 	loop(b) {
 			def c = 1;
 			
-			while (b < 3) {
+			while (b < 10) {
 				c = c + 1;
 				b = b + 1; 
 			}
 			return c; 
+	}
+
+	slides(z) {
+	    def x = 11;
+	    x = x + 10;
+	    def y = 2;
+	    y = y + 8;
+
+	    x = x / y;
+	    return;
+
+	}
+
+	possible_div_by_zero(a){
+	    def x = 1;
+	    if(a > 0)
+    	    x = x + 2;
+    	else
+    	    x = x + 0;
+	    def y = -1;
+	    if(a > 0)
+	        y = y + 2;
+        else
+            y = y + 0;
+	    def div = x/y;
+	    return div;
+
 	}
 }

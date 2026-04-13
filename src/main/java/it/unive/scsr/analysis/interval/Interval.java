@@ -14,6 +14,9 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 	@Override
@@ -65,23 +68,65 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		
 		if(left.i == null || right == null)
 			return IntervalLattice.BOTTOM;
-		
+		MathNumber ll = left.i.getLow();
+		MathNumber lu = left.i.getHigh();
+
+		MathNumber rl = right.i.getLow();
+		MathNumber ru = right.i.getHigh();
+
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
-			MathNumber u1 = left.i.getHigh();
-			MathNumber u2 = right.i.getHigh();
-			
-			MathNumber l1 = left.i.getLow();
-			MathNumber l2 = right.i.getLow();
-			
-			return new IntervalLattice(l1.add(l2), u1.add(u2));
-			
+			return new IntervalLattice(ll.add(rl), lu.add(ru));
+
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+			List<MathNumber> mults = new ArrayList<>(
+					List.of(
+							ll.multiply(rl),
+							ll.multiply(ru),
+							lu.multiply(rl),
+							lu.multiply(ru)
+					)
+			);
+			MathNumber lo = mults.get(0), hi = mults.get(0);
+			for(MathNumber mul : mults) {
+				if (lo.compareTo(mul) > 0) lo = mul;
+				if (hi.compareTo(mul) < 0) hi = mul;
+			}
+			return new IntervalLattice(lo, hi);
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			MathNumber lo = ll.add(
+					ru.multiply(MathNumber.MINUS_ONE)
+			);
+			MathNumber hi = lu.add(
+					rl.multiply(MathNumber.MINUS_ONE)
+			);
+
+			return new IntervalLattice(lo, hi);
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if(rl.compareTo(MathNumber.ZERO) <= 0 && ru.compareTo(MathNumber.ZERO) >= 0){
+				return IntervalLattice.BOTTOM;
+			}
+
+			List<MathNumber> divs = new ArrayList<>(
+					List.of(
+							ll.divide(rl),
+							ll.divide(ru),
+							lu.divide(rl),
+							lu.divide(ru)
+					)
+			);
+			MathNumber min = divs.get(0), max = divs.get(0);
+			for(MathNumber div : divs) {
+				if (min.compareTo(div) > 0) min = div;
+				if (max.compareTo(div) < 0) max = div;
+			}
+
+			// SHould we round the extremities since we are dealing with integers only?
+			// Should we perhaps return bottom when dividing by a non-integer?
+//			return new IntervalLattice(min, max);
+			return new IntervalLattice(min.roundDown(), max.roundUp());
+
 		}
 		
 		return IntervalLattice.TOP;

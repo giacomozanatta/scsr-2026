@@ -2,6 +2,7 @@ class helloworld {
 
 	f0() {
 		def x = 0;
+		def y = 0;
 		return;
 	}
 }

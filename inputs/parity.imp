@@ -1,0 +1,58 @@
+class parity_test {
+
+	f0() {
+		def x = 2;
+        def y = 3;
+        def z = -y;  // -ODD = ODD
+        def w = -x;  // -EVEN = EVEN
+
+		return;
+	}
+
+	f1() {
+		def x = 2;
+        def y = 4;
+        def a = x + y;     // EVEN + EVEN = EVEN
+
+        def b = 3;
+        def c = 5;
+        def d = b + c;     // ODD + ODD = EVEN
+
+        def e = x + b;     // EVEN + ODD = ODD
+
+        def f = c - b;     // ODD - ODD = EVEN
+        def g = c - x;     // ODD - EVEN = ODD
+
+		return;
+	}
+
+	f2() {
+		def x = 2;
+        def y = 7;
+        def a = x * y;     // ODD * EVEN = EVEN
+
+        def b = 3;
+        def c = 5;
+        def d = b * c;     // ODD * ODD = ODD
+
+        def f = y / b; //ANY / ANY = TOP
+
+        def g = c % b; // ANY % ANY = TOP
+
+        return;
+	}
+
+
+	f3(b) {
+		def a = 0;
+
+		if(b)
+		    a = 1;
+		else
+		    a = 2;
+
+		return;   //WE DON'T KNOW b -> a = TOP
+	}
+
+
+}

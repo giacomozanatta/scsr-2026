@@ -53,7 +53,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	}
 
 	@Override
-	public SignLattice evalUnaryExpression(UnaryExpression expression, SignLattice arg, ProgramPoint pp,Sign  SemanticOracle oracle) throws SemanticException {
+	public SignLattice evalUnaryExpression(UnaryExpression expression, SignLattice arg, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
 			if(arg == SignLattice.NEG)
 				return SignLattice.POS;

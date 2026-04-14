@@ -26,7 +26,7 @@ public class SignLattice
 		element = e;
 	}
 
-	@Override
+	    @Override
 	    public SignLattice top() {
 		return SignLattice.TOP;
 	    }
@@ -35,8 +35,6 @@ public class SignLattice
 	    public SignLattice bottom() {
 		return SignLattice.BOTTOM;
 	    }
-	    
-	    
 
 	    @Override
 		public int hashCode() {
@@ -57,7 +55,6 @@ public class SignLattice
 
 		@Override
 	    public StructuredRepresentation representation() {
-		
 			if(this == SignLattice.BOTTOM)
 				return Lattice.bottomRepresentation();
 			else if(this == SignLattice.TOP)
@@ -70,39 +67,21 @@ public class SignLattice
 			return new StringRepresentation("-");
 	    }
 
-	    @Override
-	    public SignLattice lubAux(SignLattice other) throws SemanticException {
-            if(this == SignLattice.TOP)
-                return this;
-            else if(this == SignLattice.BOTTOM)
-                return other;
-            else if(this == SignLattice.POS) {
-                if(other.equals(SignLattice.BOTTOM) || other.equals(SignLattice.POS))
-                    return this;
-                else if(other.equals(SignLattice.ZERO) || other.equals(SignLattice.NEG) ||  other.equals(SignLattice.TOP))
-                    return top();
-            }
-            else if(this == SignLattice.NEG) {
-                if(other.equals(SignLattice.BOTTOM) || other.equals(SignLattice.NEG))
-                    return this;
-                else if(other.equals(SignLattice.ZERO) || other.equals(SignLattice.TOP) || other.equals(SignLattice.POS))
-                    return top();
-            }
-            else if(this == SignLattice.ZERO) {
-                if(other.equals(SignLattice.BOTTOM) || other.equals(SignLattice.ZERO))
-                    return this;
-                else if(other.equals(SignLattice.POS) || other.equals(SignLattice.NEG) || other.equals(SignLattice.TOP))
-                    return top();
-            }
-
-	    	// in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP	
-	    	return SignLattice.TOP;
-	    }
+        @Override
+        public SignLattice lubAux(SignLattice other) throws SemanticException {
+            if(this == SignLattice.POS && other == SignLattice.ZERO)
+                return SignLattice.TOP;
+            // in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP
+            return SignLattice.TOP;
+        }
 
 	    @Override
 	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
+	    	if(other == SignLattice.BOTTOM)
+                return false;
+            else if(this == SignLattice.TOP)
+                return true;
+            return this.equals(other);
 	    }
 
 		// For glb in this case we use default LiSA implementation
@@ -110,8 +89,7 @@ public class SignLattice
 	
 	    // Other method implementations to use in Sign domain to assume and check satisfability of some stuff
 		
-	    public Satisfiability eq(
-				SignLattice other) {
+	    public Satisfiability eq(SignLattice other) {
 			if (this.isBottom() || other.isBottom())
 				return Satisfiability.BOTTOM;
 			else if (this.isTop() || other.isTop())
@@ -132,8 +110,7 @@ public class SignLattice
 		 * 
 		 * @return the satisfiability of {@code this > other}
 		 */
-		public Satisfiability gt(
-				SignLattice other) {
+		public Satisfiability gt(SignLattice other) {
 			if (this.isBottom() || other.isBottom())
 				return Satisfiability.BOTTOM;
 			else if (this.isTop() || other.isTop())

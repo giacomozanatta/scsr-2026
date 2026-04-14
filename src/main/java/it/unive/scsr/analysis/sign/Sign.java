@@ -6,7 +6,6 @@ import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.program.cfg.ProgramPoint;
-import it.unive.lisa.program.cfg.statement.numeric.Addition;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
 import it.unive.lisa.symbolic.value.Identifier;
@@ -73,18 +72,21 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
 		if(expression.getOperator() instanceof AdditionOperator) {
-            if(left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
-                return SignLattice.TOP;
-            if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO) || (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
-                return SignLattice.POS;
-            if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO) || (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
-                return SignLattice.NEG;
-            if(left == SignLattice.ZERO && right == SignLattice.ZERO)
-                return SignLattice.ZERO;
-            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
-                return SignLattice.BOTTOM;
-            if(left == SignLattice.TOP || right == SignLattice.TOP)
-                return SignLattice.TOP;
+			if(left == SignLattice.POS && right == SignLattice.NEG
+					|| left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.TOP;
+			if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO)
+					|| (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
+				return SignLattice.POS;
+			if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO)
+					|| (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
+				return SignLattice.NEG;
+			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
 
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			if(left == SignLattice.POS && right == SignLattice.POS)

@@ -6,16 +6,16 @@ public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
 
 	@Override
-	    public ParityLattice top() {
-			// TODO: homework
-			return null;
-	    }
+    public ParityLattice top() {
+        return ParityLattice.TOP;
+    }
 
-	    @Override
-	    public ParityLattice bottom() {
-	    	// TODO: homework
-			return null;
-	    }
+    @Override
+    public ParityLattice bottom() {
+        return ParityLattice.BOTTOM;
+    }
 
-	    //TODO add missing components
+    /*public ParityLattice evalNonNullConstant(ParityLattice element) {
+
+    }*/
 }

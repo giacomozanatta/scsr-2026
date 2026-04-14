@@ -9,12 +9,12 @@ import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
 import it.unive.lisa.symbolic.value.UnaryExpression;
-import it.unive.lisa.symbolic.value.operator.AdditionOperator;
-import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
-import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
+import it.unive.lisa.symbolic.value.operator.*;
 import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.scsr.analysis.sign.SignLattice;
+
+import javax.swing.*;
 
 public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
@@ -62,6 +62,8 @@ public class Parity implements
 			return ParityLattice.TOP;
 		else if (operator instanceof AdditionOperator || operator instanceof SubtractionOperator)
 			return left.equals(right) ? ParityLattice.EVEN : ParityLattice.ODD;
+		else if (operator instanceof ModuloOperator || operator instanceof RemainderOperator)
+			return right == ParityLattice.EVEN ? left : ParityLattice.TOP;
 		else
 			return ParityLattice.TOP;
 	}

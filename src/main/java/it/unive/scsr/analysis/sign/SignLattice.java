@@ -26,102 +26,100 @@ public class SignLattice
 		element = e;
 	}
 
-	    @Override
-	    public SignLattice top() {
-		return SignLattice.TOP;
-	    }
+    @Override
+    public SignLattice top() {
+    return SignLattice.TOP;
+    }
 
-	    @Override
-	    public SignLattice bottom() {
-		return SignLattice.BOTTOM;
-	    }
+    @Override
+    public SignLattice bottom() {
+    return SignLattice.BOTTOM;
+    }
 
-	    @Override
-		public int hashCode() {
-			return Objects.hash(element);
-		}
+    @Override
+    public int hashCode() {
+        return Objects.hash(element);
+    }
 
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			SignLattice other = (SignLattice) obj;
-			return element == other.element;
-		}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SignLattice other = (SignLattice) obj;
+        return element == other.element;
+    }
 
-		@Override
-	    public StructuredRepresentation representation() {
-			if(this == SignLattice.BOTTOM)
-				return Lattice.bottomRepresentation();
-			else if(this == SignLattice.TOP)
-				return Lattice.topRepresentation();
-			else if(this == SignLattice.ZERO)
-				return new StringRepresentation("0");
-			else if(this == SignLattice.POS) 
-				return new StringRepresentation("+");
-	
-			return new StringRepresentation("-");
-	    }
+    @Override
+    public StructuredRepresentation representation() {
+        if(this == SignLattice.BOTTOM)
+            return Lattice.bottomRepresentation();
+        else if(this == SignLattice.TOP)
+            return Lattice.topRepresentation();
+        else if(this == SignLattice.ZERO)
+            return new StringRepresentation("0");
+        else if(this == SignLattice.POS)
+            return new StringRepresentation("+");
 
-        @Override
-        public SignLattice lubAux(SignLattice other) throws SemanticException {
-            if(this == SignLattice.POS && other == SignLattice.ZERO)
-                return SignLattice.TOP;
-            // in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP
+        return new StringRepresentation("-");
+    }
+
+    @Override
+    public SignLattice lubAux(SignLattice other) throws SemanticException {
+        if(this == SignLattice.POS && other == SignLattice.ZERO)
             return SignLattice.TOP;
-        }
+        // in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP
+        return SignLattice.TOP;
+    }
 
-	    @Override
-	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	if(other == SignLattice.BOTTOM)
-                return false;
-            else if(this == SignLattice.TOP)
-                return true;
-            return this.equals(other);
-	    }
+    @Override
+    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
+        if(other == SignLattice.BOTTOM)
+            return false;
+        else if(this == SignLattice.TOP)
+            return true;
+        return this.equals(other);
+    }
 
-		// For glb in this case we use default LiSA implementation
-	
-	
-	    // Other method implementations to use in Sign domain to assume and check satisfability of some stuff
-		
-	    public Satisfiability eq(SignLattice other) {
-			if (this.isBottom() || other.isBottom())
-				return Satisfiability.BOTTOM;
-			else if (this.isTop() || other.isTop())
-				return Satisfiability.UNKNOWN;
-			else if (!this.equals(other))
-				return Satisfiability.NOT_SATISFIED;
-			else if (this == ZERO)
-				return Satisfiability.SATISFIED;
-			else
-				return Satisfiability.UNKNOWN;
-		}
-
-		/**
-		 * Tests if this instance is greater than the given one, returning a
-		 * {@link Satisfiability} element.
-		 * 
-		 * @param other the instance
-		 * 
-		 * @return the satisfiability of {@code this > other}
-		 */
-		public Satisfiability gt(SignLattice other) {
-			if (this.isBottom() || other.isBottom())
-				return Satisfiability.BOTTOM;
-			else if (this.isTop() || other.isTop())
-				return Satisfiability.UNKNOWN;
-			else if (this == NEG)
-				return other == NEG ? Satisfiability.UNKNOWN : Satisfiability.NOT_SATISFIED;
-			else if (this == ZERO)
-				return other == NEG ? Satisfiability.SATISFIED : Satisfiability.NOT_SATISFIED;
-			else
-				return other == POS ? Satisfiability.UNKNOWN : Satisfiability.SATISFIED;
-		}
+    // For glb in this case we use default LiSA implementation
 
 
+    // Other method implementations to use in Sign domain to assume and check satisfability of some stuff
+
+    public Satisfiability eq(SignLattice other) {
+        if (this.isBottom() || other.isBottom())
+            return Satisfiability.BOTTOM;
+        else if (this.isTop() || other.isTop())
+            return Satisfiability.UNKNOWN;
+        else if (!this.equals(other))
+            return Satisfiability.NOT_SATISFIED;
+        else if (this == ZERO)
+            return Satisfiability.SATISFIED;
+        else
+            return Satisfiability.UNKNOWN;
+    }
+
+    /**
+     * Tests if this instance is greater than the given one, returning a
+     * {@link Satisfiability} element.
+     *
+     * @param other the instance
+     *
+     * @return the satisfiability of {@code this > other}
+     */
+    public Satisfiability gt(SignLattice other) {
+        if (this.isBottom() || other.isBottom())
+            return Satisfiability.BOTTOM;
+        else if (this.isTop() || other.isTop())
+            return Satisfiability.UNKNOWN;
+        else if (this == NEG)
+            return other == NEG ? Satisfiability.UNKNOWN : Satisfiability.NOT_SATISFIED;
+        else if (this == ZERO)
+            return other == NEG ? Satisfiability.SATISFIED : Satisfiability.NOT_SATISFIED;
+        else
+            return other == POS ? Satisfiability.UNKNOWN : Satisfiability.SATISFIED;
+    }
 }

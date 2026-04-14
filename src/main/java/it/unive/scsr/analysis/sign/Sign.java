@@ -6,6 +6,7 @@ import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.program.cfg.ProgramPoint;
+import it.unive.lisa.program.cfg.statement.numeric.Addition;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
 import it.unive.lisa.symbolic.value.Identifier;
@@ -72,28 +73,19 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
 		if(expression.getOperator() instanceof AdditionOperator) {
-			if(left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
-                // POS + NEG || NEG + POS -> TOP; we can't know the real value of the expression
-                // 5 + (-3), (-3) + 5
-				return SignLattice.TOP;
-			else if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO) || (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
-                // POS + POS || POS + ZERO || ZERO + POS -> POS
-                // 5 + 5, 5 + 0, 0 + 5
-				return SignLattice.POS;
-			else if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO) || (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
-                // NEG + NEG || NEG + ZERO || ZERO + NEG -> NEG
-                // (-3) + (-8), (-8) + 0, 0 + (-8)
-				return SignLattice.NEG;
-			else if(left == SignLattice.ZERO && right == SignLattice.ZERO)
-                // ZERO + ZERO -> ZERO
-				return SignLattice.ZERO;
-			else if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
-                // BOTTOM + BOTTOM -> BOTTOM
-				return SignLattice.BOTTOM;
-			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-                // TOP + TOP -> TOP
-				return SignLattice.TOP;
-			
+            if(left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
+                return SignLattice.TOP;
+            if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO) || (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
+                return SignLattice.POS;
+            if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO) || (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
+                return SignLattice.NEG;
+            if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+                return SignLattice.ZERO;
+            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            if(left == SignLattice.TOP || right == SignLattice.TOP)
+                return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			if(left == SignLattice.POS && right == SignLattice.POS)
                 // POS * POS -> POS
@@ -112,29 +104,46 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
                 // TOP * TOP -> TOP
-				return SignLattice.TOP;		
-		} else if (expression.getOperator() instanceof SubtractionOperator) {
-            if(left == SignLattice.POS && right == SignLattice.NEG)
-                // POS - NEG -> POS
-                return SignLattice.POS;
-            else if(left == SignLattice.NEG && right == SignLattice.POS)
-                // NEG - POS -> NEG
-                return SignLattice.NEG;
-            else if(left == SignLattice.TOP && right == SignLattice.TOP)
-                // TOP - TOP -> TOP
-                return SignLattice.TOP;
-            else if(left == SignLattice.BOTTOM &&  right == SignLattice.BOTTOM)
-                // BOTTOM - BOTTOM -> BOTTOM
-                return SignLattice.BOTTOM;
-            else if(left == SignLattice.ZERO || right == SignLattice.ZERO)
-                // ZERO - ZERO, TOP - ZERO, ZERO - TOP, BOTTOM - ZERO, ZERO - BOTTOM, ... -> 0
-                return SignLattice.ZERO;
-            // POS - POS; NEG - NEG
-            return SignLattice.TOP;
+				return SignLattice.TOP;
 
-            // this could also be implemented as "x - y = x + (-y)" ...
+		} else if (expression.getOperator() instanceof SubtractionOperator) {
+            // this could also be implemented as "x - y = x + (-y)" but i don't know how to do this :)
+
+            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            else if(left == SignLattice.TOP || right == SignLattice.TOP)
+                return SignLattice.TOP;
+            else if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+                return SignLattice.ZERO;
+            else if(left == SignLattice.NEG && right == SignLattice.POS || left == SignLattice.ZERO && right == SignLattice.POS || left == SignLattice.NEG && right == SignLattice.ZERO)
+                // (-3) - 5; 0 - 3; (-3) - 0
+                return SignLattice.NEG;
+            else if(left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.ZERO && right == SignLattice.NEG || left == SignLattice.POS && right == SignLattice.ZERO)
+                // 5 - (-3); 0 - (-3); 3 - 0
+                return SignLattice.POS;
+            else
+                // POS - POS; NEG - NEG
+                return SignLattice.TOP;
+
         } else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+            if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+                return SignLattice.BOTTOM;
+            else if(left == SignLattice.TOP  || right == SignLattice.TOP)
+                return SignLattice.TOP;
+            else if(left == SignLattice.ZERO)
+                // 0 / x = 0
+                return SignLattice.ZERO;
+            else if(right == SignLattice.ZERO)
+                // division by zero; should produce an error or return BOTTOM
+                return SignLattice.BOTTOM;
+            else if(left == SignLattice.NEG && right == SignLattice.NEG || left == SignLattice.POS && right == SignLattice.POS)
+                // (-6 / -3) = 6 / 3 = 2
+                return SignLattice.POS;
+            else if(left == SignLattice.POS && right == SignLattice.NEG || left == SignLattice.NEG && right == SignLattice.POS)
+                // 6 / (-3) = -2; (-6) / 3 = -2
+                return SignLattice.NEG;
+            else
+                return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)
@@ -148,21 +157,19 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	// These behaviors can be handeled with the following implementations
 	
 	@Override
-	public Satisfiability satisfiesBinaryExpression(
-			BinaryExpression expression,
-			SignLattice left,
-			SignLattice right,
-			ProgramPoint pp,
-			SemanticOracle oracle) {
+	public Satisfiability satisfiesBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right, ProgramPoint pp, SemanticOracle oracle) {
 		if (left.isTop() || right.isTop())
 			return Satisfiability.UNKNOWN;
 
 		BinaryOperator operator = expression.getOperator();
 		if (operator == ComparisonEq.INSTANCE)
+            // x = y
 			return left.eq(right);
 		else if (operator == ComparisonGe.INSTANCE)
+            // x >= y; x || y
 			return left.eq(right).or(left.gt(right));
 		else if (operator == ComparisonGt.INSTANCE)
+            // x > y
 			return left.gt(right);
 		else if (operator == ComparisonLe.INSTANCE)
 			// e1 <= e2 same as !(e1 > e2)
@@ -171,19 +178,14 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			// e1 < e2 -> !(e1 >= e2) && !(e1 == e2)
 			return left.gt(right).negate().and(left.eq(right).negate());
 		else if (operator == ComparisonNe.INSTANCE)
+            // x != y
 			return left.eq(right).negate();
 		else
 			return Satisfiability.UNKNOWN;
 	}
 
 	@Override
-	public ValueEnvironment<SignLattice> assumeBinaryExpression(
-			ValueEnvironment<SignLattice> environment,
-			BinaryExpression expression,
-			ProgramPoint src,
-			ProgramPoint dest,
-			SemanticOracle oracle)
-			throws SemanticException {
+	public ValueEnvironment<SignLattice> assumeBinaryExpression(ValueEnvironment<SignLattice> environment, BinaryExpression expression, ProgramPoint src, ProgramPoint dest, SemanticOracle oracle) throws SemanticException {
 		Satisfiability sat = satisfies(environment, expression, src, oracle);
 		if (sat == Satisfiability.NOT_SATISFIED)
 			return environment.bottom();
@@ -196,6 +198,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 		BinaryOperator operator = expression.getOperator();
 		ValueExpression left = (ValueExpression) expression.getLeft();
 		ValueExpression right = (ValueExpression) expression.getRight();
+
 		if (left instanceof Identifier) {
 			eval = eval(environment, right, src, oracle);
 			id = (Identifier) left;

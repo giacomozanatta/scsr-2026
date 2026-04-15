@@ -45,8 +45,6 @@ public class Parity implements
 	evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 
-		if (left == ParityLattice.TOP || right == ParityLattice.TOP)
-			return ParityLattice.TOP;
 		if (left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM)
 			return ParityLattice.BOTTOM;
 
@@ -63,6 +61,12 @@ public class Parity implements
 			if (left == ParityLattice.EVEN || right == ParityLattice.EVEN)
 				return ParityLattice.EVEN;
 		}
+		if (expression.getOperator() instanceof ModuloOperator
+				|| expression.getOperator() instanceof RemainderOperator) {
+			if (right == ParityLattice.EVEN)
+				return left;
+		}
+		// Not convinced that `_ / 0 = T, x % 0 = x, x rem 0 = x` is sound
 
 		return ParityLattice.TOP;
 	}

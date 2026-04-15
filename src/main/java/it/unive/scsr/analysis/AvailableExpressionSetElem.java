@@ -14,41 +14,40 @@ import java.util.HashSet;
 public class AvailableExpressionSetElem implements DataflowElement<AvailableExpressionSetElem> {
     private final ValueExpression expression;
 
-    public AvailableExpressionSetElem(ValueExpression expression) {
+    AvailableExpressionSetElem(
+            ValueExpression expression) {
         this.expression = expression;
     }
 
     @Override
     public String toString() {
-        return this.representation().toString();
+        return representation().toString();
     }
 
     @Override
     public Collection<Identifier> getInvolvedIdentifiers() {
-        return AvailableExpressionSetElem.getVariablesIn(this.expression);
+        return getVariablesIn(expression);
     }
 
-    private static Collection<Identifier> getVariablesIn(ValueExpression expression) {
+    private static Collection<Identifier> getVariablesIn(
+            ValueExpression expression) {
         Collection<Identifier> result = new HashSet<>();
 
-        if(expression == null) {
+        if (expression == null)
             return result;
-        }
 
-        if(expression instanceof Identifier) {
+        if (expression instanceof Identifier)
             result.add((Identifier) expression);
-        }
 
-        if(expression instanceof UnaryExpression) {
+        if (expression instanceof UnaryExpression)
             result.addAll(getVariablesIn((ValueExpression) ((UnaryExpression) expression).getExpression()));
-        }
 
-        if (expression instanceof BinaryExpression binary){
+        if (expression instanceof BinaryExpression binary) {
             result.addAll(getVariablesIn((ValueExpression) binary.getLeft()));
             result.addAll(getVariablesIn((ValueExpression) binary.getRight()));
         }
 
-        if (expression instanceof TernaryExpression ternary){
+        if (expression instanceof TernaryExpression ternary) {
             result.addAll(getVariablesIn((ValueExpression) ternary.getLeft()));
             result.addAll(getVariablesIn((ValueExpression) ternary.getMiddle()));
             result.addAll(getVariablesIn((ValueExpression) ternary.getRight()));
@@ -56,7 +55,6 @@ public class AvailableExpressionSetElem implements DataflowElement<AvailableExpr
 
         return result;
     }
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -66,19 +64,14 @@ public class AvailableExpressionSetElem implements DataflowElement<AvailableExpr
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj){
+    public boolean equals(
+            Object obj) {
+        if (this == obj)
             return true;
-        }
-
-        if (obj == null){
+        if (obj == null)
             return false;
-        }
-
-        if (this.getClass() != obj.getClass()){
+        if (getClass() != obj.getClass())
             return false;
-        }
-
         AvailableExpressionSetElem other = (AvailableExpressionSetElem) obj;
         if (expression == null) {
             return other.expression == null;
@@ -86,22 +79,31 @@ public class AvailableExpressionSetElem implements DataflowElement<AvailableExpr
     }
 
     @Override
-    public AvailableExpressionSetElem replaceIdentifier(Identifier source, Identifier target) {
+    public StructuredRepresentation representation() {
+        return new StringRepresentation(expression);
+    }
+
+    @Override
+    public AvailableExpressionSetElem pushScope(
+            ScopeToken scope,
+            ProgramPoint pp)
+            throws SemanticException {
+        return this;
+    }
+
+    @Override
+    public AvailableExpressionSetElem popScope(
+            ScopeToken scope,
+            ProgramPoint pp)
+            throws SemanticException {
+        return this;
+    }
+
+    @Override
+    public AvailableExpressionSetElem replaceIdentifier(
+            Identifier source,
+            Identifier target) {
         return null;
     }
 
-    @Override
-    public AvailableExpressionSetElem pushScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
-        return this;
-    }
-
-    @Override
-    public AvailableExpressionSetElem popScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
-        return this;
-    }
-
-    @Override
-    public StructuredRepresentation representation() {
-        return new StringRepresentation(this.expression);
-    }
 }

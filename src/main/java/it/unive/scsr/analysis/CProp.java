@@ -135,7 +135,7 @@ public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>,CPropSetElem
     public DefiniteSet<CPropSetElem> makeLattice() {
         return new DefiniteSet<>();
     }
-    
+
     private Stream<CPropSetElem> getIfPresentInState(Identifier id, DefiniteSet<CPropSetElem> state){
         return state.getDataflowElements().stream().filter(element -> element.getId().equals(id));
     }

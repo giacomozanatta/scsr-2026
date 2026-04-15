@@ -1,0 +1,42 @@
+{
+  "warnings" : [ ],
+  "notices" : [ ],
+  "files" : [ "assets/d3-graphviz.min.js", "assets/d3.v7.min.js", "assets/style.css", "report.json", "untyped_cp.f0(cp__this).graph.json", "untyped_cp.f0(cp__this).html", "untyped_cp.f1(cp__this).graph.json", "untyped_cp.f1(cp__this).html", "untyped_cp.f2(cp__this).graph.json", "untyped_cp.f2(cp__this).html", "untyped_cp.f3(cp__this,_untyped_i).graph.json", "untyped_cp.f3(cp__this,_untyped_i).html" ],
+  "info" : {
+    "cfgs" : "4",
+    "duration" : "579ms",
+    "end" : "2026-04-07T14:34:47.806+02:00",
+    "expressions" : "75",
+    "files" : "11",
+    "globals" : "0",
+    "members" : "4",
+    "notices" : "0",
+    "programs" : "1",
+    "start" : "2026-04-07T14:34:47.227+02:00",
+    "statements" : "29",
+    "units" : "1",
+    "version" : "0.2",
+    "warnings" : "0"
+  },
+  "configuration" : {
+    "asynchronousListeners" : "",
+    "backwardDescendingFixpoint" : "unset",
+    "backwardFixpoint" : "BackwardAscendingFixpoint",
+    "dumpForcesUnwinding" : "false",
+    "fixpointWorkingSet" : "OrderBasedWorkingSet",
+    "forwardDescendingFixpoint" : "unset",
+    "forwardFixpoint" : "ForwardAscendingFixpoint",
+    "glbThreshold" : "5",
+    "hotspots" : "unset",
+    "openCallPolicy" : "TopExecutionPolicy",
+    "outputs" : "HtmlResults, JSONReportDumper, JSONResults",
+    "recursionWideningThreshold" : "5",
+    "semanticChecks" : "",
+    "shouldSmashError" : "unset",
+    "synchronousListeners" : "",
+    "syntacticChecks" : "",
+    "useWideningPoints" : "true",
+    "wideningThreshold" : "5",
+    "workdir" : "outputs/cp-eval"
+  }
+}

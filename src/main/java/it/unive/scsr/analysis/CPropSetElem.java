@@ -21,7 +21,7 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
      * You can uncomment it to get your code to compile.
      * Be aware that the code is written expecting that a field named "id"
      * and a field named "constant" exist in this class.
-    */
+     */
 
     private final Identifier id;
     private final Integer constant;

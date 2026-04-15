@@ -12,6 +12,7 @@ import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
+import it.unive.lisa.symbolic.value.operator.*;
 
 public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
@@ -54,6 +55,12 @@ public class Parity implements
 			if (left.equals(ParityLattice.even) || right.equals(ParityLattice.even)) return ParityLattice.even;
 			if (left.equals(ParityLattice.odd) && right.equals(ParityLattice.odd)) return ParityLattice.odd;
 		}
+		if (expression.getOperator() instanceof ModuloOperator || expression.getOperator() instanceof RemainderOperator){
+			if (right.equals(ParityLattice.even)) return ParityLattice.top;
+			if (left.equals(ParityLattice.even) && right.equals(ParityLattice.odd)) return ParityLattice.even;
+			if (left.equals(ParityLattice.odd) && right.equals(ParityLattice.odd)) return ParityLattice.odd;
+		}
+
 		return top();
 	}
 

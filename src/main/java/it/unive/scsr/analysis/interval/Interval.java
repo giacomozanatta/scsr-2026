@@ -65,25 +65,39 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		
 		if(left.i == null || right == null)
 			return IntervalLattice.BOTTOM;
-		
-		if(expression.getOperator() instanceof AdditionOperator) {
-			
+
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
 			
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
-			
-			return new IntervalLattice(l1.add(l2), u1.add(u2));
-			
-		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
-		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
-		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
-		}
 		
+		if(expression.getOperator() instanceof AdditionOperator) {
+			return new IntervalLattice(l1.add(l2), u1.add(u2));	
+		} 
+		else if (expression.getOperator() instanceof MultiplicationOperator) {
+			// [a,b] * [c,d] = [min{ac,ad,bc,bd}, max{ac,ad,bc,bd}]
+			// min in this case works that returns the object from where it was callled if it is the minimum, else returns other
+			return new IntervalLattice(
+					// left
+					l1.multiply(l2).min(l1.multiply(u2)).min(u1.multiply(l2)).min(u1.multiply(u2)),
+					// right
+					l1.multiply(l2).max(l1.multiply(u2)).max(u1.multiply(l2)).max(u1.multiply(u2))
+					);
+		} else if (expression.getOperator() instanceof SubtractionOperator) {
+			// [a,b] - [c,d] = [a-d, b-c]
+			return new IntervalLattice(l1.add(u2.multiply(new MathNumber(-1))), u1.add(l2.multiply(new MathNumber(-1))));
+		} else if (expression.getOperator() instanceof DivisionOperator) {
+			//same as multiplication, only we have to treat the case of division by zero, that is not defined, so we return bottom
+			if (right.lessOrEqual(IntervalLattice.ZERO)) return IntervalLattice.BOTTOM;
+			return new IntervalLattice(
+					// left (floor)
+					l1.divide(l2).min(l1.divide(u2)).min(u1.divide(l2)).min(u1.divide(u2)).roundDown(),
+					// right (ceiling)
+					l1.divide(l2).max(l1.divide(u2)).max(u1.divide(l2)).max(u1.divide(u2)).roundUp()
+					);
+		}
+		// else idk what is going on because is too high for me to know it 
 		return IntervalLattice.TOP;
 	}
 

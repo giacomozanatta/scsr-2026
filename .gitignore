@@ -231,3 +231,5 @@ gradle-app.setting
 # Ingnore Self Created Inputs and tests
 /inputs/selfCreatedTestCProp.imp
 /src/test/java/it/unive/scsr/CPropTest.java
+/inputs/selfCreatedTestParity.imp
+/src/test/java/it/unive/scsr/ParityTest.java

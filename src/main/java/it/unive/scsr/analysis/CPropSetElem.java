@@ -53,26 +53,25 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
         CPropSetElem ob = (CPropSetElem) o;
         return Objects.equals(id, ob.id) && Objects.equals(constant, ob.constant);
     }
-    
+
     // get the indentifiers we parsed 
     @Override
-	public Collection<Identifier> getInvolvedIdentifiers() {return Collections.singleton(id);}
-    
+    public Collection<Identifier> getInvolvedIdentifiers() {return Collections.singleton(id);}
+
     // we return the list with all the couples we parsed with their values, to test if it works 
     @Override
     public StructuredRepresentation representation() {return new ListRepresentation(new StringRepresentation(id),new StringRepresentation(constant));}
 
     // we obtain the value of an id
     private static Integer getIdValue(Identifier id, DefiniteSet<CPropSetElem> set) {
-		for (CPropSetElem el : set.getDataflowElements()) if (el.id.equals(id)) return el.constant;
-		return null;
-	}
+        for (CPropSetElem el : set.getDataflowElements()) if (el.id.equals(id)) return el.constant;
+        return null;
+    }
 
     public CPropSetElem pushScope(ScopeToken scope,ProgramPoint pp) throws SemanticException {return this;}
 
     public CPropSetElem popScope(ScopeToken scope, ProgramPoint pp) throws SemanticException {return this;}
 
-    public CPropSetElem replaceIdentifier(Identifier source, Identifier target) {return null;}  
+    public CPropSetElem replaceIdentifier(Identifier source, Identifier target) {return null;}
 
-    }
-
+}

@@ -30,58 +30,58 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
 
 public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetElem> {
 
-	public CProp() {super();}
+    public CProp() {super();}
 
-	//we create the heart of the analysis
+    //we create the heart of the analysis
     @Override
     public DefiniteSet<CPropSetElem> makeLattice() {return new DefiniteSet<>();}
 
-	// we obtain the value for a certain id 
+    // we obtain the value for a certain id
     private static Integer getValueOf(Identifier id, DefiniteSet<CPropSetElem> set) {
         for (CPropSetElem cp : set.getDataflowElements()) if (cp.getId().equals(id)) return cp.getConstant();
         return null;
     }
 
-	// we parse the program and evaluate every variable that appears in the code
+    // we parse the program and evaluate every variable that appears in the code
     private static Integer eval(ValueExpression exp, DefiniteSet<CPropSetElem> set) {
-		// null expression, no matter
+        // null expression, no matter
         if (exp == null) return null;
 
-		// a constant, we find the value and then we return the value
+        // a constant, we find the value and then we return the value
         if (exp instanceof Constant) {
-            Object value = ((Constant) exp).getValue(); 
-			if (value instanceof Integer) return (Integer) value;
+            Object value = ((Constant) exp).getValue();
+            if (value instanceof Integer) return (Integer) value;
         }
 
-		// an id, we find and return its value 
+        // an id, we find and return its value
         if (exp instanceof Identifier) return getValueOf((Identifier) exp, set);
 
-		// an expression, like +-B, we find the sign and return it 
-		if (exp instanceof UnaryExpression) {
-			UnaryExpression unary = (UnaryExpression) exp;
-			UnaryOperator operator = unary.getOperator();
-			ValueExpression arg = (ValueExpression) unary.getExpression();
-			Integer value = eval(arg, set);
-			if (value == null) return null;
-			if (operator instanceof NumericNegation) return (-1) * value;
-		}
-		// an expression like A op B, we fing the operation and the values of the involved id, assigning that to a variable
-		if (exp instanceof BinaryExpression) {
-			BinaryExpression binary = (BinaryExpression) exp;
-			BinaryOperator operator = binary.getOperator();
-			ValueExpression left = (ValueExpression) binary.getLeft();
-			ValueExpression right = (ValueExpression) binary.getRight();
-			Integer lvalue = eval(left, set);
-			Integer rvalue = eval(right, set);
-			if (lvalue == null || rvalue == null) return null;
-			if (operator instanceof AdditionOperator) return lvalue + rvalue;
-			if (operator instanceof SubtractionOperator) return lvalue - rvalue;
-			if (operator instanceof MultiplicationOperator) return lvalue * rvalue;
-			if (operator instanceof DivisionOperator && rvalue != 0) return lvalue / rvalue;
-		}
+        // an expression, like +-B, we find the sign and return it
+        if (exp instanceof UnaryExpression) {
+            UnaryExpression unary = (UnaryExpression) exp;
+            UnaryOperator operator = unary.getOperator();
+            ValueExpression arg = (ValueExpression) unary.getExpression();
+            Integer value = eval(arg, set);
+            if (value == null) return null;
+            if (operator instanceof NumericNegation) return (-1) * value;
+        }
+        // an expression like A op B, we fing the operation and the values of the involved id, assigning that to a variable
+        if (exp instanceof BinaryExpression) {
+            BinaryExpression binary = (BinaryExpression) exp;
+            BinaryOperator operator = binary.getOperator();
+            ValueExpression left = (ValueExpression) binary.getLeft();
+            ValueExpression right = (ValueExpression) binary.getRight();
+            Integer lvalue = eval(left, set);
+            Integer rvalue = eval(right, set);
+            if (lvalue == null || rvalue == null) return null;
+            if (operator instanceof AdditionOperator) return lvalue + rvalue;
+            if (operator instanceof SubtractionOperator) return lvalue - rvalue;
+            if (operator instanceof MultiplicationOperator) return lvalue * rvalue;
+            if (operator instanceof DivisionOperator && rvalue != 0) return lvalue / rvalue;
+        }
 
-		return null;
-	}
+        return null;
+    }
 
 
     @Override

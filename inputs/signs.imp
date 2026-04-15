@@ -28,7 +28,9 @@ class signs {
     }
 	
 	setSpeed(n){
-		// do something about speed
+		def speed = 0;
+		if (n < 0) speed = 0; 
+		else speed = n; 
 	}
 	
 	moveForward1() {

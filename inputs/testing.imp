@@ -1,0 +1,51 @@
+class AbbiamoFinito {
+
+    f_constants() {
+        def x = 10;
+        def y = 20;
+        def z = x + y;       
+        def w = z * 0;       
+        
+        if (z > 25) {        
+            x = 1;
+        } else {
+            x = 2;           
+        }
+        return x;
+    }
+
+    f_loop() {
+        def i = 0;
+        def max = 10;
+        def r = 5;          
+        
+        while (i < max) {
+            def temp = r + 2; 
+            i = i + 1;
+        }
+        return i;
+    }
+
+    f_flow_merge(cond) {
+        def a = 10;
+        def b = 10;
+        def x = 0;
+
+        if (cond > 0) {
+            x = a + b;       
+        } else {
+            x = 20;          
+        }
+
+        def y = x + 5; 
+        return y;
+    }
+
+    f_reassignment() {
+        def a = 5;
+        def b = a;
+        a = 10;              
+        def c = b + 1;       
+        return c;
+    }
+}

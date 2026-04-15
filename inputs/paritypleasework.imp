@@ -1,0 +1,69 @@
+class TestParita {
+
+    // Test base: propagazione attraverso costanti e operatori
+    f_aritmetica() {
+        def x = 10;      // Pari
+        def y = 3;       // Dispari
+        def z = x + y;   // Deve essere Dispari
+        def w = x * y;   // Deve essere Pari
+        def k = x * 0;   // Deve essere Pari (zero è pari)
+        
+        return k;
+    }
+
+    // Test di convergenza: Ciclo con incremento costante
+    f_loop_pari() {
+        def i = 0;       // Pari
+        def max = 10;
+        
+        while (i < max) {
+            i = i + 2;   // Pari + Pari rimane Pari ad ogni iterazione
+        }
+        // Al termine, i deve essere ancora Pari
+        return i;
+    }
+
+    // Test di incertezza (Top): Ciclo che alterna parità
+    f_loop_top() {
+        def j = 0;
+        while (j < 5) {
+            j = j + 1;   // Cambia da Pari a Dispari a ogni passo
+        }
+        // Senza un'analisi molto raffinata, qui j dovrebbe essere Top (sconosciuto)
+        return j;
+    }
+
+    // Test di Merge: Unione di rami con parità diversa
+    f_merge_top(cond) {
+        def x = 0;
+        if (cond > 0) {
+            x = 2;       // Pari
+        } else {
+            x = 3;       // Dispari
+        }
+        // Qui x deve essere Top (Pari ⊔ Dispari = Top)
+        def res = x + 1; 
+        return res;
+    }
+
+    // Test di Merge: Unione di rami con parità uguale
+    f_merge_pari(cond) {
+        def y = 0;
+        if (cond > 0) {
+            y = 10;      // Pari
+        } else {
+            y = 20;      // Pari
+        }
+        // Qui y deve essere Pari (Pari ⊔ Pari = Pari)
+        return y;
+    }
+
+    // Test di Re-assegnamento e Dipendenze
+    f_shadowing() {
+        def a = 4;       // Pari
+        def b = a + 1;   // Dispari (5)
+        a = 7;           // a diventa Dispari, b deve restare Dispari
+        def c = b + a;   // Dispari + Dispari = Pari
+        return c;
+    }
+}

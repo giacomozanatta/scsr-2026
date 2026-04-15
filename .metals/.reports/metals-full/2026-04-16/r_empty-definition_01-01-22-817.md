@@ -1,8 +1,19 @@
-package it.unive.scsr.analysis;
+error id: file:///C:/Users/Ibrahim/Desktop/scsr-2026/src/main/java/it/unive/scsr/analysis/CProp.java:it/unive/lisa/analysis/dataflow/DefiniteSet#
+file:///C:/Users/Ibrahim/Desktop/scsr-2026/src/main/java/it/unive/scsr/analysis/CProp.java
+empty definition using pc, found symbol in pc: it/unive/lisa/analysis/dataflow/DefiniteSet#
+empty definition using semanticdb
+empty definition using fallback
+non-local guesses:
+
+offset: 214
+uri: file:///C:/Users/Ibrahim/Desktop/scsr-2026/src/main/java/it/unive/scsr/analysis/CProp.java
+text:
+```scala
+package it.unive.scsr.analysis;// package it.unive.scsr.analysis;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.dataflow.DataflowDomain;
-import it.unive.lisa.analysis.dataflow.DefiniteSet;
+import it.unive.lisa.analysis.dataflow.@@DefiniteSet;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
@@ -139,3 +150,10 @@ public class CProp extends DataflowDomain<DefiniteSet<CPropSetElem>, CPropSetEle
         return null;
     }
 }
+
+```
+
+
+#### Short summary: 
+
+empty definition using pc, found symbol in pc: it/unive/lisa/analysis/dataflow/DefiniteSet#

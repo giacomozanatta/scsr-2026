@@ -97,22 +97,6 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
 
-			// Zero * Infty = 0, so this doesn't apply
-			/*
-			boolean leftContainsZero = l1.compareTo(MathNumber.ZERO) <= 0 && u1.compareTo(MathNumber.ZERO) >= 0;
-			boolean rightContainsZero = l2.compareTo(MathNumber.ZERO) <= 0 && u2.compareTo(MathNumber.ZERO) >= 0;
-			boolean leftHasInfinity = l1.isInfinite() || u1.isInfinite();
-			boolean rightHasInfinity = l2.isInfinite() || u2.isInfinite();
-
-
-			if ((leftContainsZero && rightHasInfinity) || (rightContainsZero && leftHasInfinity)) {
-				System.out.println("Zero");
-				return IntervalLattice.TOP;
-			}
-			*/
-
-
-
 			MathNumber p1 = (l1.isInfinite() && l2.isZero()) || (l1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : l1.multiply(l2);
 			MathNumber p2 = (l1.isInfinite() && u2.isZero()) || (l1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : l1.multiply(u2);
 			MathNumber p3 = (u1.isInfinite() && l2.isZero()) || (u1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : u1.multiply(l2);
@@ -130,7 +114,6 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 				System.out.println("Bottom");
 				return IntervalLattice.BOTTOM;
 			}
-
 
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
@@ -162,53 +145,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 				return IntervalLattice.BOTTOM;
 			}
 
-			// if we can get out a number, that's ok, so we can ignore the problematic cases
-			/*
-			if (l2.compareTo(MathNumber.ZERO) < 0 && u2.compareTo(MathNumber.ZERO) > 0) { // [l1,u1] / [-1,+1] (interval containing 0 )
-				System.out.println("Top");
-				return IntervalLattice.TOP;
-			}
-
-			// Divisor contains zero at boundary [l1,u1] / [0,u2] where u2 > 0
-			if (l2.isZero() && u2.compareTo(MathNumber.ZERO) > 0) { // these checks might not be enough with indeterminate forms (all cases should have been checked, but who knows...)
-				if (l1.compareTo(MathNumber.ZERO) >= 0)
-					res = new IntervalLattice(u1.divide(u2), MathNumber.PLUS_INFINITY); // [+,+] / [0,+] = [u1/u2, +inf]
-				else if (u1.compareTo(MathNumber.ZERO) <= 0)
-					res = new IntervalLattice(MathNumber.MINUS_INFINITY, l1.divide(u2)); // [-,-] / [0,+] = [-inf, l1/u2]
-				else
-					res = IntervalLattice.TOP; // [-,+] / [0,+] = [-inf, +inf]
-				System.out.println(res.representation());
-				return res;
-			}
-
-			// Divisor contains zero at boundary [l1,u1] / [l2,0] where l2 < 0
-			if (u2.isZero() && l2.compareTo(MathNumber.ZERO) < 0) {
-				if (l1.compareTo(MathNumber.ZERO) >= 0)
-					res = new IntervalLattice(MathNumber.MINUS_INFINITY, u1.divide(l2)); // [+,+] / [-,0] = [-inf, u1/l2]
-				else if (u1.compareTo(MathNumber.ZERO) <= 0)
-					res = new IntervalLattice(l1.divide(l2), MathNumber.PLUS_INFINITY); // [-,-] / [-,0] = [l1/l2, +inf]
-				else
-					res = IntervalLattice.TOP; // [-,+] / [-,0]
-				System.out.println(res.representation());
-				return res;
-			}
-
-			MathNumber p1 = l1.divide(l2);
-			MathNumber p2 = l1.divide(u2);
-			MathNumber p3 = u1.divide(l2);
-			MathNumber p4 = u1.divide(u2);
-
-			if (p1.isNaN() || p2.isNaN() || p3.isNaN() || p4.isNaN() || p1.min(p2).min(p3).min(p4).isNaN() || p1.max(p2).max(p3).max(p4).isNaN()) { // extra check, shouldn't happen
-				System.out.println("Bottom");
-				return IntervalLattice.BOTTOM;
-			}
-
-			res = new IntervalLattice(p1.min(p2).min(p3).min(p4), p1.max(p2).max(p3).max(p4));
-			System.out.println(res.representation());
-			return res;
-			*/
-
-			if (l2.isZero()) {
+			if (l2.isZero()) { // [l1,u1] / [0,?]
 				if (u2.isInfinite())
 					res = IntervalLattice.TOP;
 				else if (l1.compareTo(MathNumber.ZERO) >= 0)
@@ -219,7 +156,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 					res = IntervalLattice.TOP; // [-,+] / [0,+] = [-inf, +inf]
 				System.out.println(res.representation());
 				return res;
-			} else if (u2.isZero()) {
+			} else if (u2.isZero()) { // [l1,u1] / [?,0]
 				if (l2.isInfinite())
 					res = IntervalLattice.TOP;
 				else if (l1.compareTo(MathNumber.ZERO) >= 0)

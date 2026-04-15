@@ -1,5 +1,6 @@
 package it.unive.scsr.analysis.interval;
 
+import com.sun.source.doctree.SystemPropertyTree;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
@@ -13,6 +14,9 @@ import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
@@ -77,10 +81,179 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
+			// [ l1, u1 ]   [ l2, u2 ]
+			// TODO: fare check funzionamento per BOTTOM, TOP, infiniti vari, intervalli che contengono 0 (soprattuto per divisione)
+
+			System.out.println("-------------- Multiplication -------------- ");
+			System.out.print(left.representation() + " * " + right.representation() + " = ");
+
+			if (left.isBottom() || right.isBottom()) {
+				System.out.println("Bottom");
+				return IntervalLattice.BOTTOM;
+			}
+
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			// Zero * Infty = 0, so this doesn't apply
+			/*
+			boolean leftContainsZero = l1.compareTo(MathNumber.ZERO) <= 0 && u1.compareTo(MathNumber.ZERO) >= 0;
+			boolean rightContainsZero = l2.compareTo(MathNumber.ZERO) <= 0 && u2.compareTo(MathNumber.ZERO) >= 0;
+			boolean leftHasInfinity = l1.isInfinite() || u1.isInfinite();
+			boolean rightHasInfinity = l2.isInfinite() || u2.isInfinite();
+
+
+			if ((leftContainsZero && rightHasInfinity) || (rightContainsZero && leftHasInfinity)) {
+				System.out.println("Zero");
+				return IntervalLattice.TOP;
+			}
+			*/
+
+
+
+			MathNumber p1 = (l1.isInfinite() && l2.isZero()) || (l1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : l1.multiply(l2);
+			MathNumber p2 = (l1.isInfinite() && u2.isZero()) || (l1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : l1.multiply(u2);
+			MathNumber p3 = (u1.isInfinite() && l2.isZero()) || (u1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : u1.multiply(l2);
+			MathNumber p4 = (u1.isInfinite() && u2.isZero()) || (u1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : u1.multiply(u2);
+
+			IntervalLattice res = new IntervalLattice(p1.min(p2).min(p3).min(p4), p1.max(p2).max(p3).max(p4));
+			System.out.println(res.representation());
+			return res;
 			// TODO: homework
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
+			System.out.println("-------------- Subtraction -------------- ");
+			System.out.print(left.representation() + " - " + right.representation() + " = ");
+
+			if (left.isBottom() || right.isBottom()){
+				System.out.println("Bottom");
+				return IntervalLattice.BOTTOM;
+			}
+
+
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			IntervalLattice res = new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+			System.out.println(res.representation());
+			return res;
 			// TODO: homework
 		} else if (expression.getOperator() instanceof DivisionOperator) {
+			System.out.println("-------------- Division -------------- ");
+			System.out.print(left.representation() + " / " + right.representation() + " = ");
+
+			if (left.isBottom() || right.isBottom()) {
+				System.out.println("Bottom");
+				return IntervalLattice.BOTTOM;
+			}
+
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			IntervalLattice res;
+
+			if (l2.isZero() && u2.isZero()) { // [l1,u1] / [0,0]
+				System.out.println("Bottom");
+				return IntervalLattice.BOTTOM;
+			}
+
+			// if we can get out a number, that's ok, so we can ignore the problematic cases
+			/*
+			if (l2.compareTo(MathNumber.ZERO) < 0 && u2.compareTo(MathNumber.ZERO) > 0) { // [l1,u1] / [-1,+1] (interval containing 0 )
+				System.out.println("Top");
+				return IntervalLattice.TOP;
+			}
+
+			// Divisor contains zero at boundary [l1,u1] / [0,u2] where u2 > 0
+			if (l2.isZero() && u2.compareTo(MathNumber.ZERO) > 0) { // these checks might not be enough with indeterminate forms (all cases should have been checked, but who knows...)
+				if (l1.compareTo(MathNumber.ZERO) >= 0)
+					res = new IntervalLattice(u1.divide(u2), MathNumber.PLUS_INFINITY); // [+,+] / [0,+] = [u1/u2, +inf]
+				else if (u1.compareTo(MathNumber.ZERO) <= 0)
+					res = new IntervalLattice(MathNumber.MINUS_INFINITY, l1.divide(u2)); // [-,-] / [0,+] = [-inf, l1/u2]
+				else
+					res = IntervalLattice.TOP; // [-,+] / [0,+] = [-inf, +inf]
+				System.out.println(res.representation());
+				return res;
+			}
+
+			// Divisor contains zero at boundary [l1,u1] / [l2,0] where l2 < 0
+			if (u2.isZero() && l2.compareTo(MathNumber.ZERO) < 0) {
+				if (l1.compareTo(MathNumber.ZERO) >= 0)
+					res = new IntervalLattice(MathNumber.MINUS_INFINITY, u1.divide(l2)); // [+,+] / [-,0] = [-inf, u1/l2]
+				else if (u1.compareTo(MathNumber.ZERO) <= 0)
+					res = new IntervalLattice(l1.divide(l2), MathNumber.PLUS_INFINITY); // [-,-] / [-,0] = [l1/l2, +inf]
+				else
+					res = IntervalLattice.TOP; // [-,+] / [-,0]
+				System.out.println(res.representation());
+				return res;
+			}
+
+			MathNumber p1 = l1.divide(l2);
+			MathNumber p2 = l1.divide(u2);
+			MathNumber p3 = u1.divide(l2);
+			MathNumber p4 = u1.divide(u2);
+
+			if (p1.isNaN() || p2.isNaN() || p3.isNaN() || p4.isNaN() || p1.min(p2).min(p3).min(p4).isNaN() || p1.max(p2).max(p3).max(p4).isNaN()) { // extra check, shouldn't happen
+				System.out.println("Bottom");
+				return IntervalLattice.BOTTOM;
+			}
+
+			res = new IntervalLattice(p1.min(p2).min(p3).min(p4), p1.max(p2).max(p3).max(p4));
+			System.out.println(res.representation());
+			return res;
+			*/
+
+			if (l2.isZero()) {
+				if (u2.isInfinite())
+					res = IntervalLattice.TOP;
+				else if (l1.compareTo(MathNumber.ZERO) >= 0)
+					res = new IntervalLattice(u1.divide(u2), MathNumber.PLUS_INFINITY); // [+,+] / [0,+] = [u1/u2, +inf]
+				else if (u1.isNegative())
+					res = new IntervalLattice(MathNumber.MINUS_INFINITY, l1.divide(u2)); // [-,-] / [0,+] = [-inf, l1/u2]
+				else
+					res = IntervalLattice.TOP; // [-,+] / [0,+] = [-inf, +inf]
+				System.out.println(res.representation());
+				return res;
+			} else if (u2.isZero()) {
+				if (l2.isInfinite())
+					res = IntervalLattice.TOP;
+				else if (l1.compareTo(MathNumber.ZERO) >= 0)
+					res = new IntervalLattice(MathNumber.MINUS_INFINITY, u1.divide(l2)); // [+,+] / [-,0] = [-inf, u1/l2]
+				else if (u1.isNegative())
+					res = new IntervalLattice(l1.divide(l2), MathNumber.PLUS_INFINITY); // [-,-] / [-,0] = [l1/l2, +inf]
+				else
+					res = IntervalLattice.TOP; // [-,+] / [-,0]
+				System.out.println(res.representation());
+				return res;
+			}
+
+			MathNumber minV = MathNumber.PLUS_INFINITY;
+			MathNumber maxV = MathNumber.MINUS_INFINITY;
+
+			List<MathNumber> vals = new ArrayList<>(List.of(
+				l1.divide(l2),
+				l1.divide(u2),
+				u1.divide(l2),
+				u1.divide(u2)
+			));
+
+			for (MathNumber val : vals) {
+				if (!val.isNaN()) {
+					minV = minV.min(val);
+					maxV = maxV.max(val);
+				}
+			}
+
+			res = new IntervalLattice(minV, maxV);
+			System.out.println(res.representation());
+			return res;
+
+
 			// TODO: homework
 		}
 		
@@ -88,7 +261,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	}
 
 	
-	
+
 	
 	
 }

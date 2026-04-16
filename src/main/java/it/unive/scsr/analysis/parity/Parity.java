@@ -9,6 +9,7 @@ import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.symbolic.value.operator.*;
 import it.unive.lisa.symbolic.value.operator.binary.*;
+import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
@@ -36,8 +37,10 @@ public class Parity implements
 											 ParityLattice arg,
 											 ProgramPoint pp,
 	                                         SemanticOracle oracle) throws SemanticException {
-		// No unary operator changes the parity of a number
-		return arg;
+		if (expression.getOperator() == NumericNegation.INSTANCE) {
+			return arg;
+		}
+		return ParityLattice.TOP;
 	}
 
 	@Override

@@ -28,10 +28,10 @@ public class Parity implements
             throws SemanticException {
         if(constant.getValue() instanceof Integer) {
             Integer n = (Integer) constant.getValue();
-            if(n % 2 == 1)
-                return ParityLattice.ODD;
-            else
+            if(n % 2 == 0)
                 return ParityLattice.EVEN;
+            else
+                return ParityLattice.ODD;
         }
         return ParityLattice.TOP;
     }

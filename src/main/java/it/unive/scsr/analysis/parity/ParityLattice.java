@@ -16,7 +16,7 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
     public static final ParityLattice TOP = new ParityLattice(0);
     public static final ParityLattice ODD = new ParityLattice(1);
     public static final ParityLattice EVEN = new ParityLattice(2);
-    public static final ParityLattice BOTTOM = new ParityLattice(4);
+    public static final ParityLattice BOTTOM = new ParityLattice(3);
 
     public ParityLattice(int currentState) {
         this.currentState = currentState;

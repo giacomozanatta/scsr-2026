@@ -1,0 +1,59 @@
+class parity {
+    loop() {
+       def c = 1; // c = ODD
+       def b = 0; // b = EVEN
+       while (b < 10)
+            // 1° iterazione: b = EVEN + ODD = ODD
+            // 2° iterazione: b = ODD + ODD = EVEN
+            // Nel calcolo del punto fisso (fixpoint), b diventa TOP
+            b = b + c;
+       return b; // b = TOP
+    }
+
+    basic() {
+       def i = 2; // i = EVEN
+       def j = 3; // j = ODD
+       def a = i + j + 4; // a = EVEN ADD ODD = ODD
+       def s = i - j; // s = EVEN SUB ODD = ODD
+       def m = i * j; // m = EVEN MUL ODD = EVEN
+       def d = i / j; // d = EVEN DIV ODD = TOP (la divisione intera spesso genera perdita di precisione)
+    }
+
+    branches() {
+       def a = 3;
+       def b = 5;
+       def x = 0; // x = EVEN
+
+       if (a > b)
+            x = x + 2; // ramo vero: x = EVEN ADD EVEN = EVEN
+        else
+            x = 3;     // ramo falso: x = ODD
+
+       // Al punto di merge (fine if/else), x unisce i due stati: EVEN U ODD = TOP
+
+       def y = x * 2; // y = TOP MUL EVEN = EVEN (proprietà assorbente: qualsiasi intero moltiplicato per un pari è pari)
+    }
+
+    setSpeed(n){
+       // REGOLA DI SICUREZZA: questa funzione richiede che 'n' sia EVEN
+    }
+
+    moveForward1() {
+       def n = 10; // n = EVEN
+       this.setSpeed(n); // ok, la precondizione (n == EVEN) è rispettata
+    }
+
+    moveForward2() {
+       def n = 3; // n = ODD
+       this.setSpeed(n); // we have a problem here! 'n' è ODD, violazione della sicurezza!
+    }
+
+    moveForward3(b) {
+       def n = 2; // n = EVEN
+       if (b)
+            n = 3; // n = ODD
+
+       // Al punto di merge, n = EVEN U ODD = TOP
+       this.setSpeed(n); // we may have a problem here! 'n' è TOP a causa di 'b' staticamente sconosciuto. L'analizzatore solleverà un warning.
+    }
+}

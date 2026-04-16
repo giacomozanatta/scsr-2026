@@ -128,103 +128,27 @@ public class Parity implements
 
 		Identifier id;
 		ParityLattice expr_eval;
-		boolean rightIsExpr;
 		BinaryOperator operator = expression.getOperator();
 		ValueExpression left = (ValueExpression) expression.getLeft();
 		ValueExpression right = (ValueExpression) expression.getRight();
-		if (left instanceof Identifier) {
-			expr_eval = eval(environment, right, src, oracle);
-			id = (Identifier) left;
-			rightIsExpr = true;
-		} else if (right instanceof Identifier) {
-			expr_eval = eval(environment, left, src, oracle);
-			id = (Identifier) right;
-			rightIsExpr = false;
-		} else
-			return environment;
 
-		ParityLattice starting = environment.getState(id);
-		if (expr_eval.isBottom() || starting.isBottom()) {
-			return environment.bottom();
+		if (operator instanceof ComparisonEq){
+			if (left instanceof Identifier) {
+				expr_eval = eval(environment, right, src, oracle);
+				id = (Identifier) left;
+				if (expr_eval == ParityLattice.BOTTOM){
+					return environment.bottom();
+				}
+				return environment.putState(id, expr_eval);
+			} else if (right instanceof Identifier) {
+				expr_eval = eval(environment, left, src, oracle);
+				id = (Identifier) right;
+				if (expr_eval == ParityLattice.BOTTOM){
+					return environment.bottom();
+				}
+				return environment.putState(id, expr_eval);
+			}
 		}
-
-		ParityLattice update = null;
-		if (operator == ComparisonEq.INSTANCE) {
-			update = starting.glb(expr_eval);
-		} else {
-			ParityLattice e = ParityLattice.EVEN;
-			ParityLattice o = ParityLattice.ODD;
-			if (operator == ComparisonGe.INSTANCE)
-				if (rightIsExpr) {
-					if (e.gt(expr_eval).or(e.eq(expr_eval)).mightBeTrue()) {
-						update = starting.glb(e);
-					}
-					if (o.gt(expr_eval).or(o.eq(expr_eval)).mightBeTrue()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				} else {
-					if (expr_eval.gt(e).or(expr_eval.eq(e)).mightBeTrue()) {
-						update = starting.glb(e);
-					}
-					if (expr_eval.gt(o).or(expr_eval.eq(o)).mightBeTrue()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				}
-			else if (operator == ComparisonLe.INSTANCE)
-				if (rightIsExpr) {
-					if (e.gt(expr_eval).mightBeFalse()) {
-						update = starting.glb(e);
-					}
-					if (o.gt(expr_eval).mightBeFalse()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				} else {
-					if (expr_eval.gt(e).mightBeFalse()) {
-						update = starting.glb(e);
-					}
-					if (expr_eval.gt(o).mightBeFalse()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				}
-			else if (operator == ComparisonLt.INSTANCE)
-				if (rightIsExpr) {
-					if (e.gt(expr_eval).or(e.eq(expr_eval)).mightBeFalse()) {
-						update = starting.glb(e);
-					}
-					if (o.gt(expr_eval).or(o.eq(expr_eval)).mightBeFalse()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				} else {
-					if (expr_eval.gt(e).or(expr_eval.eq(e)).mightBeFalse()) {
-						update = starting.glb(e);
-					}
-					if (expr_eval.gt(o).or(expr_eval.eq(o)).mightBeFalse()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				}
-			else if (operator == ComparisonGt.INSTANCE)
-				if (rightIsExpr) {
-					if (e.gt(expr_eval).mightBeTrue()) {
-						update = starting.glb(e);
-					}
-					if (o.gt(expr_eval).mightBeTrue()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				} else {
-					if (expr_eval.gt(e).mightBeTrue()) {
-						update = starting.glb(e);
-					}
-					if (expr_eval.gt(o).mightBeTrue()) {
-						update = update == null ? starting.glb(o) : update.lub(starting.glb(o));
-					}
-				}
-		}
-
-		if (update == null)
-			return environment;
-		else if (update.isBottom())
-			return environment.bottom();
-		else
-			return environment.putState(id, update);
+		return environment;
 	}
 }

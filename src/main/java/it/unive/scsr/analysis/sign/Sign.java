@@ -6,24 +6,9 @@ import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.program.cfg.ProgramPoint;
-import it.unive.lisa.symbolic.value.BinaryExpression;
-import it.unive.lisa.symbolic.value.Constant;
-import it.unive.lisa.symbolic.value.Identifier;
-import it.unive.lisa.symbolic.value.UnaryExpression;
-import it.unive.lisa.symbolic.value.ValueExpression;
-import it.unive.lisa.symbolic.value.operator.AdditionOperator;
-import it.unive.lisa.symbolic.value.operator.DivisionOperator;
-import it.unive.lisa.symbolic.value.operator.ModuloOperator;
-import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
-import it.unive.lisa.symbolic.value.operator.RemainderOperator;
-import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
-import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonEq;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonGe;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonGt;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonLe;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonLt;
-import it.unive.lisa.symbolic.value.operator.binary.ComparisonNe;
+import it.unive.lisa.symbolic.value.*;
+import it.unive.lisa.symbolic.value.operator.*;
+import it.unive.lisa.symbolic.value.operator.binary.*;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
@@ -39,7 +24,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 	}
 
 	@Override
-	public SignLattice 
+	public SignLattice
 	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		
@@ -59,7 +44,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 
 	@Override
 	public SignLattice evalUnaryExpression(UnaryExpression expression, SignLattice arg, ProgramPoint pp,
-			SemanticOracle oracle) throws SemanticException {
+                                           SemanticOracle oracle) throws SemanticException {
 		
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
 			if(arg == SignLattice.NEG)
@@ -79,7 +64,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 
 	@Override
 	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right,
-			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+                                            ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
 		if(expression.getOperator() instanceof AdditionOperator) {
 			if(left == SignLattice.POS && right == SignLattice.NEG
@@ -112,11 +97,59 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			// a - b = a + (-b) -> in pratica, va negato il segno del valore a destra e poi le regole sono analoge all'addizione
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) {
+				return SignLattice.BOTTOM;
+			}
+			if (left == SignLattice.TOP || right == SignLattice.TOP) {
+				return SignLattice.TOP;
+			}
+			if (left == SignLattice.ZERO && right == SignLattice.ZERO) {
+				return SignLattice.ZERO;
+			}
+			if (
+				(left == SignLattice.POS && right == SignLattice.ZERO)
+				|| (left == SignLattice.ZERO && right == SignLattice.NEG)
+				|| (left == SignLattice.POS && right == SignLattice.NEG)
+			) {
+				return SignLattice.POS;
+			}
+			if (
+				(left == SignLattice.NEG && right == SignLattice.ZERO)
+				|| (left == SignLattice.ZERO && right == SignLattice.POS)
+				|| (left == SignLattice.NEG && right == SignLattice.POS)
+			) {
+				return SignLattice.NEG;
+			}
+
+			// segni opposti: nessuna assunzione sul risultato
+			return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if (right == SignLattice.ZERO) { // divisione per zero, non ha senso
+				return SignLattice.BOTTOM;
+			}
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM) {
+				return SignLattice.BOTTOM;
+			}
+			if (left == SignLattice.ZERO) { // dividere lo zero da sempre zero
+				return SignLattice.ZERO;
+			}
+			if (left == SignLattice.TOP || right == SignLattice.TOP) {
+				return SignLattice.TOP;
+			}
+
+			// stesso segno ==> risultato positivo
+			if (
+				(left == SignLattice.POS && right == SignLattice.POS)
+				|| (left == SignLattice.NEG && right == SignLattice.NEG)
+			) {
+				return SignLattice.POS;
+			}
+
+			// segno opposto ==> risultato negativo
+			return SignLattice.NEG;
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

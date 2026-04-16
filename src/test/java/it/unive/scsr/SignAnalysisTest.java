@@ -8,8 +8,10 @@ import it.unive.scsr.analysis.sign.Sign;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.outputs.HtmlInputs;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
+import it.unive.lisa.outputs.JSONResults;
 import it.unive.lisa.program.Program;
 import org.junit.Test;
 
@@ -29,8 +31,9 @@ public class SignAnalysisTest {
         conf.workdir = "outputs/signs";
 
         // we specify the visual format of the analysis results
-        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONResults<>());
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Sign(), defaultTypeDomain());
 

@@ -1,18 +1,17 @@
 package it.unive.scsr.analysis.sign;
 
-import java.util.Objects;
-
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
+import java.util.Objects;
 
 public class SignLattice 
 		implements BaseLattice<SignLattice>{
 	
-	private int element;
+	private final int element;
 	
 	// declaration of lattice elements
 	// 0, 1, 2, 3, 4 are just an encoding

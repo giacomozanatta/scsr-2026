@@ -1,51 +1,134 @@
 class signs {
-	loop() {
-		def c = 1;
-		def b = 0;
-   		while (b < 10)
-        	b = b + c;
-   		return b;
+
+    // costanti: verifica che i letterali vengano astratti nel segno corretto
+    constants() {
+        def zero  = 0;    // ZERO
+        def pos   = 5;    // POS
+        def neg   = -3;   // NEG
     }
 
-	basic() {
-		def i = 2; // i = +
-		def j = -10; // j = -
-		def a = i + j; // a = + ADD - = TOP
-		def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before 
-		def m = i * j;
-		def d = i / j;
-	}
-
-	branches() {
-	    def a = 3;
-	    def b = 5;
-		def x = 0;
-		if (a > b)
-           	x = x * 7;
-       	else
-           	x = -7;
-		def y = x / x;
+    // negazione unaria: inverte il segno
+    // -POS = NEG, -NEG = POS, -ZERO = ZERO
+    negation() {
+        def a = 4;        // POS
+        def b = -7;       // NEG
+        def z = 0;        // ZERO
+        def na = -a;      // -POS = NEG
+        def nb = -b;      // -NEG = POS
+        def nz = -z;      // -ZERO = ZERO
     }
-	
-	setSpeed(n){
-		// do something about speed
-	}
-	
-	moveForward1() {
-		def n = 10;
-		this.setSpeed(n); // ok, we are
-	}
-	
-	moveForward2() {
-		def n = -10;
-		this.setSpeed(n); // we have a problem here!
-	}
-	
-	moveForward3(b) {
-		def n = -1;
-		if (b)
-           	n = 1;
-		
-		this.setSpeed(n); // we may have a problem here! n may be negative depending on b that is statically unknow
+
+    // addizione: POS+NEG=TOP (non deterministico), stessi segni si conservano
+    // POS + POS = POS, NEG + NEG = NEG
+    // ZERO + POS = POS, ZERO + NEG = NEG, ZERO + ZERO = ZERO
+    // POS + NEG = TOP, NEG + POS = TOP
+    addition() {
+        def p = 3;           // POS
+        def n = -2;          // NEG
+        def z = 0;           // ZERO
+
+        def pp = p + p;      // POS + POS = POS
+        def nn = n + n;      // NEG + NEG = NEG
+        def zz = z + z;      // ZERO + ZERO = ZERO
+        def pz = p + z;      // POS + ZERO = POS
+        def zp = z + p;      // ZERO + POS = POS
+        def nz = n + z;      // NEG + ZERO = NEG
+        def zn = z + n;      // ZERO + NEG = NEG
+        def pn = p + n;      // POS + NEG = TOP
+        def np = n + p;      // NEG + POS = TOP
+    }
+
+    // sottrazione: a - b = a + (-b), si inverte il segno del sottraendo
+    // POS - NEG = POS, NEG - POS = NEG
+    // POS - ZERO = POS, ZERO - NEG = POS
+    // NEG - ZERO = NEG, ZERO - POS = NEG
+    // ZERO - ZERO = ZERO
+    // POS - POS = TOP, NEG - NEG = TOP
+    subtraction() {
+        def p = 6;            // POS
+        def n = -4;           // NEG
+        def z = 0;            // ZERO
+
+        def zz = z - z;       // ZERO - ZERO = ZERO
+        def pz = p - z;       // POS  - ZERO = POS
+        def zn = z - n;       // ZERO - NEG  = POS
+        def pn = p - n;       // POS  - NEG  = POS
+
+        def nz = n - z;       // NEG  - ZERO = NEG
+        def zp = z - p;       // ZERO - POS  = NEG
+        def np = n - p;       // NEG  - POS  = NEG
+
+        def pp = p - p;       // POS  - POS  = TOP (es. 5-3=2 POS, ma 3-5=-2 NEG)
+        def nn = n - n;       // NEG  - NEG  = TOP
+    }
+
+    // moltiplicazione: regola dei segni
+    // POS * POS = POS, NEG * NEG = POS
+    // POS * NEG = NEG, NEG * POS = NEG
+    // ZERO * qualsiasi = ZERO (anche ZERO * TOP = ZERO)
+    multiplication() {
+        def p = 4;            // POS
+        def n = -3;           // NEG
+        def z = 0;            // ZERO
+
+        def pp = p * p;       // POS * POS = POS
+        def nn = n * n;       // NEG * NEG = POS
+        def pn = p * n;       // POS * NEG = NEG
+        def np = n * p;       // NEG * POS = NEG
+        def zp = z * p;       // ZERO * POS = ZERO
+        def zn = z * n;       // ZERO * NEG = ZERO
+        def zz = z * z;       // ZERO * ZERO = ZERO
+    }
+
+    // divisione: divisione per zero -> BOTTOM (codice irraggiungibile)
+    // ZERO / qualsiasi = ZERO, stessi segni -> POS, segni opposti -> NEG
+    division() {
+        def p = 9;            // POS
+        def n = -6;           // NEG
+        def z = 0;            // ZERO
+
+        def pz = p / z;       // POS / ZERO = UNKNOWN
+        def nz = n / z;       // NEG / ZERO = UNKNOWN
+        def zp = z / p;       // ZERO / POS = ZERO
+        def zn = z / n;       // ZERO / NEG = ZERO
+        def pp = p / p;       // POS  / POS = POS
+        def nn = n / n;       // NEG  / NEG = POS
+        def pn = p / n;       // POS  / NEG = NEG
+        def np = n / p;       // NEG  / POS = NEG
+    }
+
+    // rami: il join (lub) al merge point unisce i due segni
+    // POS lub NEG = TOP, POS lub POS = POS, ecc.
+    branches(p) {
+        def x = 0;           // ZERO
+        if (p > 0)
+            x = 5;           // POS
+        else
+            x = -3;          // NEG
+        def after_pn = x;    // POS lub NEG = TOP
+
+        def y = 0;           // ZERO
+        if (p > 0)
+            y = 3;           // POS
+        else
+            y = 7;           // POS
+        def after_pp = y;    // POS lub POS = POS
+    }
+
+    // loop con incremento positivo: il segno si perde dopo il join all'header
+    // ZERO lub POS = TOP -> b diventa TOP dentro il loop
+    loop_pos_step() {
+        def b = 0;           // ZERO
+        while (b < 20)
+            b = b + 1;       // join(ZERO, POS) = TOP -> b = TOP + POS = TOP
+        return b;
+    }
+
+    // loop con incremento negativo: stessa perdita di informazione
+    loop_neg_step() {
+        def b = 0;           // ZERO
+        while (b > -20)
+            b = b - 1;       // join(ZERO, NEG) = TOP
+        return b;
     }
 }

@@ -14,7 +14,7 @@ public class Parity implements
 		BaseNonRelationalValueDomain<ParityLattice> {
 
 	@Override
-    public it.unive.scsr.analysis.parity.ParityLattice top() {
+    public ParityLattice top() {
         return ParityLattice.TOP;
     }
 
@@ -24,14 +24,14 @@ public class Parity implements
     }
 
     @Override
-    public it.unive.scsr.analysis.parity.ParityLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+    public ParityLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
             throws SemanticException {
         if(constant.getValue() instanceof Integer) {
             Integer n = (Integer) constant.getValue();
-            if(n%2==1)
-                return ParityLattice.ODD;
-            else
+            if(n%2==0)
                 return ParityLattice.EVEN;
+            else
+                return ParityLattice.ODD;
         }
         return ParityLattice.TOP;
     }

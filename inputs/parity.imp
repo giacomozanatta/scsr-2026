@@ -1,0 +1,144 @@
+class parity {
+
+    // Constants: basic even and odd assignment including edge cases
+    constants() {
+        def a = 4;    // EVEN
+        def b = 3;    // ODD
+        def c = 0;    // EVEN (zero is even)
+        def d = -7;   // ODD  (negative odd)
+        def e = -2;   // EVEN (negative even)
+        def f = 1;    // ODD
+        def g = 100;  // EVEN
+        return;
+    }
+
+    // Addition: all combinations including chained
+    addition() {
+        def a = 4;               // EVEN
+        def b = 3;               // ODD
+        def ee = a + a;          // EVEN + EVEN = EVEN
+        def eo = a + b;          // EVEN + ODD  = ODD
+        def oo = b + b;          // ODD  + ODD  = EVEN
+        def chain1 = a + b + b;  // EVEN + ODD + ODD = EVEN + EVEN = EVEN
+        def chain2 = a + b + a;  // EVEN + ODD + EVEN = ODD + EVEN = ODD
+        def chain3 = b + b + b;  // ODD + ODD + ODD = EVEN + ODD = ODD
+        return;
+    }
+
+    // Subtraction: all combinations including chained
+    subtraction() {
+        def a = 4;               // EVEN
+        def b = 3;               // ODD
+        def ee = a - a;          // EVEN - EVEN = EVEN
+        def eo = a - b;          // EVEN - ODD  = ODD
+        def oe = b - a;          // ODD  - EVEN = ODD
+        def oo = b - b;          // ODD  - ODD  = EVEN
+        def chain1 = a - b - b;  // EVEN - ODD - ODD = ODD - ODD = EVEN
+        def chain2 = b - a - b;  // ODD - EVEN - ODD = ODD - ODD = EVEN
+        return;
+    }
+
+    // Multiplication: all combinations including chained
+    multiplication() {
+        def a = 4;               // EVEN
+        def b = 3;               // ODD
+        def ee = a * a;          // EVEN * EVEN = EVEN
+        def eo = a * b;          // EVEN * ODD  = EVEN
+        def oo = b * b;          // ODD  * ODD  = ODD
+        def chain1 = b * b * b;  // ODD * ODD * ODD = ODD * ODD = ODD
+        def chain2 = b * b * a;  // ODD * ODD * EVEN = ODD * EVEN = EVEN
+        def chain3 = a * b * b;  // EVEN * ODD * ODD = EVEN * ODD = EVEN
+        return;
+    }
+
+    // Division: always loses parity precision, even in chains
+    division() {
+        def a = 4;               // EVEN
+        def b = 3;               // ODD
+        def ee = a / a;          // EVEN / EVEN = TOP
+        def eo = a / b;          // EVEN / ODD  = TOP
+        def oe = b / a;          // ODD  / EVEN = TOP
+        def oo = b / b;          // ODD  / ODD  = TOP
+        def chain1 = a / b + b;  // TOP + ODD = TOP (precision never recovers)
+        def chain2 = a / b * a;  // TOP * EVEN = EVEN (even * anything = even)
+        return;
+    }
+
+    // Negation combined with arithmetic
+    negation() {
+        def a = 4;          // EVEN
+        def b = 3;          // ODD
+        def na = -a;        // EVEN (negation preserves parity)
+        def nb = -b;        // ODD  (negation preserves parity)
+        def r1 = -a + a;    // EVEN + EVEN = EVEN
+        def r2 = -b + b;    // ODD  + ODD  = EVEN
+        def r3 = -a + b;    // EVEN + ODD  = ODD
+        def r4 = -b * -b;   // ODD  * ODD  = ODD
+        def r5 = -a * -b;   // EVEN * ODD  = EVEN
+        return;
+    }
+
+    // Branches: lub merges EVEN and ODD into TOP
+    branches() {
+        def a = 4;   // EVEN
+        def b = 3;   // ODD
+        def x = 0;   // EVEN
+        if (a > b)
+            x = 2;   // EVEN
+        else
+            x = 3;   // ODD
+        // x is TOP here after the merge
+        def r1 = x + a;   // TOP + EVEN = TOP
+        def r2 = x * a;   // TOP * EVEN = EVEN (even absorbs)
+        def r3 = x * b;   // TOP * ODD  = TOP
+        def r4 = x + x;   // TOP + TOP  = TOP
+        return;
+    }
+
+    // Nested branches: multiple merges
+    nestedBranches() {
+        def a = 6;    // EVEN
+        def b = 5;    // ODD
+        def c = 0;    // EVEN
+        if (a > b) {
+            if (b > c)
+                a = 3;   // ODD
+            else
+                a = 7;   // ODD
+        } else {
+            a = 4;        // EVEN
+        }
+        // inner if: ODD lub ODD = ODD
+        // outer: ODD lub EVEN = TOP
+        def result = a + 1;  // TOP + ODD = TOP
+        return;
+    }
+
+    // Precision loss propagation through a long chain
+    precisionLoss() {
+        def a = 2;             // EVEN
+        def b = 5;             // ODD
+        def c = a + b;         // EVEN + ODD  = ODD
+        def d = c * c;         // ODD  * ODD  = ODD
+        def e = d + a;         // ODD  + EVEN = ODD
+        def f = e / b;         // ODD  / ODD  = TOP  (precision lost here)
+        def g = f + 1;         // TOP  + ODD  = TOP  (lost, stays lost)
+        def h = g * 2;         // TOP  * EVEN = EVEN (even absorbs!)
+        def i = h + b;         // EVEN + ODD  = ODD  (recovered after even absorbed)
+        def j = i / a;         // ODD  / EVEN = TOP  (lost again)
+        return;
+    }
+
+    // Mixed operations stress test
+    stress() {
+        def x = 10;             // EVEN
+        def y = 7;              // ODD
+        def z = 3;              // ODD
+        def r1 = x + y * z;    // ODD * ODD = ODD, then EVEN + ODD = ODD
+        def r2 = x * y + z;    // EVEN * ODD = EVEN, then EVEN + ODD = ODD
+        def r3 = x * x + y * y; // EVEN + ODD = ODD
+        def r4 = x - y * z;    // ODD * ODD = ODD, then EVEN - ODD = ODD
+        def r5 = y * y * y * y; // ODD*ODD=ODD, ODD*ODD=ODD, ODD*ODD=ODD -> ODD
+        return;
+    }
+}

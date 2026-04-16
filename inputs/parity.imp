@@ -1,0 +1,10 @@
+class ParityTest {
+    main() {
+        def a = 10;
+        if (a > 0) {
+            a = 5;
+        } else {
+            a = 2;
+        }
+    }
+}

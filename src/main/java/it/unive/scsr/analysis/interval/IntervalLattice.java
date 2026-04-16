@@ -14,7 +14,7 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
 
     IntInterval i; // represents an interval
 
-    public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY); // represents eventual errors
+    public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
     public static IntervalLattice BOTTOM = new IntervalLattice(null);
     public static IntervalLattice ZERO = new IntervalLattice(0,0);
 

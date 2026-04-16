@@ -1,5 +1,7 @@
 package it.unive.scsr.analysis.interval;
 
+import java.util.Objects;
+
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
@@ -8,14 +10,12 @@ import it.unive.lisa.util.numeric.MathNumber;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
-import java.util.Objects;
-
 public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable<IntervalLattice> {
 
     IntInterval i; // represents an interval
 
-    public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
-    public static IntervalLattice BOTTOM = new IntervalLattice(null); // represents eventual errors
+    public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY); // represents eventual errors
+    public static IntervalLattice BOTTOM = new IntervalLattice(null);
     public static IntervalLattice ZERO = new IntervalLattice(0,0);
 
     public IntervalLattice(IntInterval i) {
@@ -30,8 +30,30 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         this.i = new IntInterval(l, u);
     }
 
-    public IntervalLattice(){
+    public IntervalLattice() {
         this(IntInterval.INFINITY);
+    }
+
+
+    @Override
+    public IntervalLattice top() {
+        return TOP;
+    }
+
+    @Override
+    public IntervalLattice bottom() {
+        return BOTTOM;
+    }
+
+    @Override
+    public StructuredRepresentation representation() {
+        if(this == BOTTOM)
+            return Lattice.bottomRepresentation();
+
+        MathNumber l = this.i.getLow();
+        MathNumber u = this.i.getHigh();
+
+        return new StringRepresentation("["+l+","+u+"]");
     }
 
     @Override
@@ -46,7 +68,7 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
 
         MathNumber lResult;
         if(l1.leq(l2))
-            lResult = l1;
+            lResult =l1;
         else
             lResult = l2;
 
@@ -54,13 +76,16 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         MathNumber u2 = other.i.getHigh();
 
         MathNumber uResult;
+
         if(u1.geq(u2))
             uResult = u1;
         else
             uResult = u2;
 
-        return new IntervalLattice(lResult, uResult);
+        return new IntervalLattice(lResult,uResult);
     }
+
+
 
     @Override
     public IntervalLattice glbAux(IntervalLattice other) throws SemanticException {
@@ -94,28 +119,9 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
     @Override
     public boolean lessOrEqualAux(IntervalLattice other) throws SemanticException {
         // Implements less or equal operator: all values of 'other' are in 'this'
-        if(this.i == null|| other.i == null)
+        if(this.i == null || other.i == null)
             return false;
         return this.i.includes(other.i);
-    }
-
-    @Override
-    public IntervalLattice top() {
-        return TOP;
-    }
-
-    @Override
-    public IntervalLattice bottom() {
-        return BOTTOM;
-    }
-
-    @Override
-    public StructuredRepresentation representation() {
-        if(this == BOTTOM)
-            return Lattice.bottomRepresentation();
-        MathNumber l = this.i.getLow();
-        MathNumber u = this.i.getHigh();
-        return new StringRepresentation("["+l+","+u+"]");
     }
 
     @Override
@@ -129,29 +135,19 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         MathNumber u2 = other.i.getHigh();
 
         MathNumber uResult = u1;
-        if(u2.geq(u1)) // The interval is increasing
+        if(u2.geq(u1))
             uResult = MathNumber.PLUS_INFINITY;
 
         MathNumber l1 = this.i.getHigh();
         MathNumber l2 = other.i.getHigh();
 
         MathNumber lResult = l1;
-        if(l2.leq(l1)) // The interval is decreasing
+        if(l2.leq(l1)) {
             lResult = MathNumber.MINUS_INFINITY;
+        }
 
         return new IntervalLattice(lResult, uResult);
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-        if(this == obj)
-            return true;
-        if(obj == null)
-            return false;
-        if(getClass() != obj.getClass())
-            return false;
-        IntervalLattice other = (IntervalLattice)obj;
-        return Objects.equals(this.i, other.i);
     }
 
     @Override
@@ -160,7 +156,19 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
     }
 
     @Override
-    public int compareTo(IntervalLattice o){
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        IntervalLattice other = (IntervalLattice) obj;
+        return Objects.equals(i, other.i);
+    }
+
+    @Override
+    public int compareTo(IntervalLattice o) {
         if(isBottom())
             return o.isBottom() ? 0 : -1;
         if(isTop())
@@ -169,7 +177,7 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         if(o.isBottom())
             return 1;
 
-        if(o.isTop())
+        if(isTop())
             return -1;
 
         return i.compareTo(o.i);

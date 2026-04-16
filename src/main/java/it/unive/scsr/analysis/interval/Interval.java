@@ -14,6 +14,9 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 	@Override
@@ -65,23 +68,46 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		
 		if(left.i == null || right == null)
 			return IntervalLattice.BOTTOM;
+
+		MathNumber l1 = left.i.getLow();
+		MathNumber u1 = left.i.getHigh();
+
+		MathNumber l2 = right.i.getLow();
+		MathNumber u2 = right.i.getHigh();
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
-			MathNumber u1 = left.i.getHigh();
-			MathNumber u2 = right.i.getHigh();
-			
-			MathNumber l1 = left.i.getLow();
-			MathNumber l2 = right.i.getLow();
-			
+
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
-			
+
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+
+			ArrayList<MathNumber> list = new ArrayList<>();
+
+			list.add(l1.multiply(l2));
+			list.add(l1.multiply(u2));
+			list.add(u1.multiply(l2));
+			list.add(u1.multiply(u2));
+
+			return new IntervalLattice(Collections.min(list), Collections.max(list));
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+
+			return new IntervalLattice(l1.subtract(u2),u1.subtract(l2));
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+
+			if (l2.compareTo(MathNumber.ZERO) <= 0 && u2.compareTo(MathNumber.ZERO) >= 0) {
+				return IntervalLattice.TOP;
+			}
+
+			ArrayList<MathNumber> list = new ArrayList<>();
+
+			list.add(l1.divide(l2));
+			list.add(l1.divide(u2));
+			list.add(u1.divide(l2));
+			list.add(u1.divide(u2));
+
+			return new IntervalLattice(Collections.min(list), Collections.max(list));
 		}
 		
 		return IntervalLattice.TOP;

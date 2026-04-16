@@ -84,11 +84,11 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			// [ l1, u1 ]   [ l2, u2 ]
 			// TODO: fare check funzionamento per BOTTOM, TOP, infiniti vari, intervalli che contengono 0 (soprattuto per divisione)
 
-			System.out.println("-------------- Multiplication -------------- ");
+			// System.out.println("-------------- Multiplication -------------- ");
 			System.out.print(left.representation() + " * " + right.representation() + " = ");
 
 			if (left.isBottom() || right.isBottom()) {
-				System.out.println("Bottom");
+				// System.out.println("Bottom");
 				return IntervalLattice.BOTTOM;
 			}
 
@@ -103,15 +103,15 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber p4 = (u1.isInfinite() && u2.isZero()) || (u1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : u1.multiply(u2);
 
 			IntervalLattice res = new IntervalLattice(p1.min(p2).min(p3).min(p4), p1.max(p2).max(p3).max(p4));
-			System.out.println(res.representation());
+			// System.out.println(res.representation());
 			return res;
 			// TODO: homework
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			System.out.println("-------------- Subtraction -------------- ");
+			// System.out.println("-------------- Subtraction -------------- ");
 			System.out.print(left.representation() + " - " + right.representation() + " = ");
 
 			if (left.isBottom() || right.isBottom()){
-				System.out.println("Bottom");
+				// System.out.println("Bottom");
 				return IntervalLattice.BOTTOM;
 			}
 
@@ -121,15 +121,15 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l2 = right.i.getLow();
 
 			IntervalLattice res = new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
-			System.out.println(res.representation());
+			// System.out.println(res.representation());
 			return res;
 			// TODO: homework
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			System.out.println("-------------- Division -------------- ");
+			// System.out.println("-------------- Division -------------- ");
 			System.out.print(left.representation() + " / " + right.representation() + " = ");
 
 			if (left.isBottom() || right.isBottom()) {
-				System.out.println("Bottom");
+				// System.out.println("Bottom");
 				return IntervalLattice.BOTTOM;
 			}
 
@@ -141,7 +141,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			IntervalLattice res;
 
 			if (l2.isZero() && u2.isZero()) { // [l1,u1] / [0,0]
-				System.out.println("Bottom");
+				// System.out.println("Bottom");
 				return IntervalLattice.BOTTOM;
 			}
 
@@ -154,7 +154,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 					res = new IntervalLattice(MathNumber.MINUS_INFINITY, l1.divide(u2)); // [-,-] / [0,+] = [-inf, l1/u2]
 				else
 					res = IntervalLattice.TOP; // [-,+] / [0,+] = [-inf, +inf]
-				System.out.println(res.representation());
+				// System.out.println(res.representation());
 				return res;
 			} else if (u2.isZero()) { // [l1,u1] / [?,0]
 				if (l2.isInfinite())
@@ -165,7 +165,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 					res = new IntervalLattice(l1.divide(l2), MathNumber.PLUS_INFINITY); // [-,-] / [-,0] = [l1/l2, +inf]
 				else
 					res = IntervalLattice.TOP; // [-,+] / [-,0]
-				System.out.println(res.representation());
+				// System.out.println(res.representation());
 				return res;
 			}
 
@@ -187,7 +187,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			}
 
 			res = new IntervalLattice(minV, maxV);
-			System.out.println(res.representation());
+			// System.out.println(res.representation());
 			return res;
 
 

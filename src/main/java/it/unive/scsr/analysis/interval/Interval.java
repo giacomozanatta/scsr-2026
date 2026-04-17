@@ -102,7 +102,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		} else if (operator instanceof DivisionOperator) {
 			// Prevent division by zero
 			// if the interval of the divisor includes zero (l2 <= 0 && u2 >= 0), we return TOP due to uncertainty/error
-			if (l2.compareTo(MathNumber.ZERO) <= 0 && u2.compareTo(MathNumber.ZERO) >= 0) {
+			if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
 				return top();
 			}
 

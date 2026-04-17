@@ -44,7 +44,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			throws SemanticException {
 		
 		if(constant.getValue() instanceof Integer) {
-			//I needt to check the integer value to 
+			//I need to check the integer value to
 			// assign the right approx value
 			Integer n = (Integer) constant.getValue();
 			if(n == 0)
@@ -112,11 +112,67 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			// DONE : homework
+			// Error - Error = Error
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			// "I don't know" - "I don't know" = "I don't know"
+			else if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+			// 0 - 0 = 0
+			else if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			// 0 - (-) = (+)
+			else if(left == SignLattice.ZERO && right == SignLattice.NEG)
+				return SignLattice.POS;
+			// 0 - (+) = (-)
+			else if(left == SignLattice.ZERO && right == SignLattice.POS)
+				return SignLattice.NEG;
+			//(-) - 0 = (-)
+			else if(left == SignLattice.NEG && right == SignLattice.ZERO)
+				return SignLattice.NEG;
+			//(+) - 0 = (+)
+			else if(left == SignLattice.POS && right == SignLattice.ZERO)
+				return SignLattice.POS;
+			// (-) - (+) = (-)
+			else if(left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.NEG;
+			// (+) - (-) = (+)
+			else if(left == SignLattice.POS && right == SignLattice.NEG)
+				return SignLattice.POS;
+			// (+) - (+) = ?
+			else if(left == SignLattice.POS && right == SignLattice.POS)
+				return SignLattice.TOP;
+			else if(left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.TOP;
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			// DONE: homework
+			// Error ÷ Error = Error
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			// "I don't know" ÷ "I don't know" = "I don't know"
+			else if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+			// division by Zero = ERROR
+			else if(right == SignLattice.ZERO)
+				return SignLattice.BOTTOM;
+			// Zero ÷ (-) or (+) = Zero
+			else if(left == SignLattice.ZERO
+					&& (right == SignLattice.POS || right == SignLattice.NEG))
+				return SignLattice.ZERO;
+			// (+) ÷ (+) = (+) and (-) ÷ (-) = (+)
+			else if(left == SignLattice.POS  && right == SignLattice.POS
+					|| left == SignLattice.NEG  && right == SignLattice.NEG)
+				return  SignLattice.POS;
+			// (+) ÷ (-) = (-) and (-) ÷ (+) = (-)
+			else if(left == SignLattice.POS  && right == SignLattice.NEG
+					|| left == SignLattice.NEG  && right == SignLattice.POS)
+				return SignLattice.NEG;
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

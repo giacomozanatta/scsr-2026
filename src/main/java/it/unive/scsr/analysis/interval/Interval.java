@@ -14,7 +14,6 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,13 +82,22 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice> {
             if(left.equals(IntervalLattice.ZERO) || right.equals(IntervalLattice.ZERO))
                 return IntervalLattice.ZERO;
 
-            // Calcolo tutti i possibili prodotti
+            // Calculate all possible products
             MathNumber p1 = l1.multiply(l2);
             MathNumber p2 = l1.multiply(u2);
             MathNumber p3 = u1.multiply(l2);
             MathNumber p4 = u1.multiply(u2);
 
-            return getIntervalLattice(p1, p2, p3, p4);
+            // Takes the minimum and maximum product for the interval
+            MathNumber min1 = p1.leq(p2) ? p1 : p2;
+            MathNumber min2 = p3.leq(p4) ? p3 : p4;
+            MathNumber min = min1.leq(min2) ? min1 : min2;
+
+            MathNumber max1 = p1.geq(p2) ? p1 : p2;
+            MathNumber max2 = p3.geq(p4) ? p3 : p4;
+            MathNumber max = max1.geq(max2) ? max1 : max2;
+
+            return new IntervalLattice(min,max);
 
         } else if(expression.getOperator() instanceof SubtractionOperator){
             MathNumber u1 = left.i.getHigh();
@@ -167,18 +175,5 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice> {
         }
 
         return IntervalLattice.TOP;
-    }
-
-    @Nonnull
-    private IntervalLattice getIntervalLattice(MathNumber q1, MathNumber q2, MathNumber q3, MathNumber q4) {
-        MathNumber min1 = q1.leq(q2) ? q1 : q2;
-        MathNumber min2 = q3.leq(q4) ? q3 : q4;
-        MathNumber min = min1.leq(min2) ? min1 : min2;
-
-        MathNumber max1 = q1.geq(q2) ? q1 : q2;
-        MathNumber max2 = q3.geq(q4) ? q3 : q4;
-        MathNumber max = max1.geq(max2) ? max1 : max2;
-
-        return new IntervalLattice(min,max);
     }
 }

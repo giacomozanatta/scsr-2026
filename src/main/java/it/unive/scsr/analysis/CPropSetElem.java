@@ -16,14 +16,6 @@ import java.util.Objects;
 
 public class CPropSetElem implements DataflowElement<CPropSetElem> {
 
-    /**
-     * IMPLEMENT THIS CLASS
-     * the code below is outside of the scope of the course.
-     * You can uncomment it to get your code to compile.
-     * Be aware that the code is written expecting that a field named "id"
-     * and a field named "constant" exist in this class.
-     */
-
     private final Identifier id;
     private final Integer constant;
 

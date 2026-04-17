@@ -1,0 +1,82 @@
+class parity {
+
+    /* * Tests basic constants, including negative numbers and zero.
+     * This ensures evalConstant handles the ternary operator correctly.
+     */
+    basicConstants() {
+        def a = 10;     // EVEN
+        def b = 21;     // ODD
+        def c = -2;     // EVEN
+        def d = -3;     // ODD
+        def e = 0;      // EVEN
+    }
+
+    /* * Tests chained evaluations (3+ operands).
+     * LiSA breaks this down into multiple binary steps.
+     * If evalBinaryExpression is correct, parity will propagate.
+     */
+    chainedArithmetic() {
+        def a = 2;      // EVEN
+        def b = 4;      // EVEN
+        def c = 6;      // EVEN
+        def d = 1;      // ODD
+
+        // (EVEN + EVEN) + EVEN -> EVEN + EVEN = EVEN
+        def res1 = a + b + c;
+
+        // (EVEN + EVEN) + ODD -> EVEN + ODD = ODD
+        def res2 = a + b + d;
+
+        // (EVEN * EVEN) * ODD -> EVEN * ODD = EVEN
+        def res3 = a * b * d;
+
+        // Complex chain: ((EVEN + ODD) * EVEN) - ODD
+        // ((ODD) * EVEN) - ODD -> EVEN - ODD = ODD
+        def res4 = (a + d) * b - d;
+    }
+
+    /* * Tests precision during multiplication with unknown values (TOP).
+     * Even if one side is TOP, the result should be EVEN if the other side is EVEN.
+     */
+    multiplicationPrecision(cond) {
+        def x = 0;
+        if (cond)
+            x = 2; // EVEN
+        else
+            x = 3; // ODD
+        // x is now TOP
+
+        def res1 = x * 2; // TOP * EVEN = EVEN
+        def res2 = x * 3; // TOP * ODD = TOP
+
+        // Chained test with TOP: (TOP * EVEN) + ODD = EVEN + ODD = ODD
+        def res3 = (x * 4) + 1;
+    }
+
+    /* * Tests Remainder and Modulo logic.
+     * Checks if parity is preserved when dividing by an EVEN divisor.
+     */
+    remainderAndModulo() {
+        def even_val = 10;
+        def odd_val = 11;
+        def divisor = 2;
+
+        def r1 = even_val % divisor; // EVEN % EVEN = EVEN
+        def r2 = odd_val % divisor;  // ODD % EVEN = ODD
+
+        // Chained: (EVEN + ODD) % EVEN -> ODD % EVEN = ODD
+        def complex = (even_val + odd_val) % divisor;
+    }
+
+    /* * Tests Least Upper Bound (LUB) and loop stabilization.
+     * Checks if the analysis finds a fixpoint correctly.
+     */
+    loopTest() {
+        def i = 0; // EVEN
+        def step = 2; // EVEN
+        while (i < 10) {
+            i = i + step; // EVEN + EVEN = EVEN
+        }
+        // After the loop, i should still be EVEN
+    }
+}

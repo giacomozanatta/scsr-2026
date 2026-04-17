@@ -1,41 +1,73 @@
 package it.unive.scsr.analysis.parity;
 
 import it.unive.lisa.analysis.BaseLattice;
+import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
-//Homework
 public class ParityLattice implements BaseLattice<ParityLattice> {
+
+	private final int element;
+
+	public static final ParityLattice TOP = new ParityLattice(0);
+	public static final ParityLattice EVEN = new ParityLattice(1);
+	public static final ParityLattice ODD = new ParityLattice(2);
+	public static final ParityLattice BOTTOM = new ParityLattice(3);
+
+	public ParityLattice(int element) {
+		this.element = element;
+	}
 
 	@Override
 	public ParityLattice top() {
-		// TODO: homework
-		return null;
+		return TOP;
 	}
 
 	@Override
 	public ParityLattice bottom() {
-		// TODO: homework
-		return null;
+		return BOTTOM;
 	}
 
 	@Override
 	public StructuredRepresentation representation() {
-		// TODO: homework
-		return null;
+		if (this == BOTTOM)
+			return Lattice.bottomRepresentation();
+		if (this == TOP)
+			return Lattice.topRepresentation();
+		if (this == EVEN)
+			return new StringRepresentation("EVEN");
+		return new StringRepresentation("ODD");
 	}
 
 	@Override
 	public ParityLattice lubAux(ParityLattice other) throws SemanticException {
-		// TODO: homework
-		return null;
+		if (this == other)
+			return this;
+		if (this == BOTTOM)
+			return other;
+		if (other == BOTTOM)
+			return this;
+		return TOP;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(ParityLattice other) throws SemanticException {
-		// TODO: homework
-		return false;
+		return this == other || this == BOTTOM || other == TOP;
 	}
 
-	// TODO add missing components
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(element);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		ParityLattice other = (ParityLattice) obj;
+		return element == other.element;
+	}
 }

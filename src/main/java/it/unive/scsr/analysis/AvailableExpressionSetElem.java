@@ -42,12 +42,14 @@ public class AvailableExpressionSetElem implements DataflowElement<AvailableExpr
         if (expression instanceof UnaryExpression)
             result.addAll(getVariablesIn((ValueExpression) ((UnaryExpression) expression).getExpression()));
 
-        if (expression instanceof BinaryExpression binary) {
+        if (expression instanceof BinaryExpression) {
+            BinaryExpression binary = (BinaryExpression) expression;
             result.addAll(getVariablesIn((ValueExpression) binary.getLeft()));
             result.addAll(getVariablesIn((ValueExpression) binary.getRight()));
         }
 
-        if (expression instanceof TernaryExpression ternary) {
+        if (expression instanceof TernaryExpression) {
+            TernaryExpression ternary = (TernaryExpression) expression;
             result.addAll(getVariablesIn((ValueExpression) ternary.getLeft()));
             result.addAll(getVariablesIn((ValueExpression) ternary.getMiddle()));
             result.addAll(getVariablesIn((ValueExpression) ternary.getRight()));

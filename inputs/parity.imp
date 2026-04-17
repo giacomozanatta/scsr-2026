@@ -1,0 +1,22 @@
+class parity {
+
+	basic() {
+		def i = 2;      // EVEN
+		def j = 3;      // ODD
+		def s1 = i + j; // ODD
+		def s2 = j + j; // EVEN
+		def d = i - j;  // ODD
+		def m = i * j;  // EVEN
+		def n = -j;     // ODD
+		return s1;
+	}
+
+	branches(b) {
+		def x = 0;
+		if (b)
+			x = x + 1;
+		else
+			x = x + 2;
+		return x;
+	}
+}

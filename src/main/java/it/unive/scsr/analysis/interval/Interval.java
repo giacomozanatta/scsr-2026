@@ -118,7 +118,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber newUpper = p1.max(p2).max(p3).max(p4);
 
 			// [l1, u1] / [l2, u2] becomes [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
-			return new IntervalLattice(newLower, newUpper);
+			return new IntervalLattice(newLower.roundDown(), newUpper.roundUp());
 		}
 
 		return top();

@@ -137,7 +137,7 @@ public class IntervalLattice
 			
 			MathNumber l1 = this.i.getLow();
 			MathNumber l2 = other.i.getLow();
-
+			
 			MathNumber lResult = l1;
 			if(l2.leq(l1)) {
 				lResult = MathNumber.MINUS_INFINITY;

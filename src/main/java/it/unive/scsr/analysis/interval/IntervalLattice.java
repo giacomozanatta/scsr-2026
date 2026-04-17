@@ -135,9 +135,9 @@ public class IntervalLattice
 			if(u2.geq(u1))
 				uResult = MathNumber.PLUS_INFINITY;
 			
-			MathNumber l1 = this.i.getHigh();
-			MathNumber l2 = other.i.getHigh();
-			
+			MathNumber l1 = this.i.getLow();
+			MathNumber l2 = other.i.getLow();
+
 			MathNumber lResult = l1;
 			if(l2.leq(l1)) {
 				lResult = MathNumber.MINUS_INFINITY;

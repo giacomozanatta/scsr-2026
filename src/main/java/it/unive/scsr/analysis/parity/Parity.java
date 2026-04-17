@@ -52,8 +52,11 @@ public class Parity implements
 	public ParityLattice evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right,
 			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
-		if (left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM)
+		if (left.isBottom() || right.isBottom())
 			return bottom();
+
+		if (left.isTop() || right.isTop())
+			return top();
 
 		BinaryOperator op = expression.getOperator();
 
@@ -61,21 +64,15 @@ public class Parity implements
 			if (left == ParityLattice.EVEN)
 				return right;
 
-			if (left == ParityLattice.ODD) {
-				if (right == ParityLattice.ODD)
-					return ParityLattice.EVEN;
-
-				if (right == ParityLattice.EVEN)
-					return ParityLattice.ODD;
-			}
+			if (left == ParityLattice.ODD)
+				return right == ParityLattice.EVEN ? ParityLattice.ODD : ParityLattice.EVEN;
 		}
 
 		if (op instanceof MultiplicationOperator) {
 			if (left == ParityLattice.EVEN || right == ParityLattice.EVEN)
 				return ParityLattice.EVEN;
 
-			if (left == ParityLattice.ODD)
-				return right;
+			return ParityLattice.ODD;
 		}
 
 		if (op instanceof ModuloOperator || op instanceof RemainderOperator) {

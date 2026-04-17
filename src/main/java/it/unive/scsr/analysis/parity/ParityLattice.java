@@ -5,6 +5,7 @@ import java.util.Objects;
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
@@ -54,26 +55,26 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 		return false;
 	}
 
-	// public Satisfiability eq(ParityLattice other) {
-	// if (this.isBottom() || other.isBottom())
-	// return Satisfiability.BOTTOM;
+	public Satisfiability eq(ParityLattice other) {
+		if (this.isBottom() || other.isBottom())
+			return Satisfiability.BOTTOM;
 
-	// if (this.isTop() || other.isTop())
-	// return Satisfiability.UNKNOWN;
+		if (this.isTop() || other.isTop())
+			return Satisfiability.UNKNOWN;
 
-	// if (this.equals(other) == false)
-	// return Satisfiability.NOT_SATISFIED;
+		if (this.equals(other) == false)
+			return Satisfiability.NOT_SATISFIED;
 
-	// // If both have the same parity -> could be equal, but not guaranteed
-	// return Satisfiability.UNKNOWN;
-	// }
+		// If both have the same parity -> could be equal, but not guaranteed
+		return Satisfiability.UNKNOWN;
+	}
 
-	// public Satisfiability gt(ParityLattice other) {
-	// if (this.isBottom() || other.isBottom())
-	// return Satisfiability.BOTTOM;
+	public Satisfiability gt(ParityLattice other) {
+		if (this.isBottom() || other.isBottom())
+			return Satisfiability.BOTTOM;
 
-	// return Satisfiability.UNKNOWN;
-	// }
+		return Satisfiability.UNKNOWN;
+	}
 
 	@Override
 	public int hashCode() {
@@ -85,11 +86,10 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 		if (this == obj)
 			return true;
 
-		if (obj == null || !(obj instanceof ParityLattice))
+		if (!(obj instanceof ParityLattice))
 			return false;
 
 		ParityLattice other = (ParityLattice) obj;
-
 		return Objects.equals(this.parity, other.parity);
 	}
 }

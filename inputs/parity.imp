@@ -1,0 +1,233 @@
+class parity {
+
+	constants() {
+		def e0 = 0;      // EVEN
+		def e2 = 2;      // EVEN
+		def e10 = 10;    // EVEN
+
+		def o1 = 1;      // ODD
+		def o3 = 3;      // ODD
+		def o11 = 11;    // ODD
+
+		return e0;
+	}
+
+	unaryNegation() {
+		def e = 8;       // EVEN
+		def o = 7;       // ODD
+
+		def ne = -e;     // EVEN
+		def no = -o;     // ODD
+
+		return no;
+	}
+
+	additionSubtraction() {
+		def e = 4;       // EVEN
+		def o = 5;       // ODD
+
+		def add_ee = e + e;   // EVEN
+		def add_eo = e + o;   // ODD
+		def add_oe = o + e;   // ODD
+		def add_oo = o + o;   // EVEN
+
+		def sub_ee = e - e;   // EVEN
+		def sub_eo = e - o;   // ODD
+		def sub_oe = o - e;   // ODD
+		def sub_oo = o - o;   // EVEN
+
+		return add_oo;
+	}
+
+	multiplication() {
+		def e = 6;       // EVEN
+		def o = 9;       // ODD
+
+		def mul_ee = e * e;   // EVEN
+		def mul_eo = e * o;   // EVEN
+		def mul_oe = o * e;   // EVEN
+		def mul_oo = o * o;   // ODD
+
+		return mul_oo;
+	}
+
+	moduloAndRemainder() {
+		def e10 = 10;    // EVEN
+		def e4 = 4;      // EVEN
+		def o9 = 9;      // ODD
+		def o5 = 5;      // ODD
+
+		def m1 = e10 % e4;    // your implementation returns left if right is EVEN -> EVEN
+		def m2 = o9 % e4;     // returns left if right is EVEN -> ODD
+		def m3 = e10 % o5;    // TOP in your implementation
+		def m4 = o9 % o5;     // TOP in your implementation
+
+		// same idea if IMP maps "%" to remainder semantics
+		def r1 = 14 % 2;      // EVEN according to your transfer function
+		def r2 = 15 % 2;      // ODD according to your transfer function
+
+		return m1;
+	}
+
+	eqAssumeLeftIdentifier() {
+		def x = 0;       // EVEN
+		def y = 3;       // ODD
+		def z = 8;       // EVEN
+
+		if (x == y)
+			x = 100;     // unreachable / contradictory: EVEN == ODD
+		else
+			x = x + 2;   // EVEN
+
+		if (z == 4)
+			z = z + 6;   // z refined/stays EVEN
+
+		return z;
+	}
+
+	eqAssumeRightIdentifier() {
+		def x = 7;       // ODD
+		def y = 0;       // EVEN
+
+		if (3 == x)
+			y = x + 2;   // x refined/stays ODD, y becomes ODD
+		else
+			y = 8;       // EVEN
+
+		return y;
+	}
+
+	neAssumeLeftIdentifier() {
+		def x = 0;       // EVEN
+		def y = 0;       // EVEN
+
+		if (x != 3)
+			y = x + 1;   // x refined to EVEN (since 3 is ODD, x != 3 says x is EVEN here), y ODD
+		else
+			y = 100;     // unreachable if x is known EVEN
+
+		return y;
+	}
+
+	neAssumeRightIdentifier() {
+		def x = 5;       // ODD
+		def y = 0;       // EVEN
+
+		if (2 != x)
+			y = x + 2;   // x refined to ODD, y ODD
+		else
+			y = 8;       // unreachable if x is known ODD
+
+		return y;
+	}
+
+	identifierToIdentifierEq() {
+		def a = 2;       // EVEN
+		def b = 8;       // EVEN
+		def c = 5;       // ODD
+
+		if (a == b)
+			c = a + b;   // EVEN
+		else
+			c = 1;       // should be unreachable wrt parity info
+
+		return c;
+	}
+
+	identifierToIdentifierNe() {
+		def a = 2;       // EVEN
+		def b = 7;       // ODD
+		def c = 0;       // EVEN
+
+		if (a != b)
+			c = a + 1;   // ODD
+		else
+			c = b + 2;   // unreachable wrt parity info
+
+		return c;
+	}
+
+	topCases(x) {
+		def y = 2;       // EVEN
+		def z = 3;       // ODD
+
+		def a = x + y;   // TOP
+		def b = x - z;   // TOP
+		def c = x * z;   // TOP unless x known EVEN/ODD
+		def d = x % z;   // TOP because right is ODD in your implementation
+		def e = -x;      // TOP
+
+		return a;
+	}
+
+	branchJoinTop(input) {
+		def x = 0;       // EVEN
+
+		if (input > 2)
+			x = 2;       // EVEN
+		else
+			x = 3;       // ODD
+
+		// join(EVEN, ODD) = TOP
+		def y = x + 4;   // TOP
+		return y;
+	}
+
+	branchJoinPrecise(input) {
+		def x = 0;       // EVEN
+
+		if (input)
+			x = 2;       // EVEN
+		else
+			x = 8;       // EVEN
+
+		// join(EVEN, EVEN) = EVEN
+		def y = x + 6;   // EVEN
+		return y;
+	}
+
+	contradiction() {
+		def x = 2;       // EVEN
+		def y = 0;       // EVEN
+
+		if (x == 3)
+			y = 1;       // contradictory branch: EVEN == ODD
+		else
+			y = 2;       // feasible branch
+
+		return y;
+	}
+
+	mixedExpressions() {
+		def a = 4;       // EVEN
+		def b = 5;       // ODD
+		def c = 8;       // EVEN
+		def d = 7;       // ODD
+
+		def r1 = (a + b) * d;   // (ODD) * ODD = ODD
+		def r2 = (b + d) * c;   // (EVEN) * EVEN = EVEN
+		def r3 = (a - c) + b;   // EVEN + ODD = ODD
+		def r4 = -(b * d);      // -(ODD) = ODD
+
+		return r4;
+	}
+
+  testEq() {
+		def x = 2;   // EVEN
+		if (x == 4)
+			x = x + 2;   // feasible, x EVEN
+		else
+			x = x + 1;   // should be infeasible wrt parity
+		return x;
+	}
+
+	testNe() {
+		def x = 2;   // EVEN
+		if (x != 3)
+			x = x + 1;   // feasible, x refined EVEN before assignment
+		else
+			x = x + 2;   // should be infeasible wrt parity
+		return x;
+	}
+
+}

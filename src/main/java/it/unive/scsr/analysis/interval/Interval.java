@@ -74,11 +74,17 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
-			
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
-			
-			return new IntervalLattice(l1.add(l2), u1.add(u2));
+
+
+			MathNumber ladd = l1.add(l2);
+			MathNumber uadd = u1.add(u2);
+
+			if (ladd.isNaN() || uadd.isNaN())
+				return IntervalLattice.TOP;
+
+			return new IntervalLattice(ladd, uadd);
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 			// [ l1, u1 ]   [ l2, u2 ]
@@ -120,7 +126,13 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
 
-			IntervalLattice res = new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+			MathNumber lsub = l1.subtract(u2);
+			MathNumber usub = u1.subtract(l2);
+
+			if (lsub.isNaN() || usub.isNaN())
+				return IntervalLattice.TOP;
+
+			IntervalLattice res = new IntervalLattice(lsub, usub);
 			// System.out.println(res.representation());
 			return res;
 			// TODO: homework

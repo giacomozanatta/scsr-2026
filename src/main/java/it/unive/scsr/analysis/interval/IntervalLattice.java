@@ -85,12 +85,9 @@ public class IntervalLattice
 	    	return new IntervalLattice(lResult,uResult);
 	    }
 	    
-	    
-
 	    @Override
 		public IntervalLattice glbAux(IntervalLattice other) throws SemanticException {
 
-	    	
 	    	if(this.i == null || other.i == null)
 	    		return BOTTOM;
 	    	
@@ -135,8 +132,8 @@ public class IntervalLattice
 			if(u2.geq(u1))
 				uResult = MathNumber.PLUS_INFINITY;
 			
-			MathNumber l1 = this.i.getHigh();
-			MathNumber l2 = other.i.getHigh();
+			MathNumber l1 = this.i.getLow();
+			MathNumber l2 = other.i.getLow();
 			
 			MathNumber lResult = l1;
 			if(l2.leq(l1)) {

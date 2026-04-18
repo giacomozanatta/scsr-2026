@@ -5,9 +5,9 @@ class intervals {
 		def j = -10;
 		def a = i + j;
 		def s = i - j;
-//		def m = i * j;
-//		def d = i / j;
-//      def l = -i;
+		def m = i * j;
+		def d = i / j;
+        def l = -i;
 	}
 
 	branches(b) {
@@ -26,6 +26,15 @@ class intervals {
 				c = c + 1;
 				b = b + 1; 
 			}
-			return c; 
+
+			def b1 = 1;
+			def c1 = 1;
+
+			while (b1 < 3) {
+				c1 = c1 + 1;
+				b1 = b1 + 1; 
+			}
+
+			return c1; 
 	}
 }

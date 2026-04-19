@@ -8,7 +8,7 @@ class ParityDemo {
 
         def neg = -b;       // -ODD -> Evaluates to ODD
 
-        def mod = b % a;    // ODD % EVEN -> Evaluates to ODD 
+        def mod = b % a;    // ODD % EVEN -> Evaluates to ODD
 
         def x = 0;
         // Test Least Upper Bound (LUB)

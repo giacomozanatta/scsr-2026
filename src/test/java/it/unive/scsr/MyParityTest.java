@@ -17,7 +17,7 @@ public class MyParityTest {
 
     @Test
     public void testParityAnalysis() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/parity.imp");
+        Program program = IMPFrontend.processFile("inputs/my-parity.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
 

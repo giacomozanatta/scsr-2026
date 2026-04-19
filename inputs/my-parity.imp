@@ -1,0 +1,30 @@
+class ParityDemo {
+    main() {
+        def a = 4;          // Evaluates to EVEN
+        def b = 7;          // Evaluates to ODD
+
+        def add = a + b;    // EVEN + ODD -> Evaluates to ODD
+        def mul = a * b;    // EVEN * ODD -> Evaluates to EVEN
+
+        def neg = -b;       // -ODD -> Evaluates to ODD
+
+        def mod = b % a;    // ODD % EVEN -> Evaluates to ODD 
+
+        def x = 0;
+        // Test Least Upper Bound (LUB)
+        if (a > 0) {
+            x = 2;          // x is EVEN here
+        } else {
+            x = 4;          // x is EVEN here
+        }
+        // At this point, LUB(EVEN, EVEN) = EVEN. x is EVEN.
+
+        def y = 0;
+        if (b > 0) {
+            y = 2;          // y is EVEN here
+        } else {
+            y = 3;          // y is ODD here
+        }
+        // At this point, LUB(EVEN, ODD) = TOP. y is TOP.
+    }
+}

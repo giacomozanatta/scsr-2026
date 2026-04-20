@@ -233,3 +233,5 @@ gradle-app.setting
 /src/test/java/it/unive/scsr/CPropTest.java
 /inputs/selfCreatedTestParity.imp
 /src/test/java/it/unive/scsr/ParityTest.java
+/inputs/IntervalTests/*
+/src/test/java/it/unive/scsr/IntervalTest.java

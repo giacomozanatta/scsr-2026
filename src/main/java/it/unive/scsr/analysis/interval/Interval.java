@@ -65,9 +65,11 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		
 		if(left.i == null || right == null)
 			return IntervalLattice.BOTTOM;
-		
+
+		if (left.isBottom() || right.isBottom())
+			return IntervalLattice.BOTTOM;
+
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
 			
@@ -77,18 +79,70 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			MathNumber v1 = safeMultiply(l1,l2);
+			MathNumber v2 = safeMultiply(l1,u2);
+			MathNumber v3 = safeMultiply(u1,l2);
+			MathNumber v4 = safeMultiply(u1,u2);
+
+			if (v1.isNaN() || v2.isNaN() || v3.isNaN() || v4.isNaN()) {
+				return IntervalLattice.TOP;
+			}
+
+			return new IntervalLattice(v1.min(v2).min(v3).min(v4), v1.max(v2).max(v3).max(v4));
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			MathNumber lNew = l1.subtract(u2);
+			MathNumber uNew = u1.subtract(l2);
+
+			if(lNew.isNaN() || uNew.isNaN())
+				return IntervalLattice.TOP;
+
+			return new IntervalLattice(lNew,uNew);
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+				return IntervalLattice.TOP;
+			}
+
+			MathNumber v1 = l1.divide(l2);
+			MathNumber v2 = l1.divide(u2);
+			MathNumber v3 = u1.divide(l2);
+			MathNumber v4 = u1.divide(u2);
+
+			if (v1.isNaN() || v2.isNaN() || v3.isNaN() || v4.isNaN())
+				return IntervalLattice.TOP;
+
+			return new IntervalLattice(v1.min(v2).min(v3).min(v4), v1.max(v2).max(v3).max(v4));
 		}
 		
 		return IntervalLattice.TOP;
 	}
 
-	
-	
-	
+	private MathNumber safeMultiply(MathNumber a, MathNumber b) {
+		if (a.isNaN() || b.isNaN())
+			return MathNumber.NaN;
+
+		if ((a.isZero() && b.isInfinite()) || (a.isInfinite() && b.isZero()))
+			return MathNumber.ZERO;
+
+		return a.multiply(b);
+	}
 	
 }

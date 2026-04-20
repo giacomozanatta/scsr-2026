@@ -63,7 +63,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
     public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
                                                 IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
-        if(left.i == null || right == null)
+        if(left.i == null || right.i == null)
             return IntervalLattice.BOTTOM;
 
         if(expression.getOperator() instanceof AdditionOperator) {
@@ -77,18 +77,70 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
             return new IntervalLattice(l1.add(l2), u1.add(u2));
 
         } else if (expression.getOperator() instanceof MultiplicationOperator) {
-            // TODO: homework
+            // DONE: homework
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            MathNumber r1 = l1.multiply(l2);
+            MathNumber r2 = l1.multiply(u2);
+            MathNumber r3 = u1.multiply(l2);
+            MathNumber r4 = u1.multiply(u2);
+
+            MathNumber min = r1;
+            if (r2.lt(min)) min = r2;
+            if (r3.lt(min)) min = r3;
+            if (r4.lt(min)) min = r4;
+
+            MathNumber max = r1;
+            if (r2.gt(max)) max = r2;
+            if (r3.gt(max)) max = r3;
+            if (r4.gt(max)) max = r4;
+
+            return new IntervalLattice(min, max);
+
         } else if (expression.getOperator() instanceof SubtractionOperator) {
-            // TODO: homework
+            // DONE: homework
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            return new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+
         } else if (expression.getOperator() instanceof DivisionOperator) {
-            // TODO: homework
+            // DONE: homework
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+                return IntervalLattice.TOP;
+            }
+
+            MathNumber r1 = l1.divide(l2);
+            MathNumber r2 = l1.divide(u2);
+            MathNumber r3 = u1.divide(l2);
+            MathNumber r4 = u1.divide(u2);
+
+            MathNumber min = r1;
+            if (r2.lt(min)) min = r2;
+            if (r3.lt(min)) min = r3;
+            if (r4.lt(min)) min = r4;
+
+            MathNumber max = r1;
+            if (r2.gt(max)) max = r2;
+            if (r3.gt(max)) max = r3;
+            if (r4.gt(max)) max = r4;
+
+            return new IntervalLattice(min, max);
         }
 
         return IntervalLattice.TOP;
     }
-
-
-
-
-
 }

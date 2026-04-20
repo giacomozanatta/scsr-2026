@@ -67,7 +67,6 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
 			
@@ -77,11 +76,77 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+            MathNumber l1 = left.i.getLow();
+            MathNumber u1 = left.i.getHigh();
+            MathNumber l2 = right.i.getLow();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber p1 = l1.multiply(l2);    // l1 x l2
+            MathNumber p2 = l1.multiply(u2);    // l1 x u2
+            MathNumber p3 = u1.multiply(l2);    // u1 x l2
+            MathNumber p4 = u1.multiply(u2);    // u1 x u2
+
+            MathNumber min = p1;
+            MathNumber max = p1;
+
+            if(p2.lt(min))  min = p2;
+            if(p2.gt(max))  max = p2;
+
+            if(p3.lt(min))  min =  p3;
+            if(p3.gt(max))  max = p3;
+
+            if(p4.lt(min))  min =  p4;
+            if(p4.gt(max))  max =  p4;
+
+            return new IntervalLattice(min, max);
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+            MathNumber l1 = left.i.getLow();
+            MathNumber u1 = left.i.getHigh();
+            MathNumber l2 = right.i.getLow();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber lResult = l1.subtract(l2);
+            MathNumber uResult = u1.subtract(u2);
+
+            return new IntervalLattice(lResult, uResult);
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+            if(left.i == null || right.i == null)
+                return IntervalLattice.BOTTOM;
+
+            MathNumber l2 = right.i.getLow();
+            MathNumber u2 = right.i.getLow();
+
+            MathNumber zero = new MathNumber(0);
+            if((l2.leq(zero)) && zero.leq(u2))
+                // l2 <= 0 <= u2; interval contains zero
+                return IntervalLattice.BOTTOM;
+
+            MathNumber invl = new MathNumber(1).divide(u2);
+            MathNumber invu = new MathNumber(1).divide(l2);
+
+            IntervalLattice inverse = new IntervalLattice(invl, invu);
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber u1 = left.i.getHigh();
+
+            MathNumber p1 = l1.multiply(invl);
+            MathNumber p2 = l1.multiply(invu);
+            MathNumber p3 = u1.multiply(invl);
+            MathNumber p4 = u1.multiply(invu);
+
+            MathNumber min = p1;
+            MathNumber max = p1;
+
+            if(p2.lt(min)) min = p2;
+            if(p2.gt(max)) max = p2;
+            if(p3.lt(min)) min = p3;
+            if(p3.gt(max)) max = p3;
+            if(p4.lt(min)) min = p4;
+            if(p4.gt(max)) max = p4;
+
+            return new IntervalLattice(min, max);
 		}
 		
 		return IntervalLattice.TOP;

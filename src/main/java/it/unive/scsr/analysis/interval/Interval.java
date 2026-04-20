@@ -186,7 +186,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice> {
                     MathNumber eval;
                     if (leftV.isNaN() || rightV.isNaN() || (leftV.isZero() && rightV.isZero()) || (leftV.isInfinite() && rightV.isInfinite())) // [0/0 = ?, infinity/infinity = ?]
                         return IntervalLattice.BOTTOM;
-                    else if ((leftV.isFinite() &&  rightV.isZero()) || ((leftV.isInfinite() && rightV.isZero()))) // [a/0=infinity, infinity/0 = infinity]
+                    else if ((leftV.isFinite() &&  rightV.isZero()) || (leftV.isInfinite() && rightV.isZero())) // [a/0=infinity, infinity/0 = infinity]
                         eval = (leftV.isPositive()) ? MathNumber.PLUS_INFINITY : MathNumber.MINUS_INFINITY;
                     else if (leftV.isZero() && rightV.isInfinite()) // [0/infinity = 0]
                         eval = MathNumber.ZERO;

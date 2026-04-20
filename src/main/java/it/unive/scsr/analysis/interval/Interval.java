@@ -77,11 +77,47 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+
+			MathNumber pot_l1 = u1.multiply(l2);
+			MathNumber pot_l2 = u2.multiply(l1);
+
+			MathNumber pot_u1 = u1.multiply(u2);
+			MathNumber pot_u2 = l1.multiply(l2);
+
+			return new IntervalLattice(pot_l1.min(pot_l2),pot_u1.max(pot_u2));
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			MathNumber lu = left.i.getHigh();
+			MathNumber ru = right.i.getHigh();
+
+			MathNumber ll = left.i.getLow();
+			MathNumber rl = right.i.getLow();
+
+			MathNumber pot_l1 = ll.subtract(ru);
+			MathNumber pot_l2 = ll.subtract(rl);
+
+			MathNumber pot_u1 = lu.subtract(ru);
+			MathNumber pot_u2 = lu.subtract(rl);
+
+			return new IntervalLattice(pot_l1.min(pot_l2),pot_u1.max(pot_u2));
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			MathNumber lu = left.i.getHigh();
+			MathNumber ru = right.i.getHigh();
+
+			MathNumber ll = left.i.getLow();
+			MathNumber rl = right.i.getLow();
+
+			MathNumber pot_l1 = ll.divide(ru);
+			MathNumber pot_l2 = ll.divide(rl);
+
+			MathNumber pot_u1 = lu.divide(ru);
+			MathNumber pot_u2 = lu.divide(rl);
+
+			return new IntervalLattice(pot_l1.min(pot_l2),pot_u1.max(pot_u2));
 		}
 		
 		return IntervalLattice.TOP;

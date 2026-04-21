@@ -14,6 +14,9 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 	@Override
@@ -130,7 +133,10 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber pot_u1 = lu.divide(ru);
 			MathNumber pot_u2 = lu.divide(rl);
 
-			return new IntervalLattice(pot_l1.min(pot_l2),pot_u1.max(pot_u2));
+			BigDecimal l = pot_l1.min(pot_l2).getNumber().setScale(0, RoundingMode.FLOOR);
+			BigDecimal r = pot_u1.max(pot_u2).getNumber().setScale(0, RoundingMode.CEILING);
+
+			return new IntervalLattice(new MathNumber(l),new MathNumber(r));
 		}
 		
 		return IntervalLattice.TOP;

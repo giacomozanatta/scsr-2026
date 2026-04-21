@@ -21,22 +21,22 @@ public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice>{
 	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
 	@Override
 	public TaintThreeLevelsLattice top() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 	@Override
 	public TaintThreeLevelsLattice bottom() {
-		// TODO 
+		// TODO: homework
 		return null;
 	}
 	@Override
 	protected TaintThreeLevelsLattice tainted() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 	@Override
 	protected TaintThreeLevelsLattice clean() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 

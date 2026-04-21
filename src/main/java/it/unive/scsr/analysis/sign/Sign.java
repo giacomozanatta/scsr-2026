@@ -114,9 +114,9 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
 				return SignLattice.TOP;		
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			// TODO: homework (optional)
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			// TODO: homework (optional)
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

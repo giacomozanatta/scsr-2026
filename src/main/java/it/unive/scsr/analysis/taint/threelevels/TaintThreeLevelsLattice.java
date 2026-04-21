@@ -16,61 +16,61 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
+		// TODO: homework
 		return false;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice top() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice bottom() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public StructuredRepresentation representation() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice tainted() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice clean() {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
+		// TODO: homework
 		return null;
 	}
 
 	@Override
 	public boolean isAlwaysTainted() {
-		// TODO
+		// TODO: homework
 		return false;
 	}
 
 	@Override
 	public boolean isPossiblyTainted() {
-		// TODO
+		// TODO: homework
 		return false;
 	}
 

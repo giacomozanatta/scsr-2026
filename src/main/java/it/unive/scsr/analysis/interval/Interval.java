@@ -67,7 +67,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
+
 			MathNumber u1 = left.i.getHigh();
 			MathNumber u2 = right.i.getHigh();
 			
@@ -75,15 +75,74 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l2 = right.i.getLow();
 			
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
-			
-		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
-		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
-		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
-		}
-		
+
+        } else if (expression.getOperator() instanceof MultiplicationOperator) {
+
+            if (left.equals(IntervalLattice.ZERO)) {
+                return IntervalLattice.ZERO;
+            }
+            else if (right.equals(IntervalLattice.ZERO)) {
+                return IntervalLattice.ZERO;
+            }
+
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            MathNumber n1 = l1.multiply(l2);
+            MathNumber n2 = l1.multiply(u2);
+            MathNumber n3 = u1.multiply(l2);
+            MathNumber n4 = u1.multiply(u2);
+
+            MathNumber min = n1.min(n2).min(n3).min(n4);
+            MathNumber max = n1.max(n2).max(n3).max(n4);
+
+            if (min.isNaN()) return IntervalLattice.TOP;
+            else if (max.isNaN())  return IntervalLattice.TOP;
+
+            return new IntervalLattice(min, max);
+        } else if (expression.getOperator() instanceof SubtractionOperator) {
+
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            MathNumber ls = l1.subtract(u2);
+            MathNumber us = u1.subtract(l2);
+
+            if (ls.isNaN()) return IntervalLattice.TOP;
+            else if (us.isNaN()) return IntervalLattice.TOP;
+
+            return new IntervalLattice(ls, us);
+        } else if (expression.getOperator() instanceof DivisionOperator) {
+
+            MathNumber u1 = left.i.getHigh();
+            MathNumber u2 = right.i.getHigh();
+
+            MathNumber l1 = left.i.getLow();
+            MathNumber l2 = right.i.getLow();
+
+            if (l2.isZero() && u2.isZero()) {
+                return IntervalLattice.BOTTOM;
+            }
+
+            MathNumber n1 = l1.divide(l2);
+            MathNumber n2 = l1.divide(u2);
+            MathNumber n3 = u1.divide(l2);
+            MathNumber n4 = u1.divide(u2);
+
+            MathNumber min = n1.min(n2).min(n3).min(n4);
+            MathNumber max = n1.max(n2).max(n3).max(n4);
+
+            if (min.isNaN()) return IntervalLattice.TOP;
+            else if (max.isNaN())  return IntervalLattice.TOP;
+
+            return new IntervalLattice(min, max);
+        }
 		return IntervalLattice.TOP;
 	}
 

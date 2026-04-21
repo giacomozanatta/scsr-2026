@@ -1,0 +1,8 @@
+class ParityTest {
+    test() {
+        def a = 4;        // Should resolve to EVEN
+        def b = 7;        // Should resolve to ODD
+        def c = a + b;    // EVEN + ODD = ODD
+        def d = a * c;    // EVEN * ODD = EVEN
+    }
+}

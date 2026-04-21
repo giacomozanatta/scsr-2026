@@ -119,7 +119,7 @@ public class IntervalLattice
 	    public boolean lessOrEqualAux(IntervalLattice other) throws SemanticException {
 			if(this.i == null || other.i == null)
 				return false;
-	    	return this.i.includes(other.i);
+	    	return other.i.includes(this.i);
 	    }
 
 		@Override
@@ -132,14 +132,14 @@ public class IntervalLattice
 			MathNumber u2 = other.i.getHigh();
 			
 			MathNumber uResult = u1;
-			if(u2.geq(u1))
+			if(u2.compareTo(u1) > 0)
 				uResult = MathNumber.PLUS_INFINITY;
 			
-			MathNumber l1 = this.i.getHigh();
-			MathNumber l2 = other.i.getHigh();
+			MathNumber l1 = this.i.getLow();
+			MathNumber l2 = other.i.getLow();
 			
 			MathNumber lResult = l1;
-			if(l2.leq(l1)) {
+			if(l2.compareTo(l1) < 0) {
 				lResult = MathNumber.MINUS_INFINITY;
 			}
 			

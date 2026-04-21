@@ -117,7 +117,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			u2 = right.i.getHigh();
 			l2 = right.i.getLow();
 
-			return new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+			return new IntervalLattice(l1.add(u2), u1.add(l2));
 
 		} else if (expression.getOperator() instanceof DivisionOperator) {
 			MathNumber u1 = left.i.getHigh();
@@ -166,9 +166,4 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		}
 		return IntervalLattice.TOP;
 	}
-
-	
-	
-	
-	
 }

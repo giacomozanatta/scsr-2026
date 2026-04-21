@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.taint.threetaint;
+package it.unive.scsr.analysis.taint.threelevels;
 
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.program.annotations.Annotation;
@@ -6,7 +6,7 @@ import it.unive.lisa.program.annotations.matcher.AnnotationMatcher;
 import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
 
 /*
- * Lattice of Three taint
+ * Lattice of  taint with three levels
  *	 Top 
  * 	/	\
  * C	 T	 
@@ -14,28 +14,28 @@ import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
  *  BOTTOM
  * 
  */
-public class ThreeTaint extends BaseTaint<ThreeTaintLattice>{
+public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice>{
 
 	
 	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
 	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
 	@Override
-	public ThreeTaintLattice top() {
+	public TaintThreeLevelsLattice top() {
 		// TODO
 		return null;
 	}
 	@Override
-	public ThreeTaintLattice bottom() {
+	public TaintThreeLevelsLattice bottom() {
 		// TODO 
 		return null;
 	}
 	@Override
-	protected ThreeTaintLattice tainted() {
+	protected TaintThreeLevelsLattice tainted() {
 		// TODO
 		return null;
 	}
 	@Override
-	protected ThreeTaintLattice clean() {
+	protected TaintThreeLevelsLattice clean() {
 		// TODO
 		return null;
 	}

@@ -19,9 +19,9 @@ class intervals {
 		return x;
   }
 
-	loop(b) {
+	loop() {
 			def c = 1;
-			
+			def b = 1;
 			while (b < 3) {
 				c = c + 1;
 				b = b + 1; 

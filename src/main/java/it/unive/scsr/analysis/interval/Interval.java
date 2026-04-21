@@ -83,6 +83,10 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
 
+			if (right.i.is(0) || left.i.is(0)) {
+				return IntervalLattice.ZERO;
+			}
+
 			MathNumber pot_l1 = u1.multiply(l2);
 			MathNumber pot_l2 = u2.multiply(l1);
 
@@ -111,6 +115,15 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber ll = left.i.getLow();
 			MathNumber rl = right.i.getLow();
 
+			if (right.i.is(0)) {
+				return IntervalLattice.BOTTOM;
+			}
+			if (left.i.is(0)) {
+				return IntervalLattice.ZERO;
+			}
+			if (left.i.isTop() || left.i.isTop()) {
+				return IntervalLattice.TOP;
+			}
 			MathNumber pot_l1 = ll.divide(ru);
 			MathNumber pot_l2 = ll.divide(rl);
 

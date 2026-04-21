@@ -12,8 +12,10 @@ import it.unive.lisa.symbolic.value.operator.DivisionOperator;
 import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
+import it.unive.lisa.util.numeric.IntInterval;
 import it.unive.lisa.util.numeric.MathNumber;
 
+//Work done by Elia Stevanato 895598 and Francesco Pasqualato 897778
 public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 	@Override
@@ -63,25 +65,46 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
 			IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		
-		if(left.i == null || right == null)
+		if(left.i == null || right.i == null)
 			return IntervalLattice.BOTTOM;
+
+		MathNumber u1 = left.i.getHigh();
+		MathNumber u2 = right.i.getHigh();
+
+		MathNumber l1 = left.i.getLow();
+		MathNumber l2 = right.i.getLow();
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
-			
-			MathNumber u1 = left.i.getHigh();
-			MathNumber u2 = right.i.getHigh();
-			
-			MathNumber l1 = left.i.getLow();
-			MathNumber l2 = right.i.getLow();
-			
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+			MathNumber x1 = l1.multiply(l2);
+			MathNumber x2 = l1.multiply(u2);
+			MathNumber x3 = u1.multiply(l2);
+			MathNumber x4 = u1.multiply(u2);
+
+			MathNumber min = x1.min(x2).min(x3).min(x4);
+			MathNumber max = x1.max(x2).max(x3).max(x4);
+
+			return new IntervalLattice(min, max);
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			return new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			if (right.i.includes(new IntInterval(MathNumber.ZERO, MathNumber.ZERO))) {
+				return IntervalLattice.TOP;
+			}
+
+			MathNumber x1 = l1.divide(l2);
+			MathNumber x2 = l1.divide(u2);
+			MathNumber x3 = u1.divide(l2);
+			MathNumber x4 = u1.divide(u2);
+
+			MathNumber min = x1.min(x2).min(x3).min(x4);
+			MathNumber max = x1.max(x2).max(x3).max(x4);
+
+			return new IntervalLattice(min, max);
 		}
 		
 		return IntervalLattice.TOP;

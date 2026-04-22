@@ -47,11 +47,28 @@ public class TaintLattice implements it.unive.lisa.lattices.informationFlow.Tain
 
 	@Override
 	public TaintLattice lubAux(TaintLattice other) throws SemanticException {
-		return Taint;
+		if (this == TaintLattice.Bottom)
+			return other;
+		if (other == TaintLattice.Bottom)
+			return this;
+
+		if (this == TaintLattice.Taint || other == TaintLattice.Taint)
+			return TaintLattice.Taint;
+
+		return TaintLattice.Clean;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(TaintLattice other) throws SemanticException {
+		if (this == other)
+			return true;
+
+		if (this == TaintLattice.Bottom)
+			return true;
+
+		if (this == TaintLattice.Clean && other == TaintLattice.Taint)
+			return true;
+
 		return false;
 	}
 
@@ -68,10 +85,10 @@ public class TaintLattice implements it.unive.lisa.lattices.informationFlow.Tain
 	@Override
 	public TaintLattice or(TaintLattice other) throws SemanticException {
 		
-		if(this == Bottom || other == Bottom)
+		if(this == TaintLattice.Bottom || other == TaintLattice.Bottom)
 			return TaintLattice.Bottom;
 		
-		if(this == Taint || other == Taint)
+		if(this == TaintLattice.Taint || other == TaintLattice.Taint)
 			return TaintLattice.Taint;
 		
 		return TaintLattice.Clean;

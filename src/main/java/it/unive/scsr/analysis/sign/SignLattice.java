@@ -8,6 +8,7 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 public class SignLattice 
 		implements BaseLattice<SignLattice>{
@@ -81,8 +82,19 @@ public class SignLattice
 
 	    @Override
 	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
+			if (this == other)
+				return true;
+
+			if (this == SignLattice.BOTTOM)
+				return true;
+
+			if (this == SignLattice.TOP)
+				return false;
+
+			if (other == SignLattice.TOP)
+				return true;
+
+			return false;
 	    }
 
 		// For glb in this case we use default LiSA implementation

@@ -1,10 +1,10 @@
-package it.unive.scsr.analysis.taint.threetaint;
+package it.unive.scsr.analysis.taint.threelevels;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 /*
- * Lattice of Three taint
+ * Lattice of  taint with three levels
  *	 Top 
  * 	/	\
  * C	 T	 
@@ -12,28 +12,28 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
  *  BOTTOM
  * 
  */
-public class ThreeTaintLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<ThreeTaintLattice> {
+public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintThreeLevelsLattice> {
 
 	@Override
-	public ThreeTaintLattice lubAux(ThreeTaintLattice other) throws SemanticException {
+	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
 		// TODO
 		return null;
 	}
 
 	@Override
-	public boolean lessOrEqualAux(ThreeTaintLattice other) throws SemanticException {
+	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
 		// TODO
 		return false;
 	}
 
 	@Override
-	public ThreeTaintLattice top() {
+	public TaintThreeLevelsLattice top() {
 		// TODO
 		return null;
 	}
 
 	@Override
-	public ThreeTaintLattice bottom() {
+	public TaintThreeLevelsLattice bottom() {
 		// TODO
 		return null;
 	}
@@ -45,19 +45,19 @@ public class ThreeTaintLattice implements it.unive.lisa.lattices.informationFlow
 	}
 
 	@Override
-	public ThreeTaintLattice tainted() {
+	public TaintThreeLevelsLattice tainted() {
 		// TODO
 		return null;
 	}
 
 	@Override
-	public ThreeTaintLattice clean() {
+	public TaintThreeLevelsLattice clean() {
 		// TODO
 		return null;
 	}
 
 	@Override
-	public ThreeTaintLattice or(ThreeTaintLattice other) throws SemanticException {
+	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
 		// TODO
 		return null;
 	}

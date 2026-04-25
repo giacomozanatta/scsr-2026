@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.taint.threetaint;
+package it.unive.scsr.analysis.taint.threelevels;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,16 +31,15 @@ import it.unive.lisa.program.cfg.statement.call.UnresolvedCall;
 import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
-import it.unive.scsr.analysis.taint.Taint;
 
 // This checker detects functions annotated as sinks, it inspects the arguments 
 // passed to that call and emits a definite warning when its value is tainted, and a possible warning when its value is top.
-public class ThreeTaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
-		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>> {
+public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> {
 
 	@Override
 	public boolean visit(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>> tool,
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
 		if (node instanceof UnresolvedCall) { // check if the current visited node correspond to a function call
@@ -66,13 +65,13 @@ public class ThreeTaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> i
 	}
 
 	private void process(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>> tool,
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> tool,
 			UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
-			AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>> res) {
-		if (descriptor.getAnnotations().contains(Taint.SINK_MATCHER)) { // check if the called function is annotated as sink
+			AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> res) {
+		if (descriptor.getAnnotations().contains(TaintThreeLevels.SINK_MATCHER)) { // check if the called function is annotated as sink
 			for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
 				Expression par = uc.getParameters()[i];
-				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ThreeTaintLattice>, TypeEnvironment<T>>> postState = res
+				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> postState = res
 						.getAnalysisStateAfter(par); // compute the post state related to each parameter
 				Set<SymbolicExpression> reachableIds = new HashSet<>();
 				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
@@ -89,10 +88,10 @@ public class ThreeTaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> i
 							if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
 								continue;
 							//extraction of the abstract value
-							ValueEnvironment<ThreeTaintLattice> valueState = postState.getExecutionState().valueState;
-							ThreeTaint signAnalysisValueDomain = (ThreeTaint) tool.getAnalysis().domain.valueDomain;
+							ValueEnvironment<TaintThreeLevelsLattice> valueState = postState.getExecutionState().valueState;
+							TaintThreeLevels signAnalysisValueDomain = (TaintThreeLevels) tool.getAnalysis().domain.valueDomain;
 							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-							ThreeTaintLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
+							TaintThreeLevelsLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
 							//TODO

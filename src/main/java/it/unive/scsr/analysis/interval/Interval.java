@@ -59,6 +59,60 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		return IntervalLattice.TOP;
 	}
 
+        private IntervalLattice multLattices(IntervalLattice left, IntervalLattice right)
+        {
+            MathNumber a1 = left.i.getLow();
+            MathNumber a2 = left.i.getHigh();
+
+            MathNumber b1 = right.i.getLow();
+            MathNumber b2 = right.i.getHigh();
+
+            MathNumber[] n = new MathNumber[4];
+            n[0] = a1.multiply(b1);
+            n[1] = a1.multiply(b2);
+            n[2] = a2.multiply(b1);
+            n[3] = a2.multiply(b2);
+            MathNumber n1 = n[0];
+            MathNumber n2 = n[0];
+            for(int i = 1; i < n.length; i++)
+            {
+                if(n[i].leq(n1))
+                    n1 = n[i];
+                if(n[i].geq(n2))
+                    n2 = n[i];
+            }     
+            return new IntervalLattice(n1, n2);
+        }
+        
+        private IntervalLattice divLattices(IntervalLattice left, IntervalLattice right)
+        {
+            MathNumber a1 = left.i.getLow();
+            MathNumber a2 = left.i.getHigh();
+
+            MathNumber b1 = right.i.getLow();
+            MathNumber b2 = right.i.getHigh();
+            
+            if(b1.leq(MathNumber.ZERO) && b2.geq(MathNumber.ZERO))
+            {
+                return IntervalLattice.BOTTOM;
+            }
+            MathNumber[] n = new MathNumber[4];
+            n[0] = a1.divide(b1);
+            n[1] = a1.divide(b2);
+            n[2] = a2.divide(b1);
+            n[3] = a2.divide(b2);
+            MathNumber n1 = n[0];
+            MathNumber n2 = n[0];
+            for(int i = 1; i < n.length; i++)
+            {
+                if(n[i].leq(n1))
+                    n1 = n[i];
+                if(n[i].geq(n2))
+                    n2 = n[i];
+            }     
+            return new IntervalLattice(n1, n2);
+        }
+        
 	@Override
 	public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
 			IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
@@ -77,11 +131,17 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+			return multLattices(left, right);
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			MathNumber u1 = left.i.getHigh();
+			MathNumber u2 = right.i.getHigh();
+			
+			MathNumber l1 = left.i.getLow();
+			MathNumber l2 = right.i.getLow();
+			
+			return new IntervalLattice(l1.subtract(l2), u1.subtract(u2));
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			return divLattices(left, right);
 		}
 		
 		return IntervalLattice.TOP;

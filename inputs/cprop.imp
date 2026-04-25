@@ -27,4 +27,10 @@ class cp {
 
 		return;
 	}
+	f6() {
+		def x = 5;
+		def y = "ciao";
+		x = -x;
+		return;
+	}
 }

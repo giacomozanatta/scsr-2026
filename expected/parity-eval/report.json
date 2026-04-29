@@ -1,0 +1,42 @@
+{
+  "warnings" : [ ],
+  "notices" : [ ],
+  "files" : [ "assets/d3-graphviz.min.js", "assets/d3.v7.min.js", "assets/style.css", "report.json", "untyped_parity.f0(parity__this).graph.json", "untyped_parity.f0(parity__this).html", "untyped_parity.f1(parity__this).graph.json", "untyped_parity.f1(parity__this).html", "untyped_parity.f2(parity__this,_untyped_a,_untyped_b).graph.json", "untyped_parity.f2(parity__this,_untyped_a,_untyped_b).html", "untyped_parity.f4(parity__this,_untyped_b).graph.json", "untyped_parity.f4(parity__this,_untyped_b).html" ],
+  "info" : {
+    "cfgs" : "4",
+    "duration" : "1s 290ms",
+    "end" : "2026-04-28T14:20:52.043+02:00",
+    "expressions" : "64",
+    "files" : "11",
+    "globals" : "0",
+    "members" : "4",
+    "notices" : "0",
+    "programs" : "1",
+    "start" : "2026-04-28T14:20:50.753+02:00",
+    "statements" : "25",
+    "units" : "1",
+    "version" : "0.2",
+    "warnings" : "0"
+  },
+  "configuration" : {
+    "asynchronousListeners" : "",
+    "backwardDescendingFixpoint" : "unset",
+    "backwardFixpoint" : "BackwardAscendingFixpoint",
+    "dumpForcesUnwinding" : "false",
+    "fixpointWorkingSet" : "OrderBasedWorkingSet",
+    "forwardDescendingFixpoint" : "unset",
+    "forwardFixpoint" : "ForwardAscendingFixpoint",
+    "glbThreshold" : "5",
+    "hotspots" : "unset",
+    "openCallPolicy" : "TopExecutionPolicy",
+    "outputs" : "HtmlResults, JSONReportDumper, JSONResults",
+    "recursionWideningThreshold" : "5",
+    "semanticChecks" : "",
+    "shouldSmashError" : "unset",
+    "synchronousListeners" : "",
+    "syntacticChecks" : "",
+    "useWideningPoints" : "true",
+    "wideningThreshold" : "5",
+    "workdir" : "outputs/parity"
+  }
+}

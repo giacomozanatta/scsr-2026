@@ -7,6 +7,7 @@ import it.unive.scsr.analysis.interval.Interval;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.program.Program;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class IntervalAnalysisTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         
         // we instantiate LiSA with our configuration

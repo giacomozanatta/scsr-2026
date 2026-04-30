@@ -1,0 +1,85 @@
+class ParityTests {
+
+    basic_constants() {
+        def e = 4;
+        def o = 7;
+        def zero = 0;
+        def neg = -4;
+    }
+
+    math_operations() {
+        def e = 2;
+        def o = 3;
+
+        def a1 = e + e; // EVEN
+        def a2 = o + o; // EVEN
+        def a3 = e + o; // ODD
+
+        def s1 = e - e; // EVEN
+        def s2 = o - e; // ODD
+
+        def m1 = e * o; // EVEN
+        def m2 = o * o; // ODD
+    }
+
+    branches(a) {
+        def x = 0;
+        if (a > 5) {
+            x = 2;
+        } else {
+            x = 4;
+        }
+        // x deve essere EVEN (perché LUB(EVEN, EVEN) = EVEN)
+
+        def y = 0;
+        if (a > 5) {
+            y = 2;
+        } else {
+            y = 3;
+        }
+        // y deve essere TOP (perché LUB(EVEN, ODD) = TOP)
+    }
+
+    loop() {
+        def i = 0;
+        while (i < 10) {
+            i = i + 1;
+        }
+        // i deve essere TOP (oscilla tra EVEN e ODD)
+        return i;
+    }
+    f0() {
+            def i = 2;
+            def j = 10;
+            def a = i + j;
+            def s = i - j;
+            def m = i * j;
+            def n = -i;
+        }
+
+        f1() {
+            def i = 2;
+            def j = 11;
+            def a = i + j;
+            def s = i - j;
+            def m = i * j;
+            def n = -i;
+        }
+
+        f2(a, b) {
+            def x = 0;
+            if (a > b)
+                   x = x * 2;
+               else
+                   x = x - 7;
+            def y = -x;
+            def z = y + y;
+        }
+
+        f4(b) {
+            def c = 0;
+               while (b)
+                c = c + 2;
+               return c;
+        }
+}

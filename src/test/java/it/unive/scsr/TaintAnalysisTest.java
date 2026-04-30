@@ -3,7 +3,9 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
+import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
+import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.scsr.analysis.taint.Taint;
 import it.unive.scsr.analysis.taint.TaintChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
@@ -40,8 +42,9 @@ public class TaintAnalysisTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Taint(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new Taint(), defaultTypeDomain());
 
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         for(CFG cfg : program.getAllCFGs()) {
             String name = cfg.getDescriptor().getName();
             if(isSource(name))

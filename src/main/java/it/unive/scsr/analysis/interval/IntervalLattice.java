@@ -121,7 +121,7 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         // Implements less or equal operator: all values of 'other' are in 'this'
         if(this.i == null || other.i == null)
             return false;
-        return this.i.includes(other.i);
+        return other.i.includes(this.i);
     }
 
     @Override
@@ -135,14 +135,14 @@ public class IntervalLattice implements BaseLattice<IntervalLattice>, Comparable
         MathNumber u2 = other.i.getHigh();
 
         MathNumber uResult = u1;
-        if(u2.geq(u1))
+        if(u2.gt(u1))
             uResult = MathNumber.PLUS_INFINITY;
 
         MathNumber l1 = this.i.getLow();
         MathNumber l2 = other.i.getLow();
 
         MathNumber lResult = l1;
-        if(l2.leq(l1)) {
+        if(l2.lt(l1)) {
             lResult = MathNumber.MINUS_INFINITY;
         }
 

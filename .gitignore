@@ -227,3 +227,13 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,eclipse,intellij
 
 /outputs/
+
+/inputs/intervals.imp
+/inputs/parity.imp
+/inputs/signs.imp
+/inputs/taint_three_levels.imp
+
+
+src/test/java/it/unive/scsr/IntervalAnalysisTest.java
+src/test/java/it/unive/scsr/ParityAnalysisTest.java
+src/test/java/it/unive/scsr/TaintThreeLevelsAnalysisTest.java

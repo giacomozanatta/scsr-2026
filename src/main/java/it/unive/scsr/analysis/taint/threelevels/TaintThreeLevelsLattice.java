@@ -80,6 +80,19 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	public boolean isAlwaysTainted() {return this == TaintThreeLevelsLattice.Taint;}
 
 	@Override
-	public boolean isPossiblyTainted() {return this == TaintThreeLevelsLattice.Top;}
+	public boolean isPossiblyTainted() {return (this == TaintThreeLevelsLattice.Top) || (this == TaintThreeLevelsLattice.Taint);}
 
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(element);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		TaintThreeLevelsLattice that = (TaintThreeLevelsLattice) o;
+		return element == that.element;
+	}
 }

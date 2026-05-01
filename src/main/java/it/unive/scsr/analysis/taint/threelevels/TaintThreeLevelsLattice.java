@@ -71,9 +71,11 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
 		if (this == TaintThreeLevelsLattice.Taint || other == TaintThreeLevelsLattice.Taint)
 			return TaintThreeLevelsLattice.Taint;
-		if (this == TaintThreeLevelsLattice.Clean && other == TaintThreeLevelsLattice.Clean)
-			return TaintThreeLevelsLattice.Clean;
-		return TaintThreeLevelsLattice.Bottom;
+		if (this == TaintThreeLevelsLattice.Bottom && other == TaintThreeLevelsLattice.Bottom)
+			return TaintThreeLevelsLattice.Bottom;
+		if (this == TaintThreeLevelsLattice.Top && other == TaintThreeLevelsLattice.Top)
+			return TaintThreeLevelsLattice.Top;
+		return TaintThreeLevelsLattice.Clean;
 	}
 
 	@Override
@@ -85,7 +87,7 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public int hashCode() {
-		return Integer.hashCode(element);
+		return On.hashCode(element);
 	}
 
 	@Override

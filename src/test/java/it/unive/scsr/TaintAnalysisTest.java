@@ -15,6 +15,7 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
+import it.unive.scsr.analysis.taint.threelevels.*;
 
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class TaintAnalysisTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Taint(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
 
         for(CFG cfg : program.getAllCFGs()) {
         	String name = cfg.getDescriptor().getName();
@@ -51,11 +52,11 @@ public class TaintAnalysisTest {
         	else if(isSanitizer(name))
         		cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
         	else if(isSink(name))
-        		cfg.getDescriptor().addAnnotation(Taint.SINK_ANNOTATION);
+        		cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
         }
     
         // added checker to the analysis
-        conf.semanticChecks.add(new TaintChecker<>());
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
         

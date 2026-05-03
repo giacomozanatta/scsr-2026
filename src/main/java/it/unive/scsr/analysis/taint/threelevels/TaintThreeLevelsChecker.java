@@ -94,7 +94,12 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 							TaintThreeLevelsLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
-							//TODO
+							if (abstractValue.isAlwaysTainted()) {
+								// checking for abstractValue.TAINT is the same as checking for abstractValue.TOP
+								tool.warnOn(uc, "Definite vulnerability: argument " + (i+1) + " is tainted");
+							} else if (abstractValue.isPossiblyTainted()) {
+								tool.warnOn(uc, "Possible vulnerability: argument " + (i+1) + " is possibly tainted");
+							}
 						}
 					} catch (SemanticException e) {
 						e.printStackTrace();

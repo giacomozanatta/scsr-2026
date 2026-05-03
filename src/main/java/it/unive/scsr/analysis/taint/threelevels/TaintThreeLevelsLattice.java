@@ -1,6 +1,10 @@
 package it.unive.scsr.analysis.taint.threelevels;
 
+import java.util.Objects;
+
+import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 /*
@@ -12,66 +16,114 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
  *  BOTTOM
  * 
  */
-public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintThreeLevelsLattice> {
+public class TaintThreeLevelsLattice
+		implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintThreeLevelsLattice> {
+
+	public static final TaintThreeLevelsLattice BOTTOM = new TaintThreeLevelsLattice(0);
+	public static final TaintThreeLevelsLattice TOP = new TaintThreeLevelsLattice(2);
+	public static final TaintThreeLevelsLattice TAINT = new TaintThreeLevelsLattice(-1);
+	public static final TaintThreeLevelsLattice CLEAN = new TaintThreeLevelsLattice(1);
+
+	private final Integer taintLevel;
+
+	public TaintThreeLevelsLattice(Integer taintLevel) {
+		this.taintLevel = taintLevel;
+	}
 
 	@Override
 	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
-		return null;
+		if (this.equals(TaintThreeLevelsLattice.BOTTOM))
+			return other;
+
+		if (other.equals(TaintThreeLevelsLattice.BOTTOM) || this.equals(other))
+			return this;
+
+		return TaintThreeLevelsLattice.TOP;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
-		return false;
+		return (this.equals(TaintThreeLevelsLattice.BOTTOM)
+				|| other.equals(TaintThreeLevelsLattice.TOP)
+				|| this.equals(other));
 	}
 
 	@Override
 	public TaintThreeLevelsLattice top() {
-		// TODO
-		return null;
+		return TaintThreeLevelsLattice.TOP;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice bottom() {
-		// TODO
-		return null;
+		return TaintThreeLevelsLattice.BOTTOM;
 	}
 
 	@Override
 	public StructuredRepresentation representation() {
-		// TODO
-		return null;
+		if (this.equals(TaintThreeLevelsLattice.TOP))
+			return Lattice.topRepresentation();
+
+		if (this.equals(TaintThreeLevelsLattice.BOTTOM))
+			return Lattice.bottomRepresentation();
+
+		return (this.equals(TaintThreeLevelsLattice.CLEAN))
+				? new StringRepresentation("CLEAN")
+				: new StringRepresentation("TAINT");
 	}
 
 	@Override
 	public TaintThreeLevelsLattice tainted() {
-		// TODO
-		return null;
+		return TaintThreeLevelsLattice.TAINT;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice clean() {
-		// TODO
-		return null;
+		return TaintThreeLevelsLattice.CLEAN;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
-		// TODO
-		return null;
+		if (this.equals(BOTTOM) || other.equals(BOTTOM))
+			return BOTTOM;
+
+		// If any side is definitely tainted → result tainted
+		if (this.equals(TAINT) || other.equals(TAINT))
+			return TAINT;
+
+		// If both are clean → clean
+		if (this.equals(CLEAN) && other.equals(CLEAN))
+			return CLEAN;
+
+		// Otherwise uncertainty → TOP
+		return TOP;
 	}
 
 	@Override
 	public boolean isAlwaysTainted() {
-		// TODO
-		return false;
+		return this.equals(TaintThreeLevelsLattice.TAINT);
 	}
 
 	@Override
 	public boolean isPossiblyTainted() {
-		// TODO
-		return false;
+		return this.equals(TaintThreeLevelsLattice.TOP);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+
+		if (obj == null || !(obj instanceof TaintThreeLevelsLattice))
+			return false;
+
+		TaintThreeLevelsLattice other = (TaintThreeLevelsLattice) obj;
+
+		return Objects.equals(this.taintLevel, other.taintLevel);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this);
 	}
 
 }

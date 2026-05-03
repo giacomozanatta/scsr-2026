@@ -33,6 +33,15 @@ class taint {
 		this.sink1(s);  // the value is clean due to sanitization
 	}
 
+    basic4() {
+        def t = this.source1();
+
+        def s = this.sanitizer1(t);
+        s = this.source1();
+
+        this.sink1(s);  // the value is not clean
+    }
+
 	branch(b) {
 		def m = 0;
 

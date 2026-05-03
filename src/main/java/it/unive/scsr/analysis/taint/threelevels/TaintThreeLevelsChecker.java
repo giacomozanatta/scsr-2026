@@ -95,6 +95,14 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 									(ProgramPoint) uc, oracle);
 
 							//TODO
+                                                        if(abstractValue == TaintThreeLevelsLattice.Taint)
+                                                        {
+                                                            tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
+                                                        }
+                                                        if(abstractValue == TaintThreeLevelsLattice.Top)
+                                                        {
+                                                            tool.warnOn(uc, "Possibly tainted value in a sink: " + par.getLocation());
+                                                        }
 						}
 					} catch (SemanticException e) {
 						e.printStackTrace();

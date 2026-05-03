@@ -48,9 +48,10 @@ public class TaintAnalysisTest {
         	String name = cfg.getDescriptor().getName();
         	if(isSource(name))
         		cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
-        	else if(isSanitizer(name))
-        		cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
-        	else if(isSink(name))
+        	else if(isSanitizer(name)) {
+				System.out.println("annotating clean: " + name);
+				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+			}else if(isSink(name))
         		cfg.getDescriptor().addAnnotation(Taint.SINK_ANNOTATION);
         }
     

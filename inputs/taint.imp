@@ -42,6 +42,25 @@ class taint {
         this.sink1(s);  // the value is not clean
     }
 
+    taint_prop_1() {
+        def t = this.source1();
+
+        def s = 5;
+        def q = s + t;
+
+        this.sink1(q);  // the value is not clean
+    }
+
+    taint_prop_2() {
+        def t = this.source1();
+
+        def s = this.source1();
+        s = this.sanitizer1(s);
+        def q = s + t;
+
+        this.sink1(q);  // the value is not clean
+    }
+
 	branch(b) {
 		def m = 0;
 

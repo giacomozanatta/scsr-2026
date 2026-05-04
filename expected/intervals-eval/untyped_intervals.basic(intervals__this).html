@@ -260,7 +260,7 @@
 								<span class="description-header">a: </span>[-8,-8]<br/>
 								<span class="description-header">i: </span>[2,2]<br/>
 								<span class="description-header">j: </span>[-10,-10]<br/>
-								<span class="description-header">s: </span>[12,12]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
 							</div>
 						</div>
 					<div class="description-nest">
@@ -350,8 +350,8 @@
 					</div>
 				</div>
 				<div id="header-node16" class="header-info header-hidden">
-					<button class="accordion active"><span class="description-title-text">ret</span></button>
-					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[skip]<br/>
+					<button class="accordion active"><span class="description-title-text">m = *(i, j)</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[m]<br/>
 						<span class="description-header">state: </span><br/>
 						<div class="description-nest">
 							<span class="description-header">heap: </span>monolith<br/>
@@ -360,6 +360,7 @@
 								<span class="description-header">a: </span>[int32]<br/>
 								<span class="description-header">i: </span>[int32]<br/>
 								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
 								<span class="description-header">s: </span>[int32]<br/>
 								<span class="description-header">this: </span>[intervals*]<br/>
 							</div>
@@ -368,7 +369,622 @@
 								<span class="description-header">a: </span>[-8,-8]<br/>
 								<span class="description-header">i: </span>[2,2]<br/>
 								<span class="description-header">j: </span>[-10,-10]<br/>
-								<span class="description-header">s: </span>[12,12]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+							</div>
+						</div>
+					<div class="description-nest">
+						<button class="accordion"><span class="description-title-text">m</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[m]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						</div>
+						<button class="accordion"><span class="description-title-text">*(i, j)</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[i * j]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						<div class="description-nest">
+							<button class="accordion"><span class="description-title-text">i</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[i]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									</div>
+								</div>
+							</div>
+							<button class="accordion"><span class="description-title-text">j</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[j]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									</div>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div id="header-node21" class="header-info header-hidden">
+					<button class="accordion active"><span class="description-title-text">d = /(i, j)</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[d]<br/>
+						<span class="description-header">state: </span><br/>
+						<div class="description-nest">
+							<span class="description-header">heap: </span>monolith<br/>
+							<span class="description-header">type: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[int32]<br/>
+								<span class="description-header">d: </span>[int32]<br/>
+								<span class="description-header">i: </span>[int32]<br/>
+								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
+								<span class="description-header">s: </span>[int32]<br/>
+								<span class="description-header">this: </span>[intervals*]<br/>
+							</div>
+							<span class="description-header">value: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[-8,-8]<br/>
+								<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">i: </span>[2,2]<br/>
+								<span class="description-header">j: </span>[-10,-10]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+							</div>
+						</div>
+					<div class="description-nest">
+						<button class="accordion"><span class="description-title-text">d</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[d]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						</div>
+						<button class="accordion"><span class="description-title-text">/(i, j)</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[i / j]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						<div class="description-nest">
+							<button class="accordion"><span class="description-title-text">i</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[i]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">m: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									</div>
+								</div>
+							</div>
+							<button class="accordion"><span class="description-title-text">j</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[j]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">m: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									</div>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div id="header-node26" class="header-info header-hidden">
+					<button class="accordion active"><span class="description-title-text">l = -(i)</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[l]<br/>
+						<span class="description-header">state: </span><br/>
+						<div class="description-nest">
+							<span class="description-header">heap: </span>monolith<br/>
+							<span class="description-header">type: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[int32]<br/>
+								<span class="description-header">d: </span>[int32]<br/>
+								<span class="description-header">i: </span>[int32]<br/>
+								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">l: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
+								<span class="description-header">s: </span>[int32]<br/>
+								<span class="description-header">this: </span>[intervals*]<br/>
+							</div>
+							<span class="description-header">value: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[-8,-8]<br/>
+								<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">i: </span>[2,2]<br/>
+								<span class="description-header">j: </span>[-10,-10]<br/>
+								<span class="description-header">l: </span>[-2,-2]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+							</div>
+						</div>
+					<div class="description-nest">
+						<button class="accordion"><span class="description-title-text">l</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[l]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						</div>
+						<button class="accordion"><span class="description-title-text">-(i)</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[- i]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						<div class="description-nest">
+							<button class="accordion"><span class="description-title-text">i</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[i]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">d: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">m: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									</div>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div id="header-node30" class="header-info header-hidden">
+					<button class="accordion active"><span class="description-title-text">z = 0</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[z]<br/>
+						<span class="description-header">state: </span><br/>
+						<div class="description-nest">
+							<span class="description-header">heap: </span>monolith<br/>
+							<span class="description-header">type: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[int32]<br/>
+								<span class="description-header">d: </span>[int32]<br/>
+								<span class="description-header">i: </span>[int32]<br/>
+								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">l: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
+								<span class="description-header">s: </span>[int32]<br/>
+								<span class="description-header">this: </span>[intervals*]<br/>
+								<span class="description-header">z: </span>[int32]<br/>
+							</div>
+							<span class="description-header">value: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[-8,-8]<br/>
+								<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">i: </span>[2,2]<br/>
+								<span class="description-header">j: </span>[-10,-10]<br/>
+								<span class="description-header">l: </span>[-2,-2]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">z: </span>[0,0]<br/>
+							</div>
+						</div>
+					<div class="description-nest">
+						<button class="accordion"><span class="description-title-text">z</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[z]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">l: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">l: </span>[-2,-2]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						</div>
+						<button class="accordion"><span class="description-title-text">0</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[0]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">l: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">l: </span>[-2,-2]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								</div>
+							</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div id="header-node33" class="header-info header-hidden">
+					<button class="accordion active"><span class="description-title-text">dz = /(i, 0)</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[dz]<br/>
+						<span class="description-header">state: </span><br/>
+						<div class="description-nest">
+							<span class="description-header">heap: </span>monolith<br/>
+							<span class="description-header">type: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[int32]<br/>
+								<span class="description-header">d: </span>[int32]<br/>
+								<span class="description-header">dz: </span>[int32]<br/>
+								<span class="description-header">i: </span>[int32]<br/>
+								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">l: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
+								<span class="description-header">s: </span>[int32]<br/>
+								<span class="description-header">this: </span>[intervals*]<br/>
+								<span class="description-header">z: </span>[int32]<br/>
+							</div>
+							<span class="description-header">value: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[-8,-8]<br/>
+								<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">dz: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">i: </span>[2,2]<br/>
+								<span class="description-header">j: </span>[-10,-10]<br/>
+								<span class="description-header">l: </span>[-2,-2]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">z: </span>[0,0]<br/>
+							</div>
+						</div>
+					<div class="description-nest">
+						<button class="accordion"><span class="description-title-text">dz</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[dz]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">l: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+									<span class="description-header">z: </span>[int32]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">l: </span>[-2,-2]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">z: </span>[0,0]<br/>
+								</div>
+							</div>
+						</div>
+						<button class="accordion"><span class="description-title-text">/(i, 0)</span></button>
+						<div class="header-panel">							<span class="description-header">expressions: </span>[i / 0]<br/>
+							<span class="description-header">state: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">heap: </span>monolith<br/>
+								<span class="description-header">type: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[int32]<br/>
+									<span class="description-header">d: </span>[int32]<br/>
+									<span class="description-header">i: </span>[int32]<br/>
+									<span class="description-header">j: </span>[int32]<br/>
+									<span class="description-header">l: </span>[int32]<br/>
+									<span class="description-header">m: </span>[int32]<br/>
+									<span class="description-header">s: </span>[int32]<br/>
+									<span class="description-header">this: </span>[intervals*]<br/>
+									<span class="description-header">z: </span>[int32]<br/>
+								</div>
+								<span class="description-header">value: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">a: </span>[-8,-8]<br/>
+									<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">i: </span>[2,2]<br/>
+									<span class="description-header">j: </span>[-10,-10]<br/>
+									<span class="description-header">l: </span>[-2,-2]<br/>
+									<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+									<span class="description-header">z: </span>[0,0]<br/>
+								</div>
+							</div>
+						<div class="description-nest">
+							<button class="accordion"><span class="description-title-text">i</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[i]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">d: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">l: </span>[int32]<br/>
+										<span class="description-header">m: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+										<span class="description-header">z: </span>[int32]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">l: </span>[-2,-2]<br/>
+										<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">z: </span>[0,0]<br/>
+									</div>
+								</div>
+							</div>
+							<button class="accordion"><span class="description-title-text">0</span></button>
+							<div class="header-panel">								<span class="description-header">expressions: </span>[0]<br/>
+								<span class="description-header">state: </span><br/>
+								<div class="description-nest">
+									<span class="description-header">heap: </span>monolith<br/>
+									<span class="description-header">type: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[int32]<br/>
+										<span class="description-header">d: </span>[int32]<br/>
+										<span class="description-header">i: </span>[int32]<br/>
+										<span class="description-header">j: </span>[int32]<br/>
+										<span class="description-header">l: </span>[int32]<br/>
+										<span class="description-header">m: </span>[int32]<br/>
+										<span class="description-header">s: </span>[int32]<br/>
+										<span class="description-header">this: </span>[intervals*]<br/>
+										<span class="description-header">z: </span>[int32]<br/>
+									</div>
+									<span class="description-header">value: </span><br/>
+									<div class="description-nest">
+										<span class="description-header">a: </span>[-8,-8]<br/>
+										<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">i: </span>[2,2]<br/>
+										<span class="description-header">j: </span>[-10,-10]<br/>
+										<span class="description-header">l: </span>[-2,-2]<br/>
+										<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+										<span class="description-header">z: </span>[0,0]<br/>
+									</div>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div id="header-node38" class="header-info header-hidden">
+					<button class="accordion active"><span class="description-title-text">ret</span></button>
+					<div class="header-panel" style="display: block">						<span class="description-header">expressions: </span>[skip]<br/>
+						<span class="description-header">state: </span><br/>
+						<div class="description-nest">
+							<span class="description-header">heap: </span>monolith<br/>
+							<span class="description-header">type: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[int32]<br/>
+								<span class="description-header">d: </span>[int32]<br/>
+								<span class="description-header">dz: </span>[int32]<br/>
+								<span class="description-header">i: </span>[int32]<br/>
+								<span class="description-header">j: </span>[int32]<br/>
+								<span class="description-header">l: </span>[int32]<br/>
+								<span class="description-header">m: </span>[int32]<br/>
+								<span class="description-header">s: </span>[int32]<br/>
+								<span class="description-header">this: </span>[intervals*]<br/>
+								<span class="description-header">z: </span>[int32]<br/>
+							</div>
+							<span class="description-header">value: </span><br/>
+							<div class="description-nest">
+								<span class="description-header">a: </span>[-8,-8]<br/>
+								<span class="description-header">d: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">dz: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">i: </span>[2,2]<br/>
+								<span class="description-header">j: </span>[-10,-10]<br/>
+								<span class="description-header">l: </span>[-2,-2]<br/>
+								<span class="description-header">m: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">s: </span>[-Inf,+Inf]<br/>
+								<span class="description-header">z: </span>[0,0]<br/>
 							</div>
 						</div>
 					</div>
@@ -411,7 +1027,7 @@
 			.attributer(attributer)
 			.zoom(true);
 		/*<![CDATA[*/
-		const graph = "digraph \"untyped intervals::basic(intervals* this)\" {\n\"node0\" [\"label\"=<i = 2>,\"shape\"=\"rect\",\"id\"=\"node0\",\"style\"=\"dashed\"]\n\"node3\" [\"label\"=<j = -10>,\"shape\"=\"rect\",\"id\"=\"node3\",\"color\"=\"gray\"]\n\"node6\" [\"label\"=<a = +(i, j)>,\"shape\"=\"rect\",\"id\"=\"node6\",\"color\"=\"gray\"]\n\"node11\" [\"label\"=<s = -(i, j)>,\"shape\"=\"rect\",\"id\"=\"node11\",\"color\"=\"gray\"]\n\"node16\" [\"label\"=<ret>,\"shape\"=\"rect\",\"id\"=\"node16\"]\n\"node0\" -> \"node3\"\n\"node3\" -> \"node6\"\n\"node6\" -> \"node11\"\n\"node11\" -> \"node16\"\n}";
+		const graph = "digraph \"untyped intervals::basic(intervals* this)\" {\n\"node0\" [\"label\"=<i = 2>,\"shape\"=\"rect\",\"id\"=\"node0\",\"style\"=\"dashed\"]\n\"node3\" [\"label\"=<j = -10>,\"shape\"=\"rect\",\"id\"=\"node3\",\"color\"=\"gray\"]\n\"node6\" [\"label\"=<a = +(i, j)>,\"shape\"=\"rect\",\"id\"=\"node6\",\"color\"=\"gray\"]\n\"node11\" [\"label\"=<s = -(i, j)>,\"shape\"=\"rect\",\"id\"=\"node11\",\"color\"=\"gray\"]\n\"node16\" [\"label\"=<m = *(i, j)>,\"shape\"=\"rect\",\"id\"=\"node16\",\"color\"=\"gray\"]\n\"node21\" [\"label\"=<d = \/(i, j)>,\"shape\"=\"rect\",\"id\"=\"node21\",\"color\"=\"gray\"]\n\"node26\" [\"label\"=<l = -(i)>,\"shape\"=\"rect\",\"id\"=\"node26\",\"color\"=\"gray\"]\n\"node30\" [\"label\"=<z = 0>,\"shape\"=\"rect\",\"id\"=\"node30\",\"color\"=\"gray\"]\n\"node33\" [\"label\"=<dz = \/(i, 0)>,\"shape\"=\"rect\",\"id\"=\"node33\",\"color\"=\"gray\"]\n\"node38\" [\"label\"=<ret>,\"shape\"=\"rect\",\"id\"=\"node38\"]\n\"node0\" -> \"node3\"\n\"node3\" -> \"node6\"\n\"node6\" -> \"node11\"\n\"node11\" -> \"node16\"\n\"node16\" -> \"node21\"\n\"node21\" -> \"node26\"\n\"node26\" -> \"node30\"\n\"node30\" -> \"node33\"\n\"node33\" -> \"node38\"\n}";
 		/*]]>*/
 
 		/* Zooming setup */

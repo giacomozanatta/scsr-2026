@@ -22,22 +22,22 @@ public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice>{
 	@Override
 	public TaintThreeLevelsLattice top() {
 		// TODO
-		return null;
+		return TaintThreeLevelsLattice.Top;
 	}
 	@Override
 	public TaintThreeLevelsLattice bottom() {
 		// TODO 
-		return null;
+		return TaintThreeLevelsLattice.Bottom;
 	}
 	@Override
 	protected TaintThreeLevelsLattice tainted() {
 		// TODO
-		return null;
+		return TaintThreeLevelsLattice.Taint;
 	}
 	@Override
 	protected TaintThreeLevelsLattice clean() {
 		// TODO
-		return null;
+		return TaintThreeLevelsLattice.Clean;
 	}
 
 	

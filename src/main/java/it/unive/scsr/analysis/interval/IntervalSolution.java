@@ -84,11 +84,11 @@ public class IntervalSolution implements BaseNonRelationalValueDomain<IntervalLa
 				return IntervalLattice.TOP;
 
 			if (!includes(right, IntervalLattice.ZERO))
-				return mul(left, new IntervalLattice(MathNumber.ONE.divide(u2), MathNumber.ONE.divide(l2)));
+				return round(mul(left, new IntervalLattice(MathNumber.ONE.divide(u2), MathNumber.ONE.divide(l2))));
 			else if (u2.isZero())
-				return mul(left, new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.ONE.divide(l2)));
+				return round(mul(left, new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.ONE.divide(l2))));
 			else if (l2.isZero())
-				return mul(left, new IntervalLattice(MathNumber.ONE.divide(u2), MathNumber.PLUS_INFINITY));
+				return round(mul(left, new IntervalLattice(MathNumber.ONE.divide(u2), MathNumber.PLUS_INFINITY)));
 			else {
 				IntervalLattice lower = mul(left, new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.ONE.divide(l2)));
 				IntervalLattice higher = mul(left, new IntervalLattice(MathNumber.ONE.divide(u2), MathNumber.PLUS_INFINITY));
@@ -100,12 +100,18 @@ public class IntervalSolution implements BaseNonRelationalValueDomain<IntervalLa
 				else {
 					MathNumber l = lower.i.getLow().compareTo(higher.i.getLow()) > 0 ? higher.i.getLow() : lower.i.getLow();
 					MathNumber u = lower.i.getHigh().compareTo(higher.i.getHigh()) < 0 ? higher.i.getHigh() : lower.i.getHigh();
-					return new IntervalLattice(l, u);
+					return round(new IntervalLattice(l, u));
 				}
 			}
 		}
 		
 		return IntervalLattice.TOP;
+	}
+
+	private IntervalLattice round(IntervalLattice intervalLattice) {
+		if (intervalLattice.i.isBottom() || intervalLattice.i.isTop())
+			return intervalLattice;
+		return new IntervalLattice(intervalLattice.i.getLow().roundDown(), intervalLattice.i.getLow().roundUp());
 	}
 
 	private IntervalLattice mul(IntervalLattice left, IntervalLattice right) {

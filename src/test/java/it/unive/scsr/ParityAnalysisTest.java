@@ -3,7 +3,7 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.scsr.analysis.interval.Interval;
+import it.unive.scsr.analysis.parity.Parity;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -29,27 +29,25 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class IntervalAnalysisTest {
+public class ParityAnalysisTest {
 
     @Test
-    public void testIntervalAnalysis() throws ParsingException, AnalysisException {
+    public void testParityAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/intervals.imp");
+        Program program = IMPFrontend.processFile("inputs/parity-eval.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/intervals";
+        conf.workdir = "outputs/parity";
 
-        // we specify the visual format of the analysis results
-        //conf.outputs.add(new HtmlInputs(true));
-        conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new JSONResults<>());
         conf.outputs.add(new JSONReportDumper());
+        
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Parity(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         
@@ -59,8 +57,8 @@ public class IntervalAnalysisTest {
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
         
-        Path expectedPath = Paths.get("expected", "intervals-eval");
-        Path actualPath = Paths.get("outputs", "intervals");
+        Path expectedPath = Paths.get("expected", "parity-eval");
+        Path actualPath = Paths.get("outputs", "parity");
 
         File expFile = Paths.get(expectedPath.toString(), "report.json").toFile();
         File actFile = Paths.get(actualPath.toString(), "report.json").toFile();

@@ -96,9 +96,7 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 
                             if(abstractValue.isAlwaysTainted()) {
                                 tool.warnOn(uc, "DEFINITE WARNING: Tainted value at: " + par.getLocation());
-                                break;
-                            }
-                            if(abstractValue.isPossiblyTainted()) {
+                            } else if(abstractValue.isPossiblyTainted()) {
                                 tool.warnOn(uc,"POSSIBLE WARNING: Uncertain value at: " + par.getLocation());
                             }
 

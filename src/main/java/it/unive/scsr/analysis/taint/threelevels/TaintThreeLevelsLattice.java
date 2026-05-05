@@ -5,6 +5,9 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.*;
 import it.unive.lisa.analysis.Lattice;
+
+import java.util.Objects;
+
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.informationFlow.TaintLattice;	
@@ -26,9 +29,9 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	static public TaintThreeLevelsLattice Clean = new TaintThreeLevelsLattice(1);
 	static public TaintThreeLevelsLattice Bottom = new TaintThreeLevelsLattice(0);
 
-	public TaintThreeLevelsLattice(int e) {
-		this.element = e;
-	}
+	public TaintThreeLevelsLattice() {this(3);}
+
+	public TaintThreeLevelsLattice(int e) {this.element = e;}
 
 	@Override
 	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
@@ -87,7 +90,7 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public int hashCode() {
-		return On.hashCode(element);
+		return Objects.hashCode(element);
 	}
 
 	@Override

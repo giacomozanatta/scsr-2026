@@ -37,7 +37,7 @@ public class TaintAnalysisTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/taint";
+        conf.workdir = "outputs/taintedtaint";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

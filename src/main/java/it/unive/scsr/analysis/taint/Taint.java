@@ -6,22 +6,22 @@ import it.unive.lisa.program.annotations.matcher.AnnotationMatcher;
 import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
 
 /*
- * Lattice of Taint Domain 
- * 
+ * Lattice of Taint Domain
+ *
  * T
  * |
  * C
  * |
  * BOTTOM
- * 
+ *
  */
 public class Taint extends BaseTaint<TaintLattice>{
 
-	
+
 	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
 	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
-	
-	
+
+
 	@Override
 	public TaintLattice top() {
 		return TaintLattice.Taint;

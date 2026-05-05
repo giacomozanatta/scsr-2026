@@ -1,0 +1,68 @@
+class taintthreelevels {
+
+    source1() {
+        return -99; // TAINTED source
+    }
+
+    sanitizer1(v) {
+        return 0; // CLEAN output
+    }
+
+    sink1(v) {
+        // SINK (taint check here)
+    }
+
+    // CLEAN → NO WARNING EXPECTED
+    basic1() {
+        def c = 0;
+        this.sink1(c);
+    }
+
+    // TAINTED → DEFINITE WARNING EXPECTED
+    basic2() {
+        def t = this.source1();
+        this.sink1(t);
+    }
+
+    // TAINTED → SANITIZED → NO WARNING EXPECTED
+    basic3() {
+        def t = this.source1();
+        def s = this.sanitizer1(t);
+        this.sink1(s);
+    }
+
+    // BRANCH:
+    // one path TAINTED, one CLEAN → POSSIBLE WARNING EXPECTED
+    branch(b) {
+        def m = 0;
+
+        if (b) {
+            m = this.source1(); // TAINTED path
+        } else {
+            m = 5;              // CLEAN path
+        }
+
+        this.sink1(m);
+    }
+
+    // TAINT PROPAGATION → DEFINITE WARNING EXPECTED
+    propagation() {
+        def t = this.source1();
+        def x = t + 1;
+        this.sink1(x);
+    }
+
+    // SANITIZATION AFTER BRANCH → NO WARNING EXPECTED
+    branchSanitized(b) {
+        def m = 0;
+
+        if (b) {
+            m = this.source1();
+        } else {
+            m = 5;
+        }
+
+        def s = this.sanitizer1(m);
+        this.sink1(s);
+    }
+}

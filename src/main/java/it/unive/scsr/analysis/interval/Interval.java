@@ -63,7 +63,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
 			IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		
-		if(left.i == null || right == null)
+		if(left.i == null || right.i == null)
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() instanceof AdditionOperator) {

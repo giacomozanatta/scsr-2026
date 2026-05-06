@@ -45,6 +45,14 @@ class taint {
 		this.sink1(m); // the value may be tainted
 	}
 
+	branch2(b) {
+    		def m = this.source1();
+    		if(b) {
+    			m = this.source1();
+    		}
+    		this.sink1(m); // DEFINITE TAINT
+    	}
+
 
 
 }

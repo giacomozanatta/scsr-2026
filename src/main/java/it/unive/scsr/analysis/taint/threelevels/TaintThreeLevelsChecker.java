@@ -31,6 +31,7 @@ import it.unive.lisa.program.cfg.statement.call.UnresolvedCall;
 import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
+//Work done by Elia Stevanato 895598 & Francesco Pasqualato 897778
 
 // This checker detects functions annotated as sinks, it inspects the arguments 
 // passed to that call and emits a definite warning when its value is tainted, and a possible warning when its value is top.
@@ -94,7 +95,13 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 							TaintThreeLevelsLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
-							//TODO
+
+							if (abstractValue.isAlwaysTainted()) {
+								tool.warnOn(uc, "DEFINITE TAINT: value in a sink is definitely tainted. Location: " + par.getLocation());
+							}
+							else if (abstractValue == TaintThreeLevelsLattice.Top) {
+								tool.warnOn(uc, "POSSIBLE TAINT: value in a sink might be tainted (uncertainty). Location: " + par.getLocation());
+							}
 						}
 					} catch (SemanticException e) {
 						e.printStackTrace();

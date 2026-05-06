@@ -19,6 +19,7 @@ public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice>{
 	
 	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
 	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
+
 	@Override
 	public TaintThreeLevelsLattice top() {
 		return TaintThreeLevelsLattice.TOP;

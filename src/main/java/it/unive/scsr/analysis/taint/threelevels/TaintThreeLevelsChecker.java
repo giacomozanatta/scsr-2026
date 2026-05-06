@@ -32,7 +32,7 @@ import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 
-// This checker detects functions annotated as sinks, it inspects the arguments 
+// This checker detects functions annotated as sinks, it inspects the arguments
 // passed to that call and emits a definite warning when its value is tainted, and a possible warning when its value is top.
 public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
 		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> {
@@ -94,7 +94,16 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 							TaintThreeLevelsLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
-							//TODO
+
+                            // If the value is DEFINITELY tainted
+                            if (abstractValue == TaintThreeLevelsLattice.TAINT) {
+                                tool.warnOn(uc, "Definite Warning: The parameter passed to the sink function is Tainted! " + par.getLocation());
+                            }
+                            // If the value MIGHT be tainted due to a loss of precision
+                            else if (abstractValue == TaintThreeLevelsLattice.TOP) {
+                                tool.warnOn(uc, "Possible Warning: The parameter passed to the sink function might be Tainted! " + par.getLocation());
+                            }
+
 						}
 					} catch (SemanticException e) {
 						e.printStackTrace();

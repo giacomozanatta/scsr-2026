@@ -66,8 +66,9 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	@Override
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
 		if (this == Bottom || other == Bottom) return Bottom;
-		if (this == other) return this;
-		return Top;
+		if (this == Taint || other == Taint) return Taint;
+		if (this == Top || other == Top) return Top;
+		return Clean;
 	}
 
 	@Override

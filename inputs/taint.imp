@@ -1,0 +1,43 @@
+class Taint {
+    source1() {
+        return 1;
+    }
+
+    GetRequest() {
+        return 1;
+    }
+
+    sanitizer1(x) {
+        return x;
+    }
+
+    sink1(x) {
+        return;
+    }
+
+    runQueryDB(x) {
+        return;
+    }
+
+    main() {
+        def a = this.source1();
+        this.sink1(a); // Definite warning
+
+        def b = this.sanitizer1(a);
+        this.sink1(b); // No warning
+
+        def c = 5;
+        this.sink1(c); // No warning
+
+        def d = 0;
+        if (a > 0) {
+            d = this.GetRequest();
+        } else {
+            d = 10;
+        }
+        this.runQueryDB(d); // Possible warning (Top)
+
+        d = 20;
+        this.sink1(d); // No warning
+    }
+}

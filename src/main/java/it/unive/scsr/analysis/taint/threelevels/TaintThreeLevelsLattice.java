@@ -99,7 +99,7 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 		if(this.equals(BOTTOM) || other.equals(BOTTOM))
 			return BOTTOM;
 		else if(this.equals(TAINT) || other.equals(TAINT))
-			return TOP;
+			return TAINT;
 		else if(this.equals(TOP) || other.equals(TOP))
 			return TOP;
 		else

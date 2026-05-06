@@ -1,0 +1,62 @@
+class taintthreelevels {
+
+    source1(){
+        return -99;
+    }
+
+    sanitizer1(v){
+        return 0;
+    }
+
+    sink1(v){
+    }
+
+    // CLEAN → no warning expected
+    basic1() {
+        def c = 0;
+        this.sink1(c);
+    }
+
+    // TAINTED → DEFINITE warning expected
+    basic2() {
+        def t = this.source1();
+        this.sink1(t);
+    }
+
+    // sanitized → no warning expected
+    basic3() {
+        def t = this.source1();
+        def s = this.sanitizer1(t);
+        this.sink1(s);
+    }
+
+    // branch: tainted in one path, clean in the other → TOP → POSSIBLE warning expected
+    branch(b) {
+        def m = 0;
+        if(b) {
+            m = this.source1();
+        } else {
+            m = 5;
+        }
+        this.sink1(m);
+    }
+
+    // taint propagates through arithmetic → DEFINITE warning expected
+    propagation() {
+        def t = this.source1();
+        def x = t + 1;
+        this.sink1(x);
+    }
+
+    // sanitization after branch → no warning expected
+    branchSanitized(b) {
+        def m = 0;
+        if(b) {
+            m = this.source1();
+        } else {
+            m = 5;
+        }
+        def s = this.sanitizer1(m);
+        this.sink1(s);
+    }
+}

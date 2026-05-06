@@ -92,16 +92,13 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
         if(this == TaintThreeLevelsLattice.Bottom || other == TaintThreeLevelsLattice.Bottom) {
             return TaintThreeLevelsLattice.Bottom;
         }
-        if(this == TaintThreeLevelsLattice.Taint && other == TaintThreeLevelsLattice.Taint) {
+        if(this == TaintThreeLevelsLattice.Taint || other == TaintThreeLevelsLattice.Taint) {
             return TaintThreeLevelsLattice.Taint;
-        }
-        if(this ==  TaintThreeLevelsLattice.Clean && other == TaintThreeLevelsLattice.Clean) {
-            return TaintThreeLevelsLattice.Clean;
         }
         if(this == TaintThreeLevelsLattice.Top || other == TaintThreeLevelsLattice.Top) {
             return TaintThreeLevelsLattice.Top;
         }
-		return TaintThreeLevelsLattice.Top;
+		return TaintThreeLevelsLattice.Clean;
 	}
 
 	@Override

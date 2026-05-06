@@ -98,16 +98,12 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
 		if(this.equals(BOTTOM) || other.equals(BOTTOM))
 			return BOTTOM;
+		else if(this.equals(TAINT) || other.equals(TAINT))
+			return TOP;
 		else if(this.equals(TOP) || other.equals(TOP))
 			return TOP;
-		// else if(this.equals(TAINT) || other.equals(TAINT))
-		// 	return TAINT;
-		// else
-		//	return CLEAN;
-		else if (this.equals(other))
-			return this;
 		else
-			return TOP;
+			return CLEAN;
 		// TODO
 	}
 

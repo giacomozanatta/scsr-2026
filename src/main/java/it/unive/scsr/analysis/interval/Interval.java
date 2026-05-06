@@ -1,7 +1,5 @@
 package it.unive.scsr.analysis.interval;
 
-import java.util.List;
-
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;

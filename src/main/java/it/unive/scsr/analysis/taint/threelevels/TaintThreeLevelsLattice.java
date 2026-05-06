@@ -5,6 +5,8 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
+import java.util.Objects;
+
 /*
  * Lattice of  taint with three levels
  *	 Top 
@@ -29,11 +31,21 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
+		if (this.val == other.val){
+			return this;
+		}
 		return TaintThreeLevelsLattice.TOP;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
+		if (other.val == TaintThreeLevelsLattice.TOP.val){
+			return true;
+		}
+		else if (this.val == TaintThreeLevelsLattice.BOTTOM.val){
+			return true;
+		}
+
 		return false;
 	}
 
@@ -95,4 +107,21 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 		return this.val == TaintThreeLevelsLattice.TOP.val;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o){
+			return true;
+		}
+		else if (o == null || this.getClass() != o.getClass()) {
+			return false;
+		}
+		else {
+			return this.val == ((TaintThreeLevelsLattice) o).val;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.val);
+	}
 }

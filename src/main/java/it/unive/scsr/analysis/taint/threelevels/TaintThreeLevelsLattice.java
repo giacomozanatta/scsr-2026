@@ -116,16 +116,11 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
         // TODO
         if (this.isBottom() || other.isBottom())
             return TaintThreeLevelsLattice.BOTTOM;
+        else if(this.isTaint() || other.isTaint())
+            return TaintThreeLevelsLattice.TAINT;
         else if (this.isTop() || other.isTop())
             return TaintThreeLevelsLattice.TOP;
-        else if (this.isTaint() && other.isTaint())
-            return TaintThreeLevelsLattice.TAINT;
-        else if (this.isClean() && other.isClean())
-            return TaintThreeLevelsLattice.CLEAN;
-        else if ((this.isTaint() && other.isClean()) && (this.isClean() && other.isTaint()))
-            return TaintThreeLevelsLattice.TOP;
-
-        return TaintThreeLevelsLattice.TOP;
+        else return TaintThreeLevelsLattice.CLEAN;
     }
 
     @Override

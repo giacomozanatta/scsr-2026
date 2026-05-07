@@ -8,12 +8,15 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 
 public class CartesianLattice implements BaseLattice<CartesianLattice>, Comparable<CartesianLattice> {
-    private final CartesianProduct pair;
+    private final SignLattice signLattice;
+    private final TaintThreeLevelsLattice taintThreeLevelsLattice;
+
     public static final CartesianLattice TOP = new CartesianLattice(SignLattice.TOP, TaintThreeLevelsLattice.Top);
     public static final CartesianLattice BOTTOM = new CartesianLattice(SignLattice.BOTTOM, TaintThreeLevelsLattice.Bottom);
 
     public CartesianLattice(SignLattice signLattice, TaintThreeLevelsLattice taintThreeLevelsLattice) {
-        pair = new CartesianProduct(signLattice, taintThreeLevelsLattice);
+        this.signLattice = signLattice;
+        this.taintThreeLevelsLattice = taintThreeLevelsLattice;
     }
 
     @Override

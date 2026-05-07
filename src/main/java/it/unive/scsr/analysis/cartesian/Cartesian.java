@@ -6,11 +6,11 @@ public class Cartesian
         implements BaseNonRelationalValueDomain<CartesianLattice> {
     @Override
     public CartesianLattice top() {
-        return null;
+        return CartesianLattice.TOP;
     }
 
     @Override
     public CartesianLattice bottom() {
-        return null;
+        return CartesianLattice.BOTTOM;
     }
 }

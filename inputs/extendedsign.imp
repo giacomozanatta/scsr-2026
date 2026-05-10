@@ -87,10 +87,10 @@ class extendedsign {
     //    NB: si arrotonda a zero
     //
     // Differenza rispetto a sign:
-    //   N/N --> NON_NEG (non POS): es. -1/-2=0 (ZERO), -4/-2=2 (POS) --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
-    //   N/P --> NON_POS (non NEG): es. -1/2=0  (ZERO), -4/2=-2 (NEG) --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
-    //   P/N --> NON_POS --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
-    //   P/P --> NON_NEG --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   N/N --> GTE_ZERO (anziché POS): es. -1/-2=0 (ZERO), -4/-2=2 (POS) --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   N/P --> LTE_ZERO (anziché NEG): es. -1/2=0  (ZERO), -4/2=-2 (NEG) --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   P/N --> LTE_ZERO --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   P/P --> GTE_ZERO --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
     //   Z/(numero != 0) = ZERO
     //   x/ZERO = BOTTOM (divisione per zero, codice irraggiungibile)
     //
@@ -103,10 +103,10 @@ class extendedsign {
 
         def zp = z / p;   // ZERO / POS  = ZERO
         def zn = z / n;   // ZERO / NEG  = ZERO
-        def pp = p / p;   // POS  / POS  = NON_NEG  (es: 9/9=1 POS, 1/9=0 ZERO)
-        def nn = n / n;   // NEG  / NEG  = NON_NEG  (es: -6/-6=1 POS, -1/-6=0 ZERO)
-        def pn = p / n;   // POS  / NEG  = NON_POS  (es: 9/-6=-1 NEG, 1/-6=0 ZERO)
-        def np = n / p;   // NEG  / POS  = NON_POS  (es: -6/9=0 ZERO, -9/3=-3 NEG)
+        def pp = p / p;   // POS  / POS  = GTE_ZERO  (es: 9/9=1 POS, 1/9=0 ZERO)
+        def nn = n / n;   // NEG  / NEG  = GTE_ZERO  (es: -6/-6=1 POS, -1/-6=0 ZERO)
+        def pn = p / n;   // POS  / NEG  = LTE_ZERO  (es: 9/-6=-1 NEG, 1/-6=0 ZERO)
+        def np = n / p;   // NEG  / POS  = LTE_ZERO  (es: -6/9=0 ZERO, -9/3=-3 NEG)
         def nz = n / z;   // NEG  / ZERO = BOTTOM
         def pz = p / z;   // POS  / ZERO = BOTTOM
 
@@ -130,8 +130,8 @@ class extendedsign {
     // 7. RAMI (IF-ELSE)
     //
     //   NEG lub POS = NON_ZERO (ho una maggiore precisione, dato che so non essero zero)
-    //   NEG lub ZERO = NON_POS
-    //   POS lub ZERO = NON_NEG
+    //   NEG lub ZERO = LTE_ZERO
+    //   POS lub ZERO = GTE_ZERO
     //   POS lub NEG lub ZERO = TOP
     // -------------------------------------------------------------------------
     branches(b) {
@@ -152,20 +152,20 @@ class extendedsign {
         def after_pos = z;   // POS
 
         def y = 0;
-        // Ramo NEG/ZERO --> join = NON_POS
+        // Ramo NEG/ZERO --> join = LTE_ZERO
         if (b > 0)
             y = -2;          // NEG
         else
             y = 0;           // ZERO
-        def after_non_pos = y;    // NON_POS
+        def after_lte_zero = y;    // LTE_ZERO
 
         def w = 0;
-        // Ramo POS/ZERO --> join = NON_NEG
+        // Ramo POS/ZERO --> join = GTE_ZERO
         if (b > 0)
             w = 4;           // POS
         else
             w = 0;           // ZERO
-        def after_non_neg = w;    // NON_NEG
+        def after_gte_zero = w;    // GTE_ZERO
 
         def v = 0;
         // Ramo POS/NEG/ZERO --> join = TOP (tutti e tre i segni possibili)
@@ -184,7 +184,7 @@ class extendedsign {
     // Se un divisore è NON_ZERO, la divisione per zero è impossibile; in sign non ho questo livello di precisione.
     // Di conseguenza, nel caso di extended sign non ho alcun warning emesso dal checker, mentre in sign si
     // -------------------------------------------------------------------------
-        safe_division(b) {
+    safe_division(b) {
         def d = 0;
         if (b > 0)
             d = 3;           // POS
@@ -288,7 +288,7 @@ class extendedsign {
             base_b = 6;          // POS
         else
             base_b = -2;         // NEG
-        // join: POS lub NEG = NON_NEG
+        // join: POS lub NEG = GTE_ZERO
         def result_b = capacity / base_b; // nessun warning
 
         // --- caso c) base sempre NEG

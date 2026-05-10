@@ -5,7 +5,6 @@ import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
-import it.unive.lisa.lattices.numeric.SignLattice;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
@@ -27,143 +26,337 @@ import it.unive.lisa.symbolic.value.operator.binary.ComparisonLt;
 import it.unive.lisa.symbolic.value.operator.binary.ComparisonNe;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
-public class ExtendedSign implements BaseNonRelationalValueDomain<SignLattice>{
+public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLattice>{
 
 	@Override
-	public SignLattice top() {
-		return SignLattice.TOP;
+	public ExtendedSignLattice top() {
+		return ExtendedSignLattice.TOP;
 	}
 
 	@Override
-	public SignLattice bottom() {
-		return SignLattice.BOTTOM;
+	public ExtendedSignLattice bottom() {
+		return ExtendedSignLattice.BOTTOM;
 	}
 
 	@Override
-	public SignLattice 
-	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+	public ExtendedSignLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
-		
+
 		if(constant.getValue() instanceof Integer) {
-			//I needt to check the integer value to 
-			// assign the right approx value
 			Integer n = (Integer) constant.getValue();
 			if(n == 0)
-				return SignLattice.ZERO;
+				return ExtendedSignLattice.ZERO;
 			else if(n > 0)
-				return SignLattice.POS;
-			return SignLattice.NEG;
+				return ExtendedSignLattice.POS;
+			return ExtendedSignLattice.NEG;
 		}
-			
-		return SignLattice.TOP;
+
+		return ExtendedSignLattice.TOP;
 	}
 
 	@Override
-	public SignLattice evalUnaryExpression(UnaryExpression expression, SignLattice arg, ProgramPoint pp,
-			SemanticOracle oracle) throws SemanticException {
-		
+	public ExtendedSignLattice evalUnaryExpression(UnaryExpression expression, ExtendedSignLattice arg, ProgramPoint pp,
+	                                               SemanticOracle oracle) throws SemanticException {
+
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
-			if(arg == SignLattice.NEG)
-				return SignLattice.POS;
-			else if(arg == SignLattice.POS)
-				return SignLattice.NEG;
-			else if(arg == SignLattice.ZERO)
-				return SignLattice.ZERO;
-			else if(arg == SignLattice.TOP)
-				return SignLattice.TOP;
-			else if(arg == SignLattice.BOTTOM)
-				return SignLattice.BOTTOM;
+			if(arg == ExtendedSignLattice.NEG)
+				return ExtendedSignLattice.POS;
+			else if(arg == ExtendedSignLattice.POS)
+				return ExtendedSignLattice.NEG;
+			else if(arg == ExtendedSignLattice.ZERO)
+				return ExtendedSignLattice.ZERO;
+			else if(arg == ExtendedSignLattice.LE0)  // -(≤0) = ≥0
+				return ExtendedSignLattice.GE0;
+			else if(arg == ExtendedSignLattice.GE0)  // -(≥0) = ≤0
+				return ExtendedSignLattice.LE0;
+			else if(arg == ExtendedSignLattice.NEQ0) // -(≠0) = ≠0
+				return ExtendedSignLattice.NEQ0;
+			else if(arg == ExtendedSignLattice.TOP)
+				return ExtendedSignLattice.TOP;
+			else if(arg == ExtendedSignLattice.BOTTOM)
+				return ExtendedSignLattice.BOTTOM;
 		}
-	
-		return SignLattice.TOP;
+		return ExtendedSignLattice.TOP;
 	}
 
 	@Override
-	public SignLattice evalBinaryExpression(BinaryExpression expression, SignLattice left, SignLattice right,
-			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+	public ExtendedSignLattice evalBinaryExpression(BinaryExpression expression, ExtendedSignLattice left, ExtendedSignLattice right,
+	                                                ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+		if(left == ExtendedSignLattice.BOTTOM || right == ExtendedSignLattice.BOTTOM)
+			return ExtendedSignLattice.BOTTOM;
+		else if(left == ExtendedSignLattice.TOP || right == ExtendedSignLattice.TOP)
+			return ExtendedSignLattice.TOP;
 
 		if(expression.getOperator() instanceof AdditionOperator) {
-			if(left == SignLattice.POS && right == SignLattice.NEG
-					|| left == SignLattice.NEG && right == SignLattice.POS)
-				return SignLattice.TOP;
-			if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO)
-					|| (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
-				return SignLattice.POS;
-			if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO)
-					|| (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
-				return SignLattice.NEG;
-			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
-				return SignLattice.ZERO;
-			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
-				return SignLattice.BOTTOM;
-			if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;
-			
+			return evalAddition(left, right);
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			if(left == SignLattice.POS && right == SignLattice.POS)
-				return SignLattice.POS;
-			else if(left == SignLattice.POS  && right == SignLattice.NEG
-					|| left == SignLattice.NEG  && right == SignLattice.POS)
-				return  SignLattice.NEG;
-			else if(left == SignLattice.NEG && right == SignLattice.NEG)
-				return SignLattice.POS;
-			else if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
-				return SignLattice.BOTTOM;
-			else if(left == SignLattice.ZERO || right == SignLattice.ZERO)
-				// this handles also the case ZERO mul TOP and TOP mul ZERO
-				return SignLattice.ZERO;
-			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+			return evalMultiplication(left, right);
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
-			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
-				return SignLattice.BOTTOM;
-			else if (left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;
-			else if (right == SignLattice.ZERO)
-				return left;
-			else if (left == SignLattice.ZERO)
-				return right == SignLattice.POS ? SignLattice.NEG : SignLattice.POS;
-			else if ((left == SignLattice.POS && right == SignLattice.POS) || (left == SignLattice.NEG && right == SignLattice.NEG))
-				return SignLattice.TOP;
-			else if (left == SignLattice.POS && right == SignLattice.NEG)
-				return SignLattice.POS;
-			else if (left == SignLattice.NEG && right == SignLattice.POS)
-				return SignLattice.NEG;
-			else
-				return SignLattice.TOP;
+			return evalSubtraction(left, right);
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
-			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM || right == SignLattice.ZERO)
-				return SignLattice.BOTTOM;
-			else if (left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;
-			else if (left == SignLattice.ZERO)
-				return SignLattice.ZERO;
-			else if ((left == SignLattice.POS && right == SignLattice.POS) || (left == SignLattice.NEG && right == SignLattice.NEG))
-				return SignLattice.POS;
-			else if ((left == SignLattice.POS && right == SignLattice.NEG) || (left == SignLattice.NEG && right == SignLattice.POS))
-				return SignLattice.NEG;
-			else
-				return SignLattice.TOP;
-
+			return evalDivision(left, right);
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)
 			return left;
-		
-		return SignLattice.TOP;
+		return ExtendedSignLattice.TOP;
 	}
-	
-	// Some information can be inferred also checking boolean expression and guards!
-	// a = T, b = +; b < a means that  a = + 
-	// These behaviors can be handeled with the following implementations
-	
+
+
+	/*
+	 *        | NEG  | ZERO | POS  | LE0  | GE0  | NEQ0
+	 * -------+------+------+------+------+------+------
+	 * NEG    | NEG  | NEG  | TOP  | NEG  | TOP  | TOP
+	 * ZERO   | NEG  | ZERO | POS  | LE0  | GE0  | NEQ0
+	 * POS    | TOP  | POS  | POS  | TOP  | POS  | TOP
+	 * LE0    | NEG  | LE0  | TOP  | LE0  | TOP  | TOP
+	 * GE0    | TOP  | GE0  | POS  | TOP  | GE0  | TOP
+	 * NEQ0   | TOP  | NEQ0 | TOP  | TOP  | TOP  | TOP
+	 */
+	private ExtendedSignLattice evalAddition(ExtendedSignLattice left, ExtendedSignLattice right) {
+		if (left == ExtendedSignLattice.ZERO) return right;
+		if (right == ExtendedSignLattice.ZERO) return left;
+
+		// NEG + NEG = NEG (sum of two negatives is always negative)
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.NEG;
+		// POS + POS = POS
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.POS;
+		// NEG + POS or POS + NEG: could be NEG, ZERO, or POS
+		if ((left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.NEG))
+			return ExtendedSignLattice.TOP;
+
+		// LE0 -> (-∞, 0]
+		// LE0 + LE0: (neg|0) + (neg|0) is always ≤ 0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.LE0;
+		// LE0 + NEG: (neg|0) + neg is always strictly negative
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.NEG;
+		// LE0 + POS: (-1)+1=0, (-2)+1=-1, 0+1=1 -> NEG, ZERO, or POS
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.TOP;
+		// LE0 + GE0: (-1)+0=-1, 0+1=1, 0+0=0  -> NEG, ZERO, or POS
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.GE0) ||
+				(left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.TOP;
+		// LE0 + NEQ0: (-1)+1=0, 0+1=1, (-1)+(-1)=-2 -> TOP
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.NEQ0) ||
+				(left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.TOP;
+
+		// GE0 -> [0, +∞)
+		// GE0 + GE0: (pos|0) + (pos|0) is always ≥ 0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.GE0;
+		// GE0 + POS: (pos|0) + pos is always strictly positive
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.POS;
+		// GE0 + NEG: 0+(-1)=-1, 1+(-1)=0, 1+(-2)=-1 -> NEG, ZERO, or POS
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.TOP;
+		// GE0 + NEQ0: 0+1=1, 0+(-1)=-1, 1+(-1)=0 -> TOP
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.NEQ0) ||
+				(left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.TOP;
+
+		// NEQ0 -> ≠0
+		// NEQ0 + NEQ0: 1+(-1)=0 -> TOP
+		if (left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.NEQ0)
+			return ExtendedSignLattice.TOP;
+
+		return ExtendedSignLattice.TOP;
+	}
+
+	/*
+	 *        | NEG  | ZERO | POS  | LE0  | GE0  | NEQ0
+	 * -------+------+------+------+------+------+------
+	 * NEG    | POS  | ZERO | NEG  | GE0  | LE0  | NEQ0
+	 * ZERO   | ZERO | ZERO | ZERO | ZERO | ZERO | ZERO
+	 * POS    | NEG  | ZERO | POS  | LE0  | GE0  | NEQ0
+	 * LE0    | GE0  | ZERO | LE0  | GE0  | LE0  | TOP
+	 * GE0    | LE0  | ZERO | GE0  | LE0  | GE0  | TOP
+	 * NEQ0   | NEQ0 | ZERO | NEQ0 | TOP  | TOP  | NEQ0
+	 */
+	private ExtendedSignLattice evalMultiplication(ExtendedSignLattice left, ExtendedSignLattice right) {
+		if (left == ExtendedSignLattice.ZERO || right == ExtendedSignLattice.ZERO)
+			return ExtendedSignLattice.ZERO;
+
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.POS;
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.POS;
+		if ((left == ExtendedSignLattice.POS && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.POS))
+			return ExtendedSignLattice.NEG;
+
+		// LE0 -> (-∞,0]   GE0 -> [0, +∞)
+		// LE0 × POS: (neg|0)×pos = neg|0 = LE0
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.LE0;
+		// LE0 × NEG: (neg|0)×neg = pos|0 = GE0
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.GE0;
+		// LE0 × LE0: (neg|0)×(neg|0) = pos|0 = GE0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.GE0;
+		// LE0 × GE0: (neg|0)×(pos|0) = neg|0 = LE0
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.GE0) ||
+				(left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.LE0;
+		// LE0 × NEQ0: (neg|0)×(neg|pos): 0×anything=0, neg×pos=neg, neg×neg=pos -> NEG|ZERO|POS = TOP
+		if ((left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.NEQ0) ||
+				(left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.LE0))
+			return ExtendedSignLattice.TOP;
+
+		// GE0 -> [0, +∞)   LE0 -> (-∞,0]
+		// GE0 × POS: (pos|0)×pos = pos|0 = GE0
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.GE0;
+		// GE0 × NEG: (pos|0)×neg = neg|0 = LE0
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.LE0;
+		// GE0 × GE0: (pos|0)×(pos|0) = pos|0 = GE0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.GE0;
+		// GE0 × NEQ0: (pos|0)×(neg|pos): 0×anything=0, pos×pos=pos, pos×neg=neg -> NEG|ZERO|POS = TOP
+		if ((left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.NEQ0) ||
+				(left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.GE0))
+			return ExtendedSignLattice.TOP;
+
+		// NEQ0 -> ≠0   (technically it's always NEQ0)
+		// NEQ0 × NEQ0: (neg|pos)×(neg|pos): neg×neg=pos, pos×pos=pos, neg×pos=neg -> NEQ0 (never zero)
+		if (left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.NEQ0)
+			return ExtendedSignLattice.NEQ0;
+		// NEQ0 × POS: (neg|pos)×pos = neg|pos = NEQ0
+		if ((left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.POS) ||
+				(left == ExtendedSignLattice.POS && right == ExtendedSignLattice.NEQ0))
+			return ExtendedSignLattice.NEQ0;
+		// NEQ0 × NEG: (neg|pos)×neg = pos|neg = NEQ0
+		if ((left == ExtendedSignLattice.NEQ0 && right == ExtendedSignLattice.NEG) ||
+				(left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.NEQ0))
+			return ExtendedSignLattice.NEQ0;
+
+		return ExtendedSignLattice.TOP;
+	}
+
+	private ExtendedSignLattice evalSubtraction(ExtendedSignLattice left, ExtendedSignLattice right) {
+		ExtendedSignLattice negRight; // invert sign, then use addition
+		if (right == ExtendedSignLattice.NEG)
+			negRight = ExtendedSignLattice.POS;
+		else if (right == ExtendedSignLattice.POS)
+			negRight = ExtendedSignLattice.NEG;
+		else if (right == ExtendedSignLattice.ZERO)
+			negRight = ExtendedSignLattice.ZERO;
+		else if (right == ExtendedSignLattice.LE0)
+			negRight = ExtendedSignLattice.GE0;
+		else if (right == ExtendedSignLattice.GE0)
+			negRight = ExtendedSignLattice.LE0;
+		else if (right == ExtendedSignLattice.NEQ0)
+			negRight = ExtendedSignLattice.NEQ0;
+		else
+			return ExtendedSignLattice.TOP;
+
+		return evalAddition(left, negRight);
+	}
+
+	/*
+	 *        | NEG  | POS  | LE0  | GE0  | NEQ0
+	 * -------+------+------+------+------+------
+	 * NEG    | GE0  | LE0  | GE0  | LE0  | TOP
+	 * ZERO   | ZERO | ZERO | ZERO | ZERO | ZERO
+	 * POS    | LE0  | GE0  | LE0  | GE0  | TOP
+	 * LE0    | GE0  | LE0  | GE0  | LE0  | TOP
+	 * GE0    | LE0  | GE0  | LE0  | GE0  | TOP
+	 * NEQ0   | TOP  | TOP  | TOP  | TOP  | TOP
+	 */
+	private ExtendedSignLattice evalDivision(ExtendedSignLattice left, ExtendedSignLattice right) {
+		// Division by 0
+		if (right == ExtendedSignLattice.ZERO)
+			return ExtendedSignLattice.BOTTOM;
+		// ZERO at numerator
+		if (left == ExtendedSignLattice.ZERO)
+			return ExtendedSignLattice.ZERO;
+
+		// NEQ0 as divisor, result NEG or POS so TOP
+		if (right == ExtendedSignLattice.NEQ0)
+			return ExtendedSignLattice.TOP;
+
+		// NEQ0 as dividend, which can be NEG or POS so TOP
+		if (left == ExtendedSignLattice.NEQ0)
+			return ExtendedSignLattice.TOP;
+
+		// NEG / NEG: negative/negative = positive or 0 (integer truncation) -> GE0
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.GE0;
+		// NEG / POS: negative/positive = negative or 0 -> LE0
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.LE0;
+		// NEG / LE0 (non-zero part is NEG): same as NEG/NEG -> GE0 (taking the bigger result like with intervals)
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.GE0;
+		// NEG / GE0 (non-zero part is POS): same as NEG/POS -> LE0
+		if (left == ExtendedSignLattice.NEG && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.LE0;
+
+		// POS / POS: positive/positive = positive or 0 -> GE0 (e.g. 1/999 ≈ 0)
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.GE0;
+		// POS / NEG: positive/negative = negative or 0 -> LE0
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.LE0;
+		// POS / LE0 (non-zero part is NEG): same as POS/NEG -> LE0
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.LE0;
+		// POS / GE0 (non-zero part is POS): same as POS/POS -> GE0
+		if (left == ExtendedSignLattice.POS && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.GE0;
+
+		// LE0 -> (-∞,0]   GE0 -> [0, +∞)
+		// LE0 // NEG: (neg|0)/neg = GE0|ZERO = GE0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.GE0;
+		// LE0 // POS: (neg|0)/pos = LE0|ZERO = LE0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.LE0;
+		// LE0 / LE0: same as LE0/NEG (non-zero part of LE0 is NEG) -> GE0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.GE0;
+		// LE0 / GE0: same as LE0/POS (non-zero part of GE0 is POS) -> LE0
+		if (left == ExtendedSignLattice.LE0 && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.LE0;
+
+		// GE0 / POS: (pos|0)/pos = GE0|ZERO = GE0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.POS)
+			return ExtendedSignLattice.GE0;
+		// GE0 / NEG: (pos|0)÷neg = LE0|ZERO = LE0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.NEG)
+			return ExtendedSignLattice.LE0;
+		// GE0 / GE0: same as GE0/POS -> GE0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.GE0)
+			return ExtendedSignLattice.GE0;
+		// GE0 / LE0: same as GE0/NEG -> LE0
+		if (left == ExtendedSignLattice.GE0 && right == ExtendedSignLattice.LE0)
+			return ExtendedSignLattice.LE0;
+
+		return ExtendedSignLattice.TOP;
+	}
+
 	@Override
 	public Satisfiability satisfiesBinaryExpression(
 			BinaryExpression expression,
-			SignLattice left,
-			SignLattice right,
+			ExtendedSignLattice left,
+			ExtendedSignLattice right,
 			ProgramPoint pp,
 			SemanticOracle oracle) {
 		if (left.isTop() || right.isTop())
@@ -189,8 +382,8 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<SignLattice>{
 	}
 
 	@Override
-	public ValueEnvironment<SignLattice> assumeBinaryExpression(
-			ValueEnvironment<SignLattice> environment,
+	public ValueEnvironment<ExtendedSignLattice> assumeBinaryExpression(
+			ValueEnvironment<ExtendedSignLattice> environment,
 			BinaryExpression expression,
 			ProgramPoint src,
 			ProgramPoint dest,
@@ -203,7 +396,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<SignLattice>{
 			return environment;
 
 		Identifier id;
-		SignLattice eval;
+		ExtendedSignLattice eval;
 		boolean rightIsExpr;
 		BinaryOperator operator = expression.getOperator();
 		ValueExpression left = (ValueExpression) expression.getLeft();
@@ -219,62 +412,65 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<SignLattice>{
 		} else
 			return environment;
 
-		SignLattice starting = environment.getState(id);
+		ExtendedSignLattice starting = environment.getState(id);
 		if (eval.isBottom() || starting.isBottom())
 			return environment.bottom();
 
-		SignLattice update = null;
+		ExtendedSignLattice update = null;
 		if (operator == ComparisonEq.INSTANCE)
 			update = starting.glb(eval);
 		else {
-			// the rule for an operator op is:
-			// - if `start op eval`, `update = U { start n v | v op eval, v in {
-			// +, 0, -} }`
-			// - if `eval op start`, `update = U { start n v | eval op v, v in {
-			// +, 0, -} }`
+			// Extended array including all lattice elements for refinement
+			ExtendedSignLattice[] all = new ExtendedSignLattice[] {
+					ExtendedSignLattice.NEG,
+					ExtendedSignLattice.ZERO,
+					ExtendedSignLattice.POS,
+					ExtendedSignLattice.LE0,
+					ExtendedSignLattice.GE0,
+					ExtendedSignLattice.NEQ0
+			};
 
-			SignLattice[] all = new SignLattice[] { SignLattice.NEG, SignLattice.ZERO, SignLattice.POS };
 			if (operator == ComparisonGe.INSTANCE)
 				if (rightIsExpr) {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						if (s.gt(eval).or(s.eq(eval)).mightBeTrue())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				} else {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						if (eval.gt(s).or(eval.eq(s)).mightBeTrue())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				}
 			else if (operator == ComparisonLe.INSTANCE)
 				if (rightIsExpr) {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						// we invert <= to > and look at the failing ones
 						if (s.gt(eval).mightBeFalse())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				} else {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						// we invert <= to > and look at the failing ones
 						if (eval.gt(s).mightBeFalse())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				}
 			else if (operator == ComparisonLt.INSTANCE)
 				if (rightIsExpr) {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						// we invert < to >= and look at the failing ones
 						if (s.gt(eval).or(s.eq(eval)).mightBeFalse())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				} else {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						// we invert < to >= and look at the failing ones
 						if (eval.gt(s).or(eval.eq(s)).mightBeFalse())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				}
 			else if (operator == ComparisonGt.INSTANCE)
 				if (rightIsExpr) {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						if (s.gt(eval).mightBeTrue())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				} else {
-					for (SignLattice s : all)
+					for (ExtendedSignLattice s : all)
 						if (eval.gt(s).mightBeTrue())
 							update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
 				}
@@ -287,5 +483,4 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<SignLattice>{
 		else
 			return environment.putState(id, update);
 	}
-
 }

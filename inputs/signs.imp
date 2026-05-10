@@ -87,14 +87,44 @@ class signs {
         def n = -6;           // NEG
         def z = 0;            // ZERO
 
-        def pz = p / z;       // POS / ZERO = UNKNOWN
-        def nz = n / z;       // NEG / ZERO = UNKNOWN
+        def pz = p / z;       // POS / ZERO = BOTTOM (divisione per zero)
+        def nz = n / z;       // NEG / ZERO = BOTTOM (divisione per zero)
         def zp = z / p;       // ZERO / POS = ZERO
         def zn = z / n;       // ZERO / NEG = ZERO
         def pp = p / p;       // POS  / POS = POS
         def nn = n / n;       // NEG  / NEG = POS
         def pn = p / n;       // POS  / NEG = NEG
         def np = n / p;       // NEG  / POS = NEG
+
+        // Casi che mostrano l'unsoundness di sign nel caso di divisione intera (a causa del troncamento a zero)
+        def p1 = 1;
+        def p2 = 3;
+        def n1 = -1;
+        def n2 = -3;
+
+        def r_p1p2 = p1 / p2;  // 1/3   = 0  (ZERO) --> sign restituisce POS --> unsound
+        def r_p2p1 = p2 / p1;  // 3/1   = 3  (POS)  --> sign restituisce POS --> corretto
+        def r_n1p2 = n1 / p2;  // -1/3  = 0  (ZERO) --> sign restituisce NEG --> unsound
+        def r_n2p1 = n2 / p1;  // -3/1  = -3 (NEG)  --> sign restituisce NEG --> corretto
+        def r_n1n2 = n1 / n2;  // -1/-3 = 0  (ZERO) --> sign restituisce POS --> unsound
+        def r_n2n1 = n2 / n1;  // -3/-1 = 3  (POS)  --> sign restituisce POS --> corretto
+        def r_p1n2 = p1 / n2;  // 1/-3  = 0  (ZERO) --> sign restituisce NEG --> unsound
+        def r_p2n1 = p2 / n1;  // 3/-1  = -3 (NEG)  --> sign restituisce NEG --> corretto
+    }
+
+    // -------------------------------------------------------------------------
+    // Questo esempio è per dimostrare la minore precisione rispetto a extendedsign;
+    // verrà emesso un warning dal checker per una divisione per zero, benché d sia != 0
+    // -------------------------------------------------------------------------
+    safe_division(b) {
+        def d = 0;
+        if (b > 0)
+            d = 3;           // POS
+        else
+            d = -1;          // NEG
+        // d = TOP --> divisione potenzialmente NON sicura, dato il rischio di una divisione per zero, benché d sia != 0
+        def n = 10;
+        def result = n / d;  // TOP, dato che d è TOP; warning emesso dal checker per potenziale divisione per zero, dato che TOP include 0
     }
 
     // rami: il join (lub) al merge point unisce i due segni
@@ -130,5 +160,46 @@ class signs {
         while (b > -20)
             b = b - 1;       // join(ZERO, NEG) = TOP
         return b;
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. DIVISORE IN DIVERSI RAMI
+    //
+    // Tre casi a confronto tra sign ed extended sign:
+    //   a) POS/POS --> nessun warning
+    //   b) POS/NEG --> sign: warning (falso positivo); in extended sign non viene emesso il warning, dato che si sa che il divisore è NON_ZERO
+    //   c) NEG/NEG --> nessun warning
+    // -------------------------------------------------------------------------
+    realistic_index(flag) {
+
+        def capacity = 100;      // POS
+
+        // --- caso a) base sempre POS
+        def base_a = 0;
+        if (flag > 0)
+            base_a = 6;          // POS
+        else
+            base_a = 2;          // POS
+        // join: POS lub POS = POS
+        def result_a = capacity / base_a;  // nessun warning
+
+        // --- caso b) base POS o NEG: il divisore è sicuramente != 0, ma qui su sign viene base_b viene considerato TOP, quindi viene emesso un warning
+        // extended sign è più preciso, dato che base_b viene considerato come NON_ZERO
+        def base_b = 0;
+        if (flag > 0)
+            base_b = 6;          // POS
+        else
+            base_b = -2;         // NEG
+        // join: POS lub NEG = TOP
+        def result_b = capacity / base_b; // !!! WARNING !!! --> non succede su extended sign
+
+        // --- caso c) base sempre NEG
+        def base_c = 0;
+        if (flag > 0)
+            base_c = 10;         // NEG
+        else
+            base_c = 5;          // NEG
+        // join: NEG lub NEG = NEG
+        def result_c = capacity / base_c;  // nessun warning
     }
 }

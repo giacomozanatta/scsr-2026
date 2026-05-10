@@ -1,0 +1,303 @@
+class extendedsign {
+
+    // -------------------------------------------------------------------------
+    // 1. COSTANTI
+    // -------------------------------------------------------------------------
+    constants() {
+        def neg  = -5;    // NEG
+        def zero = 0;     // ZERO
+        def pos  = 7;     // POS
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. NEGAZIONE (nessuna differenza rispetto a sign)
+    //      NEG --> POS, POS --> NEG, ZERO --> ZERO
+    // -------------------------------------------------------------------------
+    negation() {
+        def p  = 4;       // POS
+        def n  = -3;      // NEG
+        def z  = 0;       // ZERO
+
+        def np = -p;      // -POS  = NEG
+        def nn = -n;      // -NEG  = POS
+        def nz = -z;      // -ZERO = ZERO
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. ADDIZIONE (nessuna differenza rispetto a sign)
+    // -------------------------------------------------------------------------
+    addition() {
+        def p = 3;        // POS
+        def n = -2;       // NEG
+        def z = 0;        // ZERO
+
+        def pp = p + p;   // POS + POS = POS
+        def nn = n + n;   // NEG + NEG = NEG
+        def zz = z + z;   // ZERO + ZERO = ZERO
+        def pz = p + z;   // POS + ZERO = POS
+        def nz = n + z;   // NEG + ZERO = NEG
+        def zp = z + p;   // ZERO + POS = POS
+        def zn = z + n;   // ZERO + NEG = NEG
+        def pn = p + n;   // POS + NEG = TOP  (es. 3+(-2)=1 POS, ma 1+(-3)=-2 NEG)
+        def np = n + p;   // NEG + POS = TOP
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. SOTTRAZIONE: a - b = a + (-b) | (nessuna differenza rispetto a sign)
+    //
+    // Dopo aver negato il sottraendo, ci si comporta come nell'addizione:
+    // -------------------------------------------------------------------------
+    subtraction() {
+        def p = 6;        // POS
+        def n = -4;       // NEG
+        def z = 0;        // ZERO
+
+        def zz = z - z;   // ZERO - ZERO = ZERO
+        def pz = p - z;   // POS  - ZERO = POS
+        def pn = p - n;   // POS  - NEG  = POS
+        def zn = z - n;   // ZERO - NEG  = POS
+
+        def nz = n - z;   // NEG  - ZERO = NEG
+        def zp = z - p;   // ZERO - POS  = NEG
+        def np = n - p;   // NEG  - POS  = NEG
+
+        def pp = p - p;   // POS  - POS  = TOP
+        def nn = n - n;   // NEG  - NEG  = TOP
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. MOLTIPLICAZIONE (nessuna differenza rispetto a sign)
+    // -------------------------------------------------------------------------
+    multiplication() {
+        def p = 4;        // POS
+        def n = -3;       // NEG
+        def z = 0;        // ZERO
+
+        def pp = p * p;   // POS  * POS  = POS
+        def nn = n * n;   // NEG  * NEG  = POS
+        def pn = p * n;   // POS  * NEG  = NEG
+        def np = n * p;   // NEG  * POS  = NEG
+        def zp = z * p;   // ZERO * POS  = ZERO
+        def zn = z * n;   // ZERO * NEG  = ZERO
+        def zz = z * z;   // ZERO * ZERO = ZERO
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. DIVISIONE INTERA
+    //    NB: si arrotonda a zero
+    //
+    // Differenza rispetto a sign:
+    //   N/N --> NON_NEG (non POS): es. -1/-2=0 (ZERO), -4/-2=2 (POS) --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   N/P --> NON_POS (non NEG): es. -1/2=0  (ZERO), -4/2=-2 (NEG) --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   P/N --> NON_POS --> in sign, veniva restituito NEG ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   P/P --> NON_NEG --> in sign, veniva restituito POS ignorando lo 0 nel caso di divisore > dividendo, con arrotondamento a 0
+    //   Z/(numero != 0) = ZERO
+    //   x/ZERO = BOTTOM (divisione per zero, codice irraggiungibile)
+    //
+    // In poche parole, con extendedsign si guadagna in precisione
+    // -------------------------------------------------------------------------
+    division() {
+        def p = 9;        // POS
+        def n = -6;       // NEG
+        def z = 0;        // ZERO
+
+        def zp = z / p;   // ZERO / POS  = ZERO
+        def zn = z / n;   // ZERO / NEG  = ZERO
+        def pp = p / p;   // POS  / POS  = NON_NEG  (es: 9/9=1 POS, 1/9=0 ZERO)
+        def nn = n / n;   // NEG  / NEG  = NON_NEG  (es: -6/-6=1 POS, -1/-6=0 ZERO)
+        def pn = p / n;   // POS  / NEG  = NON_POS  (es: 9/-6=-1 NEG, 1/-6=0 ZERO)
+        def np = n / p;   // NEG  / POS  = NON_POS  (es: -6/9=0 ZERO, -9/3=-3 NEG)
+        def nz = n / z;   // NEG  / ZERO = BOTTOM
+        def pz = p / z;   // POS  / ZERO = BOTTOM
+
+        // Casi che mostrano la differenza con sign (che ignora il troncamento a zero):
+        def p1 = 1;
+        def p2 = 3;
+        def n1 = -1;
+        def n2 = -3;
+
+        def r_p1p2 = p1 / p2;  // 1/3   = 0  (ZERO) --> GTE_ZERO  (sign: POS  — unsound)
+        def r_p2p1 = p2 / p1;  // 3/1   = 3  (POS)  --> GTE_ZERO  (sign: POS  — corretto)
+        def r_n1p2 = n1 / p2;  // -1/3  = 0  (ZERO) --> LTE_ZERO  (sign: NEG  — unsound)
+        def r_n2p1 = n2 / p1;  // -3/1  = -3 (NEG)  --> LTE_ZERO  (sign: NEG  — corretto)
+        def r_n1n2 = n1 / n2;  // -1/-3 = 0  (ZERO) --> GTE_ZERO  (sign: POS  — unsound)
+        def r_n2n1 = n2 / n1;  // -3/-1 = 3  (POS)  --> GTE_ZERO  (sign: POS  — corretto)
+        def r_p1n2 = p1 / n2;  // 1/-3  = 0  (ZERO) --> LTE_ZERO  (sign: NEG  — unsound)
+        def r_p2n1 = p2 / n1;  // 3/-1  = -3 (NEG)  --> LTE_ZERO  (sign: NEG  — corretto)
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. RAMI (IF-ELSE)
+    //
+    //   NEG lub POS = NON_ZERO (ho una maggiore precisione, dato che so non essero zero)
+    //   NEG lub ZERO = NON_POS
+    //   POS lub ZERO = NON_NEG
+    //   POS lub NEG lub ZERO = TOP
+    // -------------------------------------------------------------------------
+    branches(b) {
+        def x = 0;           // ZERO iniziale
+
+        // Ramo POS/NEG --> join = NON_ZERO (più preciso rispetto a sign, dove avrei avuto TOP)
+        if (b > 0)
+            x = 5;           // POS
+        else
+            x = -3;          // NEG
+        def after_non_zero = x;   // NON_ZERO
+
+        def z = 0;
+        if (b > 0)
+            z = 5;           // POS
+        else
+            z = 3;          // POS
+        def after_pos = z;   // POS
+
+        def y = 0;
+        // Ramo NEG/ZERO --> join = NON_POS
+        if (b > 0)
+            y = -2;          // NEG
+        else
+            y = 0;           // ZERO
+        def after_non_pos = y;    // NON_POS
+
+        def w = 0;
+        // Ramo POS/ZERO --> join = NON_NEG
+        if (b > 0)
+            w = 4;           // POS
+        else
+            w = 0;           // ZERO
+        def after_non_neg = w;    // NON_NEG
+
+        def v = 0;
+        // Ramo POS/NEG/ZERO --> join = TOP (tutti e tre i segni possibili)
+        if (b > 1)
+            v = 5;           // POS
+        else if (b > 0)
+            v = 0;           // ZERO
+        else
+            v = -3;          // NEG
+        def after_top = v;   // TOP (POS lub ZERO lub NEG = TOP)
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. DIVISIONE SICURA SE IL DIVISORE È != 0
+    //
+    // Se un divisore è NON_ZERO, la divisione per zero è impossibile; in sign non ho questo livello di precisione.
+    // Di conseguenza, nel caso di extended sign non ho alcun warning emesso dal checker, mentre in sign si
+    // -------------------------------------------------------------------------
+        safe_division(b) {
+        def d = 0;
+        if (b > 0)
+            d = 3;           // POS
+        else
+            d = -1;          // NEG
+        // d = NON_ZERO --> il checker non segnala warning (divisore sicuramente != 0)
+        // il risultato è TOP dato che: POS/POS=GTE_ZERO, POS/NEG=LTE_ZERO, lub(GTE_ZERO,LTE_ZERO)=TOP
+        def n = 10;
+        def result = n / d;  // TOP (precisione persa, ma nessun warning emesso del checker)
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. LOOP
+    // -------------------------------------------------------------------------
+    loop_ascending() {
+        def b = 0;           // ZERO
+        while (b < 10)
+            b = b + 1;       // nel corso dei vari loop diventa TOP
+        return b;            // TOP
+    }
+
+    loop_descending() {
+        def b = 0;           // ZERO
+        while (b > -10)
+            b = b - 1;       // nel corso dei vari loop diventa TOP
+        return b;            // TOP
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. RESTO: il segno del risultato dipende dal segno del dividendo
+    //
+    //   NEG % nonzero = LTE_ZERO  (es: -7%3=-1 NEG, -6%3=0 ZERO)
+    //   ZERO % nonzero = ZERO
+    //   POS % nonzero = GTE_ZERO  (es: 7%3=1 POS, 6%3=0 ZERO)
+    //   qualsiasi % ZERO = BOTTOM
+    // -------------------------------------------------------------------------
+    remainder() {
+        def n = -7;       // NEG
+        def p =  7;       // POS
+        def z =  0;       // ZERO
+        def d =  3;       // POS (divisore)
+        def e = -3;       // NEG (divisore)
+
+        def r1 = n % d;   // NEG % POS  = LTE_ZERO  (-7%3=-1)
+        def r2 = n % e;   // NEG % NEG  = LTE_ZERO  (-7%-3=-1)
+        def r3 = z % d;   // ZERO % POS = ZERO
+        def r4 = p % d;   // POS % POS  = GTE_ZERO  (7%3=1)
+        def r5 = p % e;   // POS % NEG  = GTE_ZERO  (7%-3=1)
+        def r6 = p % z;   // POS % ZERO = BOTTOM
+        def r7 = p % z;   // NEG % ZERO = BOTTOM
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. MODULO: il segno del risultato dipende dal segno del divisore
+    //
+    //   qualsiasi % POS = GTE_ZERO  (risultato in [0, divisore))
+    //   qualsiasi % NEG = LTE_ZERO  (risultato in (divisore, 0])
+    //   ZERO % nonzero = ZERO
+    //   qualsiasi % ZERO = BOTTOM
+    // -------------------------------------------------------------------------
+    modulo() {
+        def n = -7;       // NEG
+        def p =  7;       // POS
+        def z =  0;       // ZERO
+        def d =  3;       // POS (divisore)
+        def e = -3;       // NEG (divisore)
+
+        def m1 = n % d;   // NEG mod POS  = GTE_ZERO  (-7 mod 3 = 2)
+        def m2 = p % d;   // POS mod POS  = GTE_ZERO  (7 mod 3 = 1)
+        def m3 = z % d;   // ZERO mod POS = ZERO
+        def m4 = n % e;   // NEG mod NEG  = LTE_ZERO  (-7 mod -3 = -1)
+        def m5 = p % e;   // POS mod NEG  = LTE_ZERO  (7 mod -3 = -2)
+        def m6 = p % z;   // POS mod ZERO = BOTTOM
+        def m7 = p % z;   // NEG mod ZERO = BOTTOM
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. DIVISORE IN DIVERSI RAMI
+    //
+    // Tre casi a confronto tra sign ed extended sign:
+    //   a) POS/POS --> nessun warning
+    //   b) POS/NEG --> nessun warning (in sign viene emesso)
+    //   c) NEG/NEG --> nessun warning
+    // -------------------------------------------------------------------------
+    realistic_index(flag) {
+
+        def capacity = 100;      // POS
+
+        // --- caso a) base sempre POS
+        def base_a = 0;
+        if (flag > 0)
+            base_a = 6;          // POS
+        else
+            base_a = 2;          // POS
+        // join: POS lub POS = POS
+        def result_a = capacity / base_a;  // nessun warning
+
+        // --- caso b) base POS o NEG: il divisore è sicuramente != 0, quindi NON_ZERO --> divisione sicura, a differenza di quanto dichiara sign
+        def base_b = 0;
+        if (flag > 0)
+            base_b = 6;          // POS
+        else
+            base_b = -2;         // NEG
+        // join: POS lub NEG = NON_NEG
+        def result_b = capacity / base_b; // nessun warning
+
+        // --- caso c) base sempre NEG
+        def base_c = 0;
+        if (flag > 0)
+            base_c = 10;         // NEG
+        else
+            base_c = 5;          // NEG
+        // join: NEG lub NEG = NEG
+        def result_c = capacity / base_c;  // nessun warning
+    }
+}

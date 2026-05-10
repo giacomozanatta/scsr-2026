@@ -5,6 +5,7 @@ import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.scsr.analysis.sign.NonNegativeSpeedInMoveForwardChecker;
 import it.unive.scsr.analysis.sign.Sign;
+import it.unive.scsr.checkers.DivByZeroSignChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -39,6 +40,7 @@ public class SignAnalysisTest {
 
         // added checker to the analysis
         conf.semanticChecks.add(new NonNegativeSpeedInMoveForwardChecker<>());
+        conf.semanticChecks.add(new DivByZeroSignChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
         

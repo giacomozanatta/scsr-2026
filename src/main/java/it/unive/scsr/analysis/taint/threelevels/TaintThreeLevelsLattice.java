@@ -69,9 +69,13 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
+		// viene usato nel momento in cui si deve combinare due elementi (es a + b), per capire cos'è il risultato;
+		// è diverso da lub; lub con (TAIN, CLEAN), darebbe TOP; mentre qui diamo TAINT, com'è giusto che sia
+
 		if (this == BOTTOM || other == BOTTOM) {
 			return BOTTOM;
 		}
+		// se uno dei due elementi è TAIN, allora anche il risultato lo è; si propaga
 		if (this == TAINT || other == TAINT) {
 			return TAINT;
 		}

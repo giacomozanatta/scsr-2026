@@ -1,0 +1,114 @@
+class extendedsign_taint {
+
+    // funzione TAINT
+    source1() {
+        return -99;
+    }
+
+    // funzione CLEAN
+    sanitizer1(v) {
+        return 0;
+    }
+
+    // funzione SINK: viene emesso un warning se v è TAIN
+    sink1(v) {
+    }
+
+    // -------------------------------------------------------------------------
+    // 1. COSTANTE
+    // -------------------------------------------------------------------------
+    basic_clean() {
+        def c = 5;            // (POS, CLEAN)
+        this.sink1(c);        // nessun warning
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. TAINTED
+    // -------------------------------------------------------------------------
+    basic_tainted() {
+        def t = this.source1();   // (TOP_sign, TAINT)
+        this.sink1(t);            // warning TAINT CERTO
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. SANITIZZATO
+    // -------------------------------------------------------------------------
+    basic_sanitized() {
+        def t = this.source1();       // (TOP_sign, TAINT)
+        def s = this.sanitizer1(t);   // (TOP_sign, CLEAN)
+        this.sink1(s);                // nessun warning
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. TAINT SI PROPAGA ATTRAVERSO OPERAZIONI ARITMETICHE
+    // -------------------------------------------------------------------------
+    taint_through_arithmetic() {
+        def t = this.source1();   // (TOP_sign, TAINT)
+        def c = 3;                // (POS, CLEAN)
+        def x = t + c;            // (TOP_sign.lub(POS), TAINT.or(CLEAN)) = (TOP, TAINT) --> un valore TAINT si propaga anche attraverso operazioni matematiche
+        this.sink1(x);            // warning TAINT CERTO
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. OPERAZIONI SU COSTANTI: il risultato è clean, perché le costanti non sono TAINT
+    // -------------------------------------------------------------------------
+    clean_operations() {
+        def a = 10;           // (POS, CLEAN)
+        def b = 3;            // (POS, CLEAN)
+        def c = a - b;        // (POS, CLEAN)
+        def d = c * 2;        // (POS, CLEAN)
+        this.sink1(d);        // nessun warning
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. IF-ELSE: taint possibile
+    // -------------------------------------------------------------------------
+    branch_possible(b) {
+        def m = 0;                    // (ZERO, CLEAN)
+        if (b) {
+            m = this.source1();       // (TOP_sign, TAINT)
+        } else {
+            m = 5;                    // (POS, CLEAN)
+        }
+        // join: (TOP_sign.lub(POS), TAINT.lub(CLEAN)) = (TOP, TOP) -> taint possibile, ma non sicuro (TOP)
+        this.sink1(m);                // warning TAINT POSSIBILE
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. DIVISORE TAINTED E POTENZIALMENTE UGUALE A 0
+    // -------------------------------------------------------------------------
+    tainted_divisor() {
+        def t = this.source1();   // (TOP_sign, TAINT) - rischio di divisione per zero
+        def n = 10;               // (POS, CLEAN)
+        def result = n / t;       // (TOP, TAINT) - il segno può essere qualsiasi; il valore è sicuramente TAINT --> la causa è il divisore TAINT e TOP
+        this.sink1(result);       // warning TAINT CERTO
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. SOMMA DI VALORI TAINED
+    // -------------------------------------------------------------------------
+    double_source() {
+        def t1 = this.source1();  // (TOP, TAINT)
+        def t2 = this.source1();  // (TOP, TAINT)
+        def x  = t1 + t2;         // (TOP, TAINT)
+        this.sink1(x);            // warning TAINT CERTO
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. IF-ELSE: il valore è sanitizzato solo in un ramo
+    //
+    //   Ramo then: s = sanitizer1(t)  --> (TOP, CLEAN)
+    //   Ramo else: s = t              --> (TOP, TAINT)
+    //   Join: (TOP, CLEAN.lub(TAINT)) = (TOP, TOP_taint)
+    //   sink1(s): TOP_taint --> [POSSIBLE TAINTED] warning
+    // -------------------------------------------------------------------------
+    partial_sanitization(b) {
+        def t = this.source1();       // (TOP, TAINT)
+        def s = t;
+        if (b) {
+            s = this.sanitizer1(t);   // (TOP, CLEAN)
+        }
+        // join: (TOP, CLEAN.lub(TAINT)) = (TOP_sign, TOP_taint) --> sanitizzato solo in un ramo
+        this.sink1(s);                // warning TAINT POSSIBILE
+    }
+}

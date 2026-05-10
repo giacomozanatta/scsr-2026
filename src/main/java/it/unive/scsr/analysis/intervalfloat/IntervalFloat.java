@@ -28,20 +28,17 @@ public class IntervalFloat implements BaseNonRelationalValueDomain<IntervalFloat
 	public IntervalFloatLattice bottom() {
 		return IntervalFloatLattice.BOTTOM;
 	}
-	
-	@Override
-	public IntervalFloatLattice
-	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
-			throws SemanticException {
-		
-		if(constant.getValue() instanceof Integer) {
-			//I need to check the integer value to 
-			// assign the right approx value
-			Integer n = (Integer) constant.getValue();
 
-			return new IntervalFloatLattice(n, n);
+	@Override
+	public IntervalFloatLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+			throws SemanticException {
+
+		if(constant.getValue() instanceof Number) {
+			Number n = (Number) constant.getValue();
+			MathNumber val = new MathNumber(n.doubleValue());
+			return new IntervalFloatLattice(val, val);
 		}
-			
+
 		return IntervalFloatLattice.TOP;
 	}
 

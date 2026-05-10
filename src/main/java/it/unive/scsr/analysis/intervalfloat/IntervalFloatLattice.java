@@ -122,30 +122,42 @@ public class IntervalFloatLattice
 	    	return other.i.includes(this.i);
 	    }
 
-		@Override
-		public IntervalFloatLattice wideningAux(IntervalFloatLattice other) throws SemanticException {
-			
-	    	if(this.i == null || other.i == null)
-	    		return BOTTOM;
-	    	
-			MathNumber u1 = this.i.getHigh();
-			MathNumber u2 = other.i.getHigh();
-			
-			MathNumber uResult = u1;
-			if(u2.gt(u1))
-				uResult = MathNumber.PLUS_INFINITY;
-			
-			MathNumber l1 = this.i.getLow();
-			MathNumber l2 = other.i.getLow();
-			
-			MathNumber lResult = l1;
-			if(l2.lt(l1)) {
-				lResult = MathNumber.MINUS_INFINITY;
-			}
-			
-			return new IntervalFloatLattice(lResult, uResult);
-			
+	@Override
+	public IntervalFloatLattice wideningAux(IntervalFloatLattice other) throws SemanticException {
+		if(this.i == null || other.i == null)
+			return BOTTOM;
+
+		// Note: the following code does work as before, but code that
+		// does tiny increments (e.g. +0.0000001) could still trick
+		// it into thinking that it doesn't go to infinity
+
+		MathNumber u1 = this.i.getHigh();
+		MathNumber u2 = other.i.getHigh();
+		MathNumber l1 = this.i.getLow();
+		MathNumber l2 = other.i.getLow();
+
+		MathNumber uResult = u1;
+		MathNumber lResult = l1;
+
+		// small margin to cancel out floating-point inaccuracies
+		MathNumber margin = new MathNumber(1e-5);
+
+		// if the new upper bound is significantly greater than the safety margin, then widen to +INFINITY.
+		// We are assuming that the increment isn't just noise
+		if(u2.subtract(u1).gt(margin)) {
+			uResult = MathNumber.PLUS_INFINITY;
+		} else if(u2.gt(u1)) { // If it's greater but within the epsilon error margin, just accept the new bound
+			uResult = u2;
 		}
+
+		if(l1.subtract(l2).gt(margin)) { /// similarly to the previous case, but with the lower bounds
+			lResult = MathNumber.MINUS_INFINITY;
+		} else if(l2.lt(l1)) {
+			lResult = l2;
+		}
+
+		return new IntervalFloatLattice(lResult, uResult);
+	}
 
 		@Override
 		public int hashCode() {

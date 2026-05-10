@@ -15,6 +15,7 @@ import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
 import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaint;
 
+import it.unive.scsr.checkers.ExtendedSignTaintSinkChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
@@ -47,6 +48,8 @@ public class ExtendedSignTaintAnalysisTest {
                 cfg.getDescriptor().addAnnotation(ExtendedSignTaint.SINK_ANNOTATION);
             }
         }
+
+        conf.semanticChecks.add(new ExtendedSignTaintSinkChecker<>());
 
         conf.outputs.add(new JSONReportDumper());
 

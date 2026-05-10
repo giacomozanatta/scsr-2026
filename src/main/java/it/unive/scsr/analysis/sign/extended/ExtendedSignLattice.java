@@ -3,7 +3,9 @@ package it.unive.scsr.analysis.sign.extended;
 import java.util.Objects;
 
 import it.unive.lisa.analysis.BaseLattice;
+import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
@@ -59,14 +61,22 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
 
     @Override
     public boolean lessOrEqualAux(ExtendedSignLattice other) throws SemanticException {
-        // TODO
-        return false;
+        if (this.includesNeg  && !other.includesNeg)  return false;
+        if (this.includesZero && !other.includesZero) return false;
+        if (this.includesPos  && !other.includesPos)  return false;
+        return true;
     }
 
     @Override
     public StructuredRepresentation representation() {
-        // TODO
-        return null;
+        if (this == BOTTOM)  return Lattice.bottomRepresentation();
+        if (this == TOP)     return Lattice.topRepresentation();
+        if (this == LT_ZERO) return new StringRepresentation("<0");
+        if (this == EQ_ZERO) return new StringRepresentation("=0");
+        if (this == GT_ZERO) return new StringRepresentation(">0");
+        if (this == LE_ZERO) return new StringRepresentation("<=0");
+        if (this == NE_ZERO) return new StringRepresentation("!=0");
+        return new StringRepresentation(">=0");
     }
 
     @Override

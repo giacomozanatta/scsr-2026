@@ -288,15 +288,15 @@ class extendedsign {
             base_b = 6;          // POS
         else
             base_b = -2;         // NEG
-        // join: POS lub NEG = GTE_ZERO
+        // join: POS lub NEG = NON_ZERO (divisor is probably non-zero → no warning)
         def result_b = capacity / base_b; // nessun warning
 
         // --- caso c) base sempre NEG
         def base_c = 0;
         if (flag > 0)
-            base_c = 10;         // NEG
+            base_c = -10;        // NEG
         else
-            base_c = 5;          // NEG
+            base_c = -5;         // NEG
         // join: NEG lub NEG = NEG
         def result_c = capacity / base_c;  // nessun warning
     }

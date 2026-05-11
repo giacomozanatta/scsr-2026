@@ -1,67 +1,88 @@
 class extendedsign_taint {
 
-    // funzione TAINT
+    // Taint source: simulates attacker-controlled input (e.g. HTTP request parameter)
     source1() {
         return -99;
     }
 
-    // funzione CLEAN
+    // Sanitizer: neutralizes taint (e.g. input validation / escaping)
     sanitizer1(v) {
         return 0;
     }
 
-    // funzione SINK: viene emesso un warning se v è TAIN
+    // Sink: emits a warning if argument is TAINT or TOP (e.g. SQL query, log write)
     sink1(v) {
     }
 
     // -------------------------------------------------------------------------
-    // 1. COSTANTE
+    // 1. TRUSTED CONSTANT: never attacker-controlled → no warning
+    //
+    // Real-world: a hardcoded configuration value passed to a sink.
+    // The analysis infers (POS, CLEAN) — the value is provably not from any source.
     // -------------------------------------------------------------------------
     basic_clean() {
         def c = 5;            // (POS, CLEAN)
-        this.sink1(c);        // nessun warning
+        this.sink1(c);        // SAFE: CLEAN → no warning
     }
 
     // -------------------------------------------------------------------------
-    // 2. TAINTED
+    // 2. DIRECT TAINT FLOW: attacker input reaches sink → DEFINITE warning
+    //
+    // Real-world: a raw HTTP parameter forwarded directly to a database query.
+    // The analysis infers (TOP_sign, TAINT) — sign unknown, definitely tainted.
     // -------------------------------------------------------------------------
     basic_tainted() {
         def t = this.source1();   // (TOP_sign, TAINT)
-        this.sink1(t);            // warning TAINT CERTO
+        this.sink1(t);            // WARNING: TAINT → DEFINITE
     }
 
     // -------------------------------------------------------------------------
-    // 3. SANITIZZATO
+    // 3. SANITIZED INPUT: taint removed before sink → no warning
+    //
+    // Real-world: user input validated/escaped before being written to a log.
+    // Sanitizer maps any tainted value to CLEAN; sign becomes TOP (value unknown).
     // -------------------------------------------------------------------------
     basic_sanitized() {
         def t = this.source1();       // (TOP_sign, TAINT)
         def s = this.sanitizer1(t);   // (TOP_sign, CLEAN)
-        this.sink1(s);                // nessun warning
+        this.sink1(s);                // SAFE: CLEAN → no warning
     }
 
     // -------------------------------------------------------------------------
-    // 4. TAINT SI PROPAGA ATTRAVERSO OPERAZIONI ARITMETICHE
+    // 4. TAINT PROPAGATES THROUGH ARITHMETIC → DEFINITE warning
+    //
+    // Real-world: attacker-controlled discount applied to a price via addition.
+    // Taint propagates through the + operator: TAINT.or(CLEAN) = TAINT.
+    // Sign: TOP_sign.lub(POS) = TOP (result sign unknown).
     // -------------------------------------------------------------------------
     taint_through_arithmetic() {
         def t = this.source1();   // (TOP_sign, TAINT)
         def c = 3;                // (POS, CLEAN)
-        def x = t + c;            // (TOP_sign.lub(POS), TAINT.or(CLEAN)) = (TOP, TAINT) --> un valore TAINT si propaga anche attraverso operazioni matematiche
-        this.sink1(x);            // warning TAINT CERTO
+        def x = t + c;            // (TOP, TAINT): taint survives arithmetic
+        this.sink1(x);            // WARNING: TAINT → DEFINITE
     }
 
     // -------------------------------------------------------------------------
-    // 5. OPERAZIONI SU COSTANTI: il risultato è clean, perché le costanti non sono TAINT
+    // 5. CLEAN ARITHMETIC: all constants, no taint source → no warning
+    //
+    // Real-world: internal fee computation from hardcoded rates.
+    // All values are compile-time constants; no attacker-controlled input.
     // -------------------------------------------------------------------------
     clean_operations() {
         def a = 10;           // (POS, CLEAN)
         def b = 3;            // (POS, CLEAN)
         def c = a - b;        // (POS, CLEAN)
         def d = c * 2;        // (POS, CLEAN)
-        this.sink1(d);        // nessun warning
+        this.sink1(d);        // SAFE: CLEAN → no warning
     }
 
     // -------------------------------------------------------------------------
-    // 6. IF-ELSE: taint possibile
+    // 6. CONDITIONAL TAINT: input on one branch, constant on other → POSSIBLE warning
+    //
+    // Real-world: a flag determines whether to use a user-provided value or a default.
+    // then: m = source1()  → (TOP_sign, TAINT)
+    // else: m = 5          → (POS, CLEAN)
+    // join: (TOP, TAINT.lub(CLEAN)) = (TOP, TOP) → taint uncertain
     // -------------------------------------------------------------------------
     branch_possible(b) {
         def m = 0;                    // (ZERO, CLEAN)
@@ -70,37 +91,46 @@ class extendedsign_taint {
         } else {
             m = 5;                    // (POS, CLEAN)
         }
-        // join: (TOP_sign.lub(POS), TAINT.lub(CLEAN)) = (TOP, TOP) -> taint possibile, ma non sicuro (TOP)
-        this.sink1(m);                // warning TAINT POSSIBILE
+        // join: (TOP, TOP) → taint status uncertain
+        this.sink1(m);                // WARNING: TOP → POSSIBLE
     }
 
     // -------------------------------------------------------------------------
-    // 7. DIVISORE TAINTED E POTENZIALMENTE UGUALE A 0
+    // 7. TAINTED DIVISOR: attacker-controlled denominator → DEFINITE warning
+    //
+    // Real-world: attacker supplies a page_size used as divisor.
+    // Sign is TOP (could be zero) → division-by-zero risk.
+    // Taint is TAINT → definitely attacker-controlled.
+    // This case requires the product domain: neither pure sign nor pure taint alone detects both issues.
     // -------------------------------------------------------------------------
     tainted_divisor() {
-        def t = this.source1();   // (TOP_sign, TAINT) - rischio di divisione per zero
+        def t = this.source1();   // (TOP_sign, TAINT)
         def n = 10;               // (POS, CLEAN)
-        def result = n / t;       // (TOP, TAINT) - il segno può essere qualsiasi; il valore è sicuramente TAINT --> la causa è il divisore TAINT e TOP
-        this.sink1(result);       // warning TAINT CERTO
+        def result = n / t;       // (TOP, TAINT): sign unknown, taint propagated
+        this.sink1(result);       // WARNING: TAINT → DEFINITE
     }
 
     // -------------------------------------------------------------------------
-    // 8. SOMMA DI VALORI TAINED
+    // 8. TWO TAINTED SOURCES: both attacker-controlled, summed → DEFINITE warning
+    //
+    // Real-world: two request parameters combined (e.g. offset + limit in a query).
+    // TAINT.or(TAINT) = TAINT — taint is preserved through the addition.
     // -------------------------------------------------------------------------
     double_source() {
         def t1 = this.source1();  // (TOP, TAINT)
         def t2 = this.source1();  // (TOP, TAINT)
         def x  = t1 + t2;         // (TOP, TAINT)
-        this.sink1(x);            // warning TAINT CERTO
+        this.sink1(x);            // WARNING: TAINT → DEFINITE
     }
 
     // -------------------------------------------------------------------------
-    // 9. IF-ELSE: il valore è sanitizzato solo in un ramo
+    // 9. PARTIAL SANITIZATION: sanitized on one branch only → POSSIBLE warning
     //
-    //   Ramo then: s = sanitizer1(t)  --> (TOP, CLEAN)
-    //   Ramo else: s = t              --> (TOP, TAINT)
-    //   Join: (TOP, CLEAN.lub(TAINT)) = (TOP, TOP_taint)
-    //   sink1(s): TOP_taint --> [POSSIBLE TAINTED] warning
+    // Real-world: a web handler sanitizes input only when a validation flag is set.
+    // An attacker can reach the sink by triggering the unsanitized (else) branch.
+    // then: s = sanitizer1(t)  → (TOP, CLEAN)
+    // else: s = t              → (TOP, TAINT)
+    // join: (TOP, CLEAN.lub(TAINT)) = (TOP, TOP) → taint uncertain
     // -------------------------------------------------------------------------
     partial_sanitization(b) {
         def t = this.source1();       // (TOP, TAINT)
@@ -108,7 +138,7 @@ class extendedsign_taint {
         if (b) {
             s = this.sanitizer1(t);   // (TOP, CLEAN)
         }
-        // join: (TOP, CLEAN.lub(TAINT)) = (TOP_sign, TOP_taint) --> sanitizzato solo in un ramo
-        this.sink1(s);                // warning TAINT POSSIBILE
+        // join: (TOP, TOP) → sanitized only on one branch
+        this.sink1(s);                // WARNING: TOP → POSSIBLE
     }
 }

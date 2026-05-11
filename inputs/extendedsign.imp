@@ -300,4 +300,16 @@ class extendedsign {
         // join: NEG lub NEG = NEG
         def result_c = capacity / base_c;  // nessun warning
     }
+
+    // -------------------------------------------------------------------------
+    // 13. GUARDED DIVISION: branch guarantees divisor > 0 → no warning
+    // -------------------------------------------------------------------------
+    guarded_division(n) {
+        def result = 0;
+        if (n > 0) {
+            def total = 100;
+            result = total / n;  // n ∈ [1, +∞] in this branch → no warning
+        }
+        return result;
+    }
 }

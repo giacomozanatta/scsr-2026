@@ -1,0 +1,20 @@
+class TaintTest {
+    test() {
+        def a = 0;
+        def b = this.source();
+
+        this.sink(a);
+        this.sink(b);
+        b = this.sanitizer1(b);
+
+
+        def c = 0;
+        if (a == 0) {
+            c = b;
+        } else {
+            c = a;
+        }
+        this.sink(c);
+    }
+
+}

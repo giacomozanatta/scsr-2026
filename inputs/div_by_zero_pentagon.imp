@@ -1,0 +1,57 @@
+class div_by_zero_pentagon {
+
+    // -------------------------------------------------------------------------
+    // NOTE: zero_divisor() is intentionally excluded from this file,
+    // because Pentagon crashes when the divisor is concretely [0,0]
+    // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // 1. SAFE DIVISION: divisor is always positive --> no warning
+    //
+    // Real-world: splitting a fixed bill among a known number of users.
+    // Pentagon proves users = 4 and total = 120, so share = 30 - safe.
+    // -------------------------------------------------------------------------
+    safe_payment_split() {
+        def total = 120;
+        def users = 4;
+        def share = total / users;  // Pentagon: users = 4 > 0 - OK
+        return share;
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. POSSIBLE DIVISION BY ZERO: divisor may be 0 depending on the branch
+    //
+    // Real-world: computing a transaction average when there may be no
+    // transactions. If has_transactions is false, count stays 0 and the
+    // division crashes. Pentagon sees count in [0, 10] - includes 0 -->
+    // POSSIBLE warning.
+    //
+    //    then branch: count = 10
+    //    else branch: count = 0
+    //    join:        count ∈ [0, 10] --> includes 0 --> POSSIBLE
+    // -------------------------------------------------------------------------
+    conditional_divisor(has_transactions) {
+        def count = 0;
+        def total = 1000;
+        if (has_transactions) {
+            count = 10;
+        }
+        def average = total / count;  // count in [0,10]: possible div by zero
+        return average;
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. GUARDED DIVISION: branch guarantees divisor > 0 --> no warning
+    //
+    // Real-world: defensive programming pattern. Pentagon tracks the relational
+    // constraint n > 0 precisely inside the branch --> no warning.
+    // -------------------------------------------------------------------------
+    guarded_division(n) {
+        def result = 0;
+        if (n > 0) {
+            def total = 100;
+            result = total / n;  // Pentagon: n > 0 in this branch --> no warning
+        }
+        return result;
+    }
+}

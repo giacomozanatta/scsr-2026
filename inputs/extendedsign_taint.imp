@@ -110,6 +110,22 @@ class extendedsign_taint {
         this.sink1(result);       // WARNING: TAINT → DEFINITE
     }
 
+    // example to show a limitation of extendedsign;
+    // divisor in a branch become zero; this branch is reachable due to a user input,
+    // so the result should be taint, but it's not.
+    tainted_divisor_2() {
+        def t = this.source1();   // (TOP_sign, TAINT)
+        def d = 0;
+        if (t < 0) {
+            d = 0;
+        } else {
+            d = 2;
+        }
+        def n = 10;               // (POS, CLEAN)
+        def result = n / d;       // (TOP, CLEAN) --> TOP perché d = 0;
+        this.sink1(result);       // NO WARNING --> limite di extendedsign
+    }
+
     // -------------------------------------------------------------------------
     // 8. TWO TAINTED SOURCES: both attacker-controlled, summed → DEFINITE warning
     //

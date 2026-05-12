@@ -19,7 +19,7 @@ public class ExtendedSignAnalysisTest {
 
     @Test
     public void testExtendedSign() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/stud_ex.imp");
+        Program program = IMPFrontend.processFile("inputs/extendedsign.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/extendedsign";

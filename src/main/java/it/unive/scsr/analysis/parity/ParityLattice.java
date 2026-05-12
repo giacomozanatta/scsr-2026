@@ -44,9 +44,9 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 		else if (this == ParityLattice.TOP)
 			return Lattice.topRepresentation();
 		else if (this == ParityLattice.EVEN)
-			return new StringRepresentation("EVEN");
+			return new StringRepresentation("Even");
 		else
-			return new StringRepresentation("ODD");
+			return new StringRepresentation("Odd");
 	}
 
 	@Override
@@ -134,17 +134,5 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 			return false;
 		ParityLattice other = (ParityLattice) obj;
 		return element == other.element;
-	}
-
-	@Override
-	public String toString() {
-		if (this == ParityLattice.BOTTOM)
-			return "⊥";
-		else if (this == ParityLattice.TOP)
-			return "⊤";
-		else if (this == ParityLattice.EVEN)
-			return "EVEN";
-		else
-			return "ODD";
 	}
 }

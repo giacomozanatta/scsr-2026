@@ -1,0 +1,89 @@
+class strings {
+
+    // ---------- helper methods (act as call targets for checkers) ----------
+
+    fetch(url) {
+        def result = "fetching: " + url;
+        return result;
+    }
+
+    resolve(domain) {
+        def result = "resolving: " + domain;
+        return result;
+    }
+
+    sendEmail(recipient, body) {
+        def result = "sent to: " + recipient;
+        return result;
+    }
+
+    log(msg) {
+        def out = "log: " + msg;
+        return out;
+    }
+
+    // ---------- HTTP prefix checker scenarios ----------
+
+    // WARN: literal "https://..." passed directly to fetch()
+    testHttpsDirect() {
+        def r = this.fetch("https://api.example.com/data");
+        return r;
+    }
+
+    // WARN: literal "http://..." passed directly to fetch()
+    testHttpDirect() {
+        def r = this.fetch("http://legacy.service.com/api");
+        return r;
+    }
+
+    // WARN: prefix survives strcat — full URL still starts with "https://"
+    testHttpsConcat() {
+        def base = "https://secure.bank.com";
+        def endpoint = "/transfer";
+        def url = strcat(base, endpoint);
+        def r = this.fetch(url);    // WARN: prefix of url is "https://..."
+        return r;
+    }
+
+    // NO WARN: ftp:// does not start with http:// or https://
+    testFtpNoWarn() {
+        def r = this.fetch("ftp://files.internal/report.csv");
+        return r;
+    }
+
+    // ---------- .com suffix checker scenarios ----------
+
+    // WARN: "google.com" ends with ".com"
+    testDotComDirect() {
+        def r = this.resolve("google.com");
+        return r;
+    }
+
+    // WARN: email address ending in ".com" passed to sendEmail()
+    testDotComEmail() {
+        def r = this.sendEmail("user@company.com", "Hello!");
+        return r;
+    }
+
+    // WARN: both prefix and suffix checkers fire on this call —
+    // url starts with "https://" AND ends with ".com"
+    testBothCheckers() {
+        def url = "https://www.amazon.com";
+        def r = this.fetch(url);    // HTTPStringChecker fires (prefix)
+        def s = this.resolve(url);  // DotComStringChecker fires (suffix)
+        return r;
+    }
+
+    // NO WARN: ".org" suffix does not end with ".com"
+    testOrgNoWarn() {
+        def r = this.resolve("wikipedia.org");
+        return r;
+    }
+
+    // NO WARN for suffix, but WARN for prefix
+    testHttpsOrgMixed() {
+        def url = "https://university.edu";
+        def r = this.fetch(url);    // WARN (prefix: https://), no suffix warn
+        return r;
+    }
+}

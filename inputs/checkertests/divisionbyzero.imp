@@ -1,0 +1,67 @@
+/*
+ * Based on CVE-2023-46849 and the actual fix found at the following link
+ * https://github.com/OpenVPN/openvpn/commit/1cfca659244e362f372d9843351257f456392a2f
+ * The vulnerability consists in a division by zero when fragmenting packets that
+ * can make OpenVPN crash, which could be exploited to cause DoS attacks
+ */
+class FragmentEngine {
+    fragmentEnabled;
+    fragmentSize;
+
+    ~FragmentEngine() { // constructor
+        this.fragmentEnabled = false;
+        this.fragmentSize = 0;
+    }
+
+    configure(size) {
+        this.fragmentEnabled = true;
+        this.fragmentSize = size;
+    }
+
+    // Simulates restoring VPN/session state. The bug is caused
+    // when fragmentEnabled is restored, while fragmentSize becomes 0
+    restoreState() {
+        this.fragmentEnabled = true;
+        this.fragmentSize = 0;
+    }
+
+    // Compute number of fragments required.
+    computeFragments(payloadSize) {
+        if (this.fragmentEnabled) {                             // assumes that "enabled" means that a valid size is set
+            def fragments = payloadSize / this.fragmentSize;    // Division by zero if fragmentSize == 0
+            return fragments;
+        }
+        return 1;
+    }
+
+    computeFragmentsFixed(payloadSize) {
+        // this.fragmentSize = 4;
+        // this.fragmentEnabled = true;
+        if (this.fragmentEnabled) {
+            if (this.fragmentSize > 0) {                       // and is not implemented for intervals, so this nonsense is necessay
+                def fragments = payloadSize / this.fragmentSize;
+                return fragments;
+            }
+        }
+        return 1;
+    }
+}
+
+
+class Test {
+    divByZeroVulnerable(x) {
+        def engine = new FragmentEngine();
+        engine.configure(512);
+        engine.computeFragments(4096);
+        engine.restoreState();
+        def bad = engine.computeFragments(4096); // CVE-2023-46849
+    }
+
+    divByZeroFixed(x) {
+        def engine = new FragmentEngine();
+        engine.configure(512);
+        engine.computeFragmentsFixed(4096);
+        engine.restoreState();
+        def good = engine.computeFragmentsFixed(4096);
+       }
+}

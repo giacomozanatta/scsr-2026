@@ -1,0 +1,178 @@
+class extendedSignsTests {
+
+    f1(b1, b2) {
+
+        // NONNEG
+        def nonneg = 0;
+        if (b1)
+            nonneg = 10;
+
+        // NONPOS
+        def nonpos = 0;
+        if (b2)
+            nonpos = -10;
+
+        // NONZERO
+        def nonzero = -5;
+        if (b1)
+            nonzero = 5;
+
+        // NEGATION: NONZERO -> NONZERO
+        def neg1 = -nonzero;
+
+        // NEGATION: NONNEG -> NONPOS
+        def neg2 = -nonneg;
+
+        // NEGATION: NONPOS -> NONNEG
+        def neg3 = -nonpos;
+
+        // NONNEG + POS = POS
+        def a1 = nonneg + 3;
+
+        // NONPOS + NEG = NEG
+        def a2 = nonpos + (-3);
+
+        // NONNEG + NONPOS = TOP
+        def a3 = nonneg + nonpos;
+
+        // NONZERO + POS = TOP
+        def a4 = nonzero + 1;
+
+        // NONZERO + NONZERO = TOP
+        def a5 = nonzero + nonzero;
+
+        return a5;
+    }
+
+    f2(b1, b2) {
+
+        // NONNEG
+        def nonneg = 0;
+        if (b1)
+            nonneg = 5;
+
+        // NONPOS
+        def nonpos = 0;
+        if (b2)
+            nonpos = -5;
+
+        // NONZERO
+        def nonzero = -2;
+        if (b1)
+            nonzero = 2;
+
+        // POS - NEG = POS
+        def s1 = 5 - (-3);
+
+        // NONNEG - NONNEG = TOP
+        def s2 = nonneg - nonneg;
+
+        // NONPOS - POS = NEG
+        def s3 = nonpos - 10;
+
+        // NONZERO - NONZERO = TOP
+        def s4 = nonzero - nonzero;
+
+        return s4;
+    }
+
+    f3(b1, b2) {
+
+        // NONNEG
+        def nonneg = 0;
+        if (b1)
+            nonneg = 4;
+
+        // NONPOS
+        def nonpos = 0;
+        if (b2)
+            nonpos = -4;
+
+        // NONZERO
+        def nonzero1 = -5;
+        if (b1)
+            nonzero1 = 5;
+
+        def nonzero2 = -2;
+        if (b2)
+            nonzero2 = 2;
+
+        // NONZERO * NONZERO = NONZERO
+        def m1 = nonzero1 * nonzero2;
+
+        // NONNEG * NONPOS = TOP
+        def m2 = nonneg * nonpos;
+
+        // X * ZERO = ZERO
+        def m3 = nonzero1 * 0;
+
+        // POS * NEG = NEG
+        def m4 = 3 * (-2);
+
+        // NEG * NEG = POS
+        def m5 = (-3) * (-2);
+
+        return m5;
+    }
+
+    f4(b1, b2) {
+
+        // NONZERO
+        def nonzero = -10;
+        if (b1)
+            nonzero = 10;
+
+        // NONNEG
+        def nonneg = 0;
+        if (b2)
+            nonneg = 5;
+
+        // POS / NEG = NEG
+        def d1 = 10 / (-2);
+
+        // NONZERO / POS = NONZERO
+        def d2 = nonzero / 2;
+
+        // ZERO / NONZERO = ZERO
+        def d3 = 0 / nonzero;
+
+        // NONZERO / NONZERO = TOP
+        def d4 = nonzero / nonzero;
+
+        // NONNEG / NONNEG = TOP
+        def d5 = nonneg / nonneg;
+
+        return d5;
+    }
+
+    f5(b1, b2) {
+
+        // NONNEG
+        def nonneg = 0;
+        if (b1)
+            nonneg = 8;
+
+        // NONPOS
+        def nonpos = 0;
+        if (b2)
+            nonpos = -8;
+
+        // NONZERO
+        def nonzero = -3;
+        if (b1)
+            nonzero = 3;
+
+        // BRANCH JOIN -> NONZERO
+        def x = -1;
+        if (b2)
+            x = 1;
+
+        // NONZERO
+        def y = x * x;
+
+        // NONZERO + POS = TOP
+        def z = y + 1;
+
+        return z;
+    }
+}

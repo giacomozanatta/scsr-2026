@@ -95,6 +95,19 @@ class extendedsign_taint {
         this.sink1(m);                // WARNING: TOP → POSSIBLE
     }
 
+    // possible, but not sure, division by zero. it depends on which branch will be executed;
+    // it's used to show POSSIBLE warning of TaintedDivisorChecker
+    branch_possible_division(b) {
+        def m = 0;                    // (ZERO, CLEAN)
+        if (b) {
+            m = this.source1();       // (TOP_sign, TAINT)
+        } else {
+            m = 5;                    // (POS, CLEAN)
+        }
+        // join: (TOP, TOP) --> taint status uncertain
+        def r = 1 / m;
+    }
+
     // -------------------------------------------------------------------------
     // 7. TAINTED DIVISOR: attacker-controlled denominator → DEFINITE warning
     //
@@ -156,5 +169,23 @@ class extendedsign_taint {
         }
         // join: (TOP, TOP) → sanitized only on one branch
         this.sink1(s);                // WARNING: TOP → POSSIBLE
+    }
+
+    // 10. PARTIAL SANITIZATION ON DIVISOR: sanitized on one branch only --> POSSIBLE warning
+    //
+    // Real-world: input validation applied conditionally before using a value as a rate divisor.
+    // then: d = sanitizer1(t)  --> (TOP, CLEAN)
+    // else: d = t              --> (TOP, TAINT)
+    // join: (TOP, CLEAN.lub(TAINT)) = (TOP, TOP) --> taint uncertain, sign still TOP
+    partial_sanitized_divisor(b) {
+
+        def t = this.source1();       // (TOP, TAINT)
+        def d = t;
+        if (b) {
+            d = this.sanitizer1(t);   // (TOP, CLEAN)
+        }
+
+        // join: (TOP, TOP) --> sanitized only on one branch
+        def r = 10 / d;               // WARNING: POSSIBLE division by zero + WARNING: POSSIBLE tainted division by zero
     }
 }

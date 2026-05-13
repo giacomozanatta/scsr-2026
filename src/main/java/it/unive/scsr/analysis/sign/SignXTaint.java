@@ -3,12 +3,15 @@ package it.unive.scsr.analysis.sign;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.combination.LatticeProduct;
+import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
+import it.unive.lisa.program.annotations.Annotations;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
+import it.unive.lisa.symbolic.value.Identifier;
 import it.unive.lisa.symbolic.value.UnaryExpression;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
@@ -30,6 +33,31 @@ public class SignXTaint implements BaseNonRelationalValueDomain<LatticeProduct<S
         @Override
         public LatticeProduct<SignLattice, TaintThreeLevelsLattice> bottom() {
                 return new LatticeProduct<>(sign.bottom(), taint.bottom());
+        }
+
+        @Override
+        public LatticeProduct<SignLattice, TaintThreeLevelsLattice> fixedVariable(
+                        Identifier id,
+                        ProgramPoint pp,
+                        SemanticOracle oracle) throws SemanticException {
+                Annotations annots = id.getAnnotations();
+                if (annots.contains(BaseTaint.TAINTED_MATCHER))
+                        return new LatticeProduct<>(sign.top(), TaintThreeLevelsLattice.TAINT);
+                if (annots.contains(BaseTaint.CLEAN_MATCHER))
+                        return new LatticeProduct<>(sign.top(), TaintThreeLevelsLattice.CLEAN);
+                return bottom();
+        }
+
+        @Override
+        public LatticeProduct<SignLattice, TaintThreeLevelsLattice> evalIdentifier(
+                        Identifier id,
+                        ValueEnvironment<LatticeProduct<SignLattice, TaintThreeLevelsLattice>> environment,
+                        ProgramPoint pp,
+                        SemanticOracle oracle) throws SemanticException {
+                LatticeProduct<SignLattice, TaintThreeLevelsLattice> def = fixedVariable(id, pp, oracle);
+                if (!def.isBottom())
+                        return def;
+                return BaseNonRelationalValueDomain.super.evalIdentifier(id, environment, pp, oracle);
         }
 
         @Override

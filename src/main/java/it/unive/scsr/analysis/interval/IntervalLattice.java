@@ -179,4 +179,17 @@ public class IntervalLattice
 			
 			return i.compareTo(o.i);
 		}
+
+		public MathNumber getHigh() {
+			return i == null ? null : i.getHigh();
+		}
+
+		public MathNumber getLow() {
+			return i == null ? null : i.getLow();
+		}
+
+		public boolean includes(IntervalLattice other) {
+			if (i == null || other.i == null) return false;
+			return i.includes(other.i);
+		}
 }

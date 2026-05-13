@@ -50,10 +50,15 @@ public class SignExtendedXTaint implements BaseNonRelationalValueDomain<LatticeP
                         ValueEnvironment<LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice>> environment,
                         ProgramPoint pp,
                         SemanticOracle oracle) throws SemanticException {
-                LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> def = fixedVariable(id, pp, oracle);
-                if (!def.isBottom())
-                        return def;
-                return BaseNonRelationalValueDomain.super.evalIdentifier(id, environment, pp, oracle);
+                LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> envValue = environment.getState(id);
+                Annotations annots = id.getAnnotations();
+                // Preserve the sign component from the body analysis;
+                // override only the taint component based on the annotation.
+                if (annots.contains(BaseTaint.TAINTED_MATCHER))
+                        return new LatticeProduct<>(envValue.first, TaintThreeLevelsLattice.TAINT);
+                if (annots.contains(BaseTaint.CLEAN_MATCHER))
+                        return new LatticeProduct<>(envValue.first, TaintThreeLevelsLattice.CLEAN);
+                return envValue;
         }
 
         @Override

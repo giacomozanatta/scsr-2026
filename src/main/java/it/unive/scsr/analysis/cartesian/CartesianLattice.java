@@ -2,12 +2,15 @@ package it.unive.scsr.analysis.cartesian;
 
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.lattices.Satisfiability;
+import it.unive.lisa.util.representation.ListRepresentation;
+import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 import it.unive.scsr.analysis.sign.SignLattice;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 
-public class CartesianLattice implements BaseLattice<CartesianLattice>, Comparable<CartesianLattice> {
+public class CartesianLattice implements BaseLattice<CartesianLattice> {
     private final SignLattice signLattice;
     private final TaintThreeLevelsLattice taintThreeLevelsLattice;
 
@@ -31,21 +34,37 @@ public class CartesianLattice implements BaseLattice<CartesianLattice>, Comparab
 
     @Override
     public CartesianLattice lubAux(CartesianLattice other) throws SemanticException {
-        return null;
+        return new CartesianLattice(signLattice.lubAux(other.signLattice), taintThreeLevelsLattice.lubAux(other.taintThreeLevelsLattice));
     }
 
     @Override
     public boolean lessOrEqualAux(CartesianLattice other) throws SemanticException {
-        return false;
+        return this.taintThreeLevelsLattice.lessOrEqualAux(other.taintThreeLevelsLattice) && this.signLattice.lessOrEqualAux(other.signLattice);
     }
 
     @Override
     public StructuredRepresentation representation() {
-        return null;
+        return new ListRepresentation(new StringRepresentation(this.signLattice), new StringRepresentation(this.taintThreeLevelsLattice));
     }
 
-    @Override
-    public int compareTo(CartesianLattice cartesianLattice) {
-        return 0;
+
+    public Satisfiability eq(
+            CartesianLattice other) throws SemanticException {
+        // Using unknown since TaintThreeLevelsLattice does not implement eq
+        return this.signLattice.eq(other.signLattice).and(Satisfiability.UNKNOWN);
     }
+
+    /**
+     * Tests if this instance is greater than the given one, returning a
+     * {@link Satisfiability} element.
+     *
+     * @param other the instance
+     * @return the satisfiability of {@code this > other}
+     */
+    public Satisfiability gt(
+            CartesianLattice other) throws SemanticException {
+        // Using unknown since TaintThreeLevelsLattice does not implement gt
+        return this.signLattice.gt(other.signLattice).and(Satisfiability.UNKNOWN);
+    }
+
 }

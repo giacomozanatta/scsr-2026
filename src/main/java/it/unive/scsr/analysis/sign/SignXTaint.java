@@ -7,7 +7,10 @@ import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
+import it.unive.lisa.program.annotations.Annotation;
 import it.unive.lisa.program.annotations.Annotations;
+import it.unive.lisa.program.annotations.matcher.AnnotationMatcher;
+import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
@@ -21,7 +24,11 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 //so i decided to use LatticeProduct to combine them
 
 public class SignXTaint implements BaseNonRelationalValueDomain<LatticeProduct<SignLattice, TaintThreeLevelsLattice>> {
-
+	
+	
+	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
+	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
+	
         private final Sign sign = new Sign();
         private final TaintThreeLevels taint = new TaintThreeLevels();
 

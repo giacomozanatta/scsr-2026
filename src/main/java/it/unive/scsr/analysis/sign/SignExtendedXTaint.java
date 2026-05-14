@@ -7,7 +7,10 @@ import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
+import it.unive.lisa.program.annotations.Annotation;
 import it.unive.lisa.program.annotations.Annotations;
+import it.unive.lisa.program.annotations.matcher.AnnotationMatcher;
+import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.UnaryExpression;
@@ -17,7 +20,9 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 //TASK REQUEST: to implement two domains in LiSA :Sign x ThreeTaint (Cartesian Product)
 public class SignExtendedXTaint implements BaseNonRelationalValueDomain<LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice>> {
-    
+   	
+	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
+	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION); 
         private final ExtendedSign sign = new ExtendedSign();
         private final TaintThreeLevels taint = new TaintThreeLevels();
 
@@ -29,19 +34,6 @@ public class SignExtendedXTaint implements BaseNonRelationalValueDomain<LatticeP
         @Override
         public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> bottom() {
                 return new LatticeProduct<>(sign.bottom(), taint.bottom());
-        }
-
-        @Override
-        public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> fixedVariable(
-                        Identifier id,
-                        ProgramPoint pp,
-                        SemanticOracle oracle) throws SemanticException {
-                Annotations annots = id.getAnnotations();
-                if (annots.contains(BaseTaint.TAINTED_MATCHER))
-                        return new LatticeProduct<>(sign.top(), TaintThreeLevelsLattice.TAINT);
-                if (annots.contains(BaseTaint.CLEAN_MATCHER))
-                        return new LatticeProduct<>(sign.top(), TaintThreeLevelsLattice.CLEAN);
-                return bottom();
         }
 
         @Override

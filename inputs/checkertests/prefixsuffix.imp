@@ -1,0 +1,141 @@
+/*
+ * Simulates a program that downloads a file on demand
+ * from a preconfigured configured server based on the
+ * called function
+ */
+class FileDownloader {
+    download(target) {   // simulate file download
+        return target;
+    }
+
+    downloadFromSRV1(resource) {
+        def baseURL = "http://down.load/";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+
+    downloadFromSRV3(resource) {
+        def baseURL = "ftp://up.load/";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+
+    downloadFromSRV3(resource) {
+        def baseURL = "magnet:?xt=urn:btih:e337a880c4d0f552bab5b437fe1208d26130ccc5&dn=btw.com";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+}
+
+
+
+/*
+ * Simulates a simple protocol stripper program that removes the
+ * protocol from the provided URL. This could be use to make the
+ * links "better looking"
+ */
+class ProtocolStripper {
+    useLink(l) {
+        return l;
+    }
+
+    protocolStrip(input) {
+        return input.replace("*://", "");
+    }
+
+    urlTest1() {
+        def url = "https://gentoo.com";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+
+    urlTest2() {
+        def url = "gentoo.com";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+
+    urlTest3() {
+        def url = "gentoo.org";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+}
+
+
+
+/*
+ * Error reporter example that will create pretty
+ * strings for the passed messages
+ */
+class FancyReporter {
+    logFancy(msg) {
+        return msg;
+    }
+
+    testFancyReporter() {
+        def proto = "https://";
+        def host  = "vps.com";
+
+        def msg = "Refused to load the script '"
+                + proto + host + "/"
+                + "/js/video.js' because it violates the following Content Security Policy directive: script-src 'unsafe-eval' 'unsafe-inline'";
+        this.logFancy(msg);
+
+        msg = "404: Not found \nCouldn't find the requested URL at " + proto + host;
+        this.logFancy(msg);
+
+        msg = proto + " is an unsupported protocol for " + host;
+        this.logFancy(msg);
+    }
+}
+
+
+
+/*
+ * Same site tracker, just adds a parameter
+ * to the link to track users on the website
+ */
+class AnalyticsTracker {
+    attachTracking(url) {
+        def tracking = "?source=analytics";
+        return url + tracking;
+    }
+
+    log(msg) {
+            return msg;
+    }
+
+    testTracking() {
+        def target = "https://metrics.example.com";
+        def tracker = this.attachTracking(target);
+        this.log(tracker);
+
+        target = "inches.example.com";
+        tracker = this.attachTracking(target);
+        this.log(tracker);
+    }
+}
+
+/*
+ * Protocol updater, makes request go from
+ * plain http to https
+ */
+ class ProtocolUpgrader {
+     send(target) {
+         return target;
+     }
+
+     upgrade(url) {
+         if (url.startsWith("http://")) {
+             return url.replace("http://", "https://");
+         }
+         return url;
+     }
+
+     testUpgrade() {
+         def raw = "http://google.com";
+         def upgraded = this.upgrade(raw);
+         return this.send(upgraded);
+     }
+ }

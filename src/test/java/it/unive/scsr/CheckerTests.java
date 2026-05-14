@@ -4,6 +4,8 @@ import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
+import it.unive.lisa.analysis.string.Prefix;
+import it.unive.lisa.analysis.string.Suffix;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.analysis.numeric.Interval;
 import it.unive.scsr.analysis.intervalfloat.IntervalFloat;
@@ -62,8 +64,9 @@ public class CheckerTests {
         conf.workdir = "outputs/checkers/prefixsuffix";
         conf.outputs.add(new HtmlResults<>(true));
 
-        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
-        conf.semanticChecks.add(new DotComStringChecker<>());
+        // conf.analysis = simpleDomain(defaultHeapDomain(), new Suffix(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Prefix(), defaultTypeDomain());
+        // conf.semanticChecks.add(new DotComStringChecker<>());
         conf.semanticChecks.add(new HTTPStringChecker<>());
         conf.outputs.add(new JSONReportDumper());
 
@@ -98,9 +101,9 @@ public class CheckerTests {
         lisa.run(program);
     }
 
-    String[] nameSource = {"source1", "source", "GetRequest"};
-    String[] nameSanitizers = {"sanitizer1"};
-    String[] nameSinks = {"sink1", "sink", "runQueryDB"};
+    String[] nameSource = {"source1", "source", "GetRequest", "sourceSerializedObject"};
+    String[] nameSanitizers = {"sanitizer1", "sanitizeJob", "sanitizeParam"};
+    String[] nameSinks = {"sink1", "sink", "runQueryDB", "deserializePathJob"};
 
     private boolean isSource(String name) {
         for (String src : nameSource)

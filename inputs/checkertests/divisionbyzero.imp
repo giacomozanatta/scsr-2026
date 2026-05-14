@@ -8,7 +8,7 @@ class FragmentEngine {
     fragmentEnabled;
     fragmentSize;
 
-    ~FragmentEngine() { // constructor
+    ~FragmentEngine() {
         this.fragmentEnabled = false;
         this.fragmentSize = 0;
     }

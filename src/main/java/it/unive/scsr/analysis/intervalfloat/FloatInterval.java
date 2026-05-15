@@ -23,9 +23,8 @@ import java.util.Set;
 import org.apache.commons.collections4.iterators.EmptyIterator;
 
 /**
- * An interval with Float bounds.
- *
- * @author <a href="mailto:luca.negrini@unive.it">Luca Negrini</a>
+ * An interval with integer bounds.
+ * * @author <a href="mailto:luca.negrini@unive.it">Luca Negrini</a>
  */
 public class FloatInterval
         implements
@@ -42,17 +41,17 @@ public class FloatInterval
     /**
      * The interval {@code [0, 0]}.
      */
-    public static final FloatInterval ZERO = new FloatInterval(0, 0);
+    public static final FloatInterval ZERO = new FloatInterval(0f, 0f);
 
     /**
      * The interval {@code [1, 1]}.
      */
-    public static final FloatInterval ONE = new FloatInterval(1, 1);
+    public static final FloatInterval ONE = new FloatInterval(1f, 1f);
 
     /**
      * The interval {@code [-1, -1]}.
      */
-    public static final FloatInterval MINUS_ONE = new FloatInterval(-1, -1);
+    public static final FloatInterval MINUS_ONE = new FloatInterval(-1f, -1f);
 
     /**
      * The interval {@code [NaN, NaN]}, denoting undefined results of
@@ -82,13 +81,12 @@ public class FloatInterval
      * Builds a new interval. Order of the bounds is adjusted (i.e., if
      * {@code low} is greater than {@code high}, then the interval
      * {@code [high, low]} is created).
-     *
-     * @param low  the lower bound
+     * * @param low  the lower bound
      * @param high the upper bound
      */
     public FloatInterval(
-            int low,
-            int high) {
+            float low,
+            float high) {
         this(new MathNumber(low), new MathNumber(high));
     }
 
@@ -97,8 +95,7 @@ public class FloatInterval
      * {@code low} is greater than {@code high}, then the interval
      * {@code [high, low]} is created). Note that if both bounds are
      * {@code null}, the bottom element is created.
-     *
-     * @param low  the lower bound (if {@code null}, -inf will be used)
+     * * @param low  the lower bound (if {@code null}, -inf will be used)
      * @param high the upper bound (if {@code null}, +inf will be used)
      */
     public FloatInterval(
@@ -124,8 +121,7 @@ public class FloatInterval
      * {@code low} is greater than {@code high}, then the interval
      * {@code [high, low]} is created). Note that if both bounds are
      * {@code null}, the bottom element is created.
-     *
-     * @param low  the lower bound
+     * * @param low  the lower bound
      * @param high the upper bound
      */
     public FloatInterval(
@@ -155,8 +151,7 @@ public class FloatInterval
     /**
      * Yields the upper bound of this interval. This might be null if
      * {@link #isBottom()} yields {@code true}.
-     *
-     * @return the upper bound of this interval
+     * * @return the upper bound of this interval
      */
     public MathNumber getHigh() {
         return high;
@@ -165,8 +160,7 @@ public class FloatInterval
     /**
      * Yields the lower bound of this interval. This might be null if
      * {@link #isBottom()} yields {@code true}.
-     *
-     * @return the lower bound of this interval
+     * * @return the lower bound of this interval
      */
     public MathNumber getLow() {
         return low;
@@ -175,8 +169,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if the lower bound of this interval is set to minus
      * infinity.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean lowIsMinusInfinity() {
         return !isBottom() && low.isMinusInfinity();
@@ -185,8 +178,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if the upper bound of this interval is set to plus
      * infinity.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean highIsPlusInfinity() {
         return !isBottom() && high.isPlusInfinity();
@@ -195,8 +187,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if this is interval is not finite, that is, if at
      * least one bound is set to infinity.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean isInfinite() {
         return !isBottom() && (this == INFINITY || (highIsPlusInfinity() || lowIsMinusInfinity()));
@@ -205,8 +196,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if this is interval is finite, that is, if neither
      * bound is set to infinity.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean isFinite() {
         return !isBottom() && !isInfinite();
@@ -215,8 +205,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if this is the interval representing infinity, that
      * is, {@code [-Inf, +Inf]}.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean isInfinity() {
         return this == INFINITY;
@@ -225,8 +214,7 @@ public class FloatInterval
     /**
      * Yields {@code true} if this is a singleton interval, that is, if the
      * lower bound and the upper bound are the same.
-     *
-     * @return {@code true} if that condition holds
+     * * @return {@code true} if that condition holds
      */
     public boolean isSingleton() {
         return isFinite() && low.equals(high);
@@ -236,34 +224,31 @@ public class FloatInterval
      * Yields {@code true} if this is a singleton interval containing only
      * {@code n}.
      *
-     * @param n the Float to test
-     *
-     * @return {@code true} if that condition holds
+     * @param n the integer to test
+     * * @return {@code true} if that condition holds
      */
     public boolean is(
-            int n) {
-        return !isBottom() && isSingleton() && low.is(n);
+            float n) {
+        return !isBottom() && isSingleton() && low.compareTo(new MathNumber(n)) == 0;
     }
 
     private static FloatInterval cacheAndRound(
             FloatInterval i) {
         if (i.isBottom() || i.isTop())
             return i;
-        if (i.is(0))
+        if (i.is(0f))
             return ZERO;
-        if (i.is(1))
+        if (i.is(1f))
             return ONE;
-        if (i.is(-1))
+        if (i.is(-1f))
             return MINUS_ONE;
-        return new FloatInterval(i.low.roundDown(), i.high.roundUp());
+        return new FloatInterval(i.low, i.high);
     }
 
     /**
      * Performs the interval addition between {@code this} and {@code other}.
-     *
-     * @param other the other interval
-     *
-     * @return {@code this + other}
+     * * @param other the other interval
+     * * @return {@code this + other}
      */
     public FloatInterval plus(
             FloatInterval other) {
@@ -277,10 +262,8 @@ public class FloatInterval
 
     /**
      * Performs the interval subtraction between {@code this} and {@code other}.
-     *
-     * @param other the other interval
-     *
-     * @return {@code this - other}
+     * * @param other the other interval
+     * * @return {@code this - other}
      */
     public FloatInterval diff(
             FloatInterval other) {
@@ -319,16 +302,14 @@ public class FloatInterval
     /**
      * Performs the interval multiplication between {@code this} and
      * {@code other}.
-     *
-     * @param other the other interval
-     *
-     * @return {@code this * other}
+     * * @param other the other interval
+     * * @return {@code this * other}
      */
     public FloatInterval mul(
             FloatInterval other) {
         if (isBottom() || other.isBottom())
             return BOTTOM;
-        if (is(0) || other.is(0))
+        if (is(0f) || other.is(0f))
             return ZERO;
         if (isInfinity() || other.isInfinity())
             return INFINITY;
@@ -345,20 +326,17 @@ public class FloatInterval
 
     /**
      * Performs the interval division between {@code this} and {@code other}.
-     *
-     * @param other       the other interval
+     * * @param other       the other interval
      * @param ignoreZero  if {@code true}, causes the division to ignore the
-     *                        fact that {@code other} might contain 0, producing
-     *                        a smaller result
+     * fact that {@code other} might contain 0, producing
+     * a smaller result
      * @param errorOnZero whether or not an {@link ArithmeticException} should
-     *                        be thrown immediately if {@code other} contains
-     *                        zero
-     *
-     * @return {@code this / other}
-     *
-     * @throws ArithmeticException if {@code other} contains 0 and
-     *                                 {@code errorOnZero} is set to
-     *                                 {@code true}
+     * be thrown immediately if {@code other} contains
+     * zero
+     * * @return {@code this / other}
+     * * @throws ArithmeticException if {@code other} contains 0 and
+     * {@code errorOnZero} is set to
+     * {@code true}
      */
     public FloatInterval div(
             FloatInterval other,
@@ -366,12 +344,12 @@ public class FloatInterval
             boolean errorOnZero) {
         if (isBottom() || other.isBottom())
             return BOTTOM;
-        if (errorOnZero && (other.is(0) || other.includes(ZERO)))
+        if (errorOnZero && (other.is(0f) || other.includes(ZERO)))
             throw new ArithmeticException("FloatInterval divide by zero");
 
-        if (is(0))
+        if (is(0f))
             return ZERO;
-        if (other.is(0))
+        if (other.is(0f))
             return TOP;
 
         if (!other.includes(ZERO))
@@ -400,10 +378,8 @@ public class FloatInterval
 
     /**
      * Yields {@code true} if this interval includes the given one.
-     *
-     * @param other the other interval
-     *
-     * @return {@code true} if it is included, {@code false} otherwise
+     * * @param other the other interval
+     * * @return {@code true} if it is included, {@code false} otherwise
      */
     public boolean includes(
             FloatInterval other) {
@@ -414,10 +390,8 @@ public class FloatInterval
 
     /**
      * Yields {@code true} if this interval intersects with the given one.
-     *
-     * @param other the other interval
-     *
-     * @return {@code true} if those intersects, {@code false} otherwise
+     * * @param other the other interval
+     * * @return {@code true} if those intersects, {@code false} otherwise
      */
     public boolean intersects(
             FloatInterval other) {
@@ -461,7 +435,6 @@ public class FloatInterval
         return true;
     }
 
-    @Override
     public int compareTo(
             FloatInterval o) {
         if (isBottom())
@@ -581,7 +554,7 @@ public class FloatInterval
         try {
             ubound = new BinaryExpression(
                     pp.getProgram().getTypes().getBooleanType(),
-                    new Constant(pp.getProgram().getTypes().getIntegerType(), getHigh().toInt(), pp.getLocation()),
+                    new Constant(pp.getProgram().getTypes().getIntegerType(), getHigh().toFloat(), pp.getLocation()),
                     e,
                     ComparisonGe.INSTANCE,
                     e.getCodeLocation());
@@ -592,7 +565,7 @@ public class FloatInterval
         try {
             lbound = new BinaryExpression(
                     pp.getProgram().getTypes().getBooleanType(),
-                    new Constant(pp.getProgram().getTypes().getIntegerType(), getLow().toInt(), pp.getLocation()),
+                    new Constant(pp.getProgram().getTypes().getIntegerType(), getLow().toFloat(), pp.getLocation()),
                     e,
                     ComparisonLe.INSTANCE,
                     e.getCodeLocation());
@@ -607,7 +580,6 @@ public class FloatInterval
         return Set.of(lbound, ubound);
     }
 
-    @Override
     public FloatInterval generate(
             Set<BinaryExpression> constraints,
             ProgramPoint pp)

@@ -8,7 +8,6 @@ import it.unive.lisa.analysis.string.Prefix;
 import it.unive.lisa.analysis.string.Suffix;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.analysis.numeric.Interval;
-import it.unive.scsr.analysis.intervalfloat.FloatInterval;
 import it.unive.scsr.analysis.intervalfloat.IntervalFloat;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
@@ -29,7 +28,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 public class CheckerTests {
     @Test
     public void testOverUnder() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/checkertests/overunderflow_1-2.imp");
+        Program program = IMPFrontend.processFile("inputs/checkertests/overunderflow.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/checkers/overunderflow";
         conf.outputs.add(new HtmlResults<>(true));
@@ -44,12 +43,12 @@ public class CheckerTests {
 
     @Test
     public void testDivisionByZero() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/checkertests/divisionbyzero_1-2.imp");
+        Program program = IMPFrontend.processFile("inputs/checkertests/divisionbyzero.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/checkers/divisionbyzero";
         conf.outputs.add(new HtmlResults<>(true));
 
-        conf.analysis = simpleDomain(defaultHeapDomain(), new IntervalFloat(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
 
@@ -60,7 +59,7 @@ public class CheckerTests {
 
     @Test
     public void prefixSuffixCheck() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/checkertests/prefixsuffix_1.imp"); // TODO: update as needed to check the others
+        Program program = IMPFrontend.processFile("inputs/checkertests/prefixsuffix.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/checkers/prefixsuffix";
         conf.outputs.add(new HtmlResults<>(true));
@@ -77,7 +76,7 @@ public class CheckerTests {
 
     @Test
     public void testTaintAnalysis() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/checkertests/taintthreelevel_1-2.imp");
+        Program program = IMPFrontend.processFile("inputs/checkertests/taintthreelevel.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/checkers/taintthreelevel";
         conf.outputs.add(new HtmlResults<>(true));

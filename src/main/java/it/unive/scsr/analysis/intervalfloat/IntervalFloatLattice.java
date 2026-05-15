@@ -3,8 +3,6 @@ package it.unive.scsr.analysis.intervalfloat;
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
-import it.unive.scsr.analysis.interval.IntervalLattice;
-import it.unive.scsr.analysis.intervalfloat.FloatInterval;
 import it.unive.lisa.util.numeric.MathNumber;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
@@ -12,7 +10,7 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
 import java.util.Objects;
 
 public class IntervalFloatLattice
-		extends IntervalLattice {
+		implements BaseLattice<IntervalFloatLattice>, Comparable<IntervalFloatLattice> {
 
 	FloatInterval i;
 
@@ -59,6 +57,7 @@ public class IntervalFloatLattice
 		return new StringRepresentation("["+l+","+u+"]");
 	}
 
+	@Override
 	public IntervalFloatLattice lubAux(IntervalFloatLattice other) throws SemanticException {
 
 		if(this.i == null || other.i == null)
@@ -88,6 +87,7 @@ public class IntervalFloatLattice
 
 
 
+	@Override
 	public IntervalFloatLattice glbAux(IntervalFloatLattice other) throws SemanticException {
 
 
@@ -115,12 +115,14 @@ public class IntervalFloatLattice
 		return new IntervalFloatLattice(lResult, uResult);
 	}
 
+	@Override
 	public boolean lessOrEqualAux(IntervalFloatLattice other) throws SemanticException {
 		if(this.i == null || other.i == null)
 			return false;
 		return other.i.includes(this.i);
 	}
 
+	@Override
 	public IntervalFloatLattice wideningAux(IntervalFloatLattice other) throws SemanticException {
 		if(this.i == null || other.i == null)
 			return BOTTOM;
@@ -174,6 +176,7 @@ public class IntervalFloatLattice
 		return Objects.equals(i, other.i);
 	}
 
+	@Override
 	public int compareTo(IntervalFloatLattice o) {
 		if(isBottom())
 			return o.isBottom() ? 0 : -1;

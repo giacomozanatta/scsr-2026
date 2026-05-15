@@ -10,17 +10,10 @@ import it.unive.scsr.analysis.sign.SignLattice;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 
-public class CartesianLattice implements BaseLattice<CartesianLattice> {
-    private final SignLattice signLattice;
-    private final TaintThreeLevelsLattice taintThreeLevelsLattice;
-
+public record CartesianLattice(SignLattice signLattice,
+                               TaintThreeLevelsLattice taintThreeLevelsLattice) implements BaseLattice<CartesianLattice> {
     public static final CartesianLattice TOP = new CartesianLattice(SignLattice.TOP, TaintThreeLevelsLattice.Top);
     public static final CartesianLattice BOTTOM = new CartesianLattice(SignLattice.BOTTOM, TaintThreeLevelsLattice.Bottom);
-
-    public CartesianLattice(SignLattice signLattice, TaintThreeLevelsLattice taintThreeLevelsLattice) {
-        this.signLattice = signLattice;
-        this.taintThreeLevelsLattice = taintThreeLevelsLattice;
-    }
 
     @Override
     public CartesianLattice top() {
@@ -66,5 +59,4 @@ public class CartesianLattice implements BaseLattice<CartesianLattice> {
         // Using unknown since TaintThreeLevelsLattice does not implement gt
         return this.signLattice.gt(other.signLattice).and(Satisfiability.UNKNOWN);
     }
-
 }

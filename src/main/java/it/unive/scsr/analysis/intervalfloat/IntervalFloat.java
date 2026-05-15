@@ -2,7 +2,6 @@ package it.unive.scsr.analysis.intervalfloat;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
-import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.program.cfg.ProgramPoint;
 import it.unive.lisa.symbolic.value.BinaryExpression;
 import it.unive.lisa.symbolic.value.Constant;
@@ -12,37 +11,37 @@ import it.unive.lisa.symbolic.value.operator.DivisionOperator;
 import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
+import it.unive.lisa.util.numeric.IntInterval;
 import it.unive.lisa.util.numeric.MathNumber;
+import  it.unive.lisa.analysis.numeric.Interval;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntervalFloat implements BaseNonRelationalValueDomain<IntervalFloatLattice>{
+public class IntervalFloat extends Interval {
 
 	@Override
-	public IntervalFloatLattice top() {
-		return IntervalFloatLattice.TOP;
+	public IntInterval top() {
+		return IntInterval.TOP;
 	}
 
 	@Override
-	public IntervalFloatLattice bottom() {
-		return IntervalFloatLattice.BOTTOM;
+	public IntInterval bottom() {
+		return IntInterval.BOTTOM;
 	}
 
 	@Override
-	public IntervalFloatLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
-			throws SemanticException {
+	public IntInterval evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle) {
 
 		if(constant.getValue() instanceof Number) {
 			Number n = (Number) constant.getValue();
 			MathNumber val = new MathNumber(n.doubleValue());
-			return new IntervalFloatLattice(val, val);
+			return new IntInterval(val, val);
 		}
 
-		return IntervalFloatLattice.TOP;
+		return IntInterval.TOP;
 	}
 
-	@Override
 	public IntervalFloatLattice evalUnaryExpression(UnaryExpression expression, IntervalFloatLattice arg, ProgramPoint pp,
 	                                                SemanticOracle oracle) throws SemanticException {
 
@@ -59,7 +58,6 @@ public class IntervalFloat implements BaseNonRelationalValueDomain<IntervalFloat
 		return IntervalFloatLattice.TOP;
 	}
 
-	@Override
 	public IntervalFloatLattice evalBinaryExpression(BinaryExpression expression, IntervalFloatLattice left,
 	                                                 IntervalFloatLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		

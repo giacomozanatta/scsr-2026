@@ -10,22 +10,27 @@ import it.unive.scsr.analysis.sign.extended.ExtendedSignLattice;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 public class SignTaintLattice implements BaseLattice<SignTaintLattice> {
-    private final ExtendedSignLattice sign;
-    private final TaintThreeLevelsLattice taint;
 
-    private SignTaintLattice(ExtendedSignLattice sign, TaintThreeLevelsLattice taint) {
+    public static final SignTaintLattice TOP = new SignTaintLattice(ExtendedSignLattice.TOP, TaintThreeLevelsLattice.TOP);
+    public static final SignTaintLattice BOTTOM = new SignTaintLattice(ExtendedSignLattice.BOTTOM, TaintThreeLevelsLattice.BOTTOM);
+
+    final ExtendedSignLattice sign;
+    final TaintThreeLevelsLattice taint;
+
+    SignTaintLattice(ExtendedSignLattice sign, TaintThreeLevelsLattice taint) {
+        // TODO: consider if either component is BOTTOM, collapse both to BOTTOM so (BOTTOM, X) equals SignTaintLattice.BOTTOM.
         this.sign = sign;
         this.taint = taint;
     }
 
     @Override
     public SignTaintLattice top() {
-        return new SignTaintLattice(ExtendedSignLattice.TOP, TaintThreeLevelsLattice.TOP);
+        return TOP;
     }
 
     @Override
     public SignTaintLattice bottom() {
-        return new SignTaintLattice(ExtendedSignLattice.BOTTOM, TaintThreeLevelsLattice.BOTTOM);
+        return BOTTOM;
     }
 
     @Override

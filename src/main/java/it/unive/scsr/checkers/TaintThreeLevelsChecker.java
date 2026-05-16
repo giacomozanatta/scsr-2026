@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.taint.threelevels;
+package it.unive.scsr.checkers;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,6 +31,8 @@ import it.unive.lisa.program.cfg.statement.call.UnresolvedCall;
 import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 // This checker detects functions annotated as sinks, it inspects the arguments 
 // passed to that call and emits a definite warning when its value is tainted, and a possible warning when its value is top.

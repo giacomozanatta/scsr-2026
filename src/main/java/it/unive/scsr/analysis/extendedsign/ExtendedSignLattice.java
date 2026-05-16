@@ -6,7 +6,6 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
-import it.unive.scsr.analysis.sign.SignLattice;
 
 import java.util.Objects;
 
@@ -157,11 +156,27 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
             return Satisfiability.BOTTOM;
         else if (this.isTop() || other.isTop())
             return Satisfiability.UNKNOWN;
-        else if (this == NEG)
-            return other == NEG ? Satisfiability.UNKNOWN : Satisfiability.NOT_SATISFIED;
+
+        else if (this == LT_ZERO)
+            return (other == LT_ZERO || other == LE_ZERO) ? Satisfiability.UNKNOWN : Satisfiability.NOT_SATISFIED;
+
         else if (this == ZERO)
-            return other == NEG ? Satisfiability.SATISFIED : Satisfiability.NOT_SATISFIED;
+            return other == LT_ZERO ? Satisfiability.SATISFIED : Satisfiability.NOT_SATISFIED;
+
+        else if (this == GT_ZERO)
+            return (other == LT_ZERO || other == ZERO || other == LE_ZERO) ? Satisfiability.SATISFIED : Satisfiability.UNKNOWN;
+
+        else if (this == LE_ZERO)
+            return (other == LT_ZERO) ? Satisfiability.UNKNOWN :
+                    (other == GT_ZERO || other == GE_ZERO) ? Satisfiability.NOT_SATISFIED : Satisfiability.UNKNOWN;
+
+        else if (this == GE_ZERO)
+            return other == LT_ZERO ? Satisfiability.SATISFIED : Satisfiability.UNKNOWN;
+
+        else if (this == NE_ZERO)
+            return Satisfiability.UNKNOWN;
+
         else
-            return other == POS ? Satisfiability.UNKNOWN : Satisfiability.SATISFIED;
+            return Satisfiability.UNKNOWN;
     }
 }

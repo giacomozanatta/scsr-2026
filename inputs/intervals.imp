@@ -1,8 +1,8 @@
 class intervals {
 
 	basic() {
-		def i = 2;
-		def j = -10;
+		def i = 2.5;
+		def j = -10.5;
 		def a = i + j;
 		def s = i - j;
 		def m = i * j;
@@ -14,9 +14,9 @@ class intervals {
 	branches(b) {
 		def x = 0;
 		if (b)
-           	x = x + 7;
+           	x = x + 0.1;
        	else
-           	x = -7;
+           	x = -0.3;
 		return x;
   }
 
@@ -55,5 +55,13 @@ class intervals {
 	    def div = x/y;
 	    return div;
 
+	}
+
+	floaties(){
+	    def x = 1.0;
+	    def y = 2.5;
+
+	    def add = x + y;
+	    return add;
 	}
 }

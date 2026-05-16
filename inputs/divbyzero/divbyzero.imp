@@ -1,0 +1,14 @@
+class divbyzero {
+
+    f0() {
+        def a = 10;
+        def b = 0;
+        def c = 5;
+
+        def d = a / b;
+        def e = a / c;
+
+        return;
+    }
+
+}

@@ -173,7 +173,6 @@ public class DoubleIntervalLattice
 
     @Override
     public int compareTo(DoubleIntervalLattice o) {
-        // TODO: rethink this also
         if (isBottom())
             return o.isBottom() ? 0 : -1;
         if (isTop())
@@ -185,7 +184,11 @@ public class DoubleIntervalLattice
         if (isTop())
             return -1;
 
-        return i.compareTo(o.i);
+        int lowCompare = this.getLow().compareTo(o.getLow());
+        if (lowCompare != 0)
+            return this.getHigh().compareTo(o.getHigh());
+
+        return lowCompare;
     }
 
 

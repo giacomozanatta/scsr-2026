@@ -183,6 +183,7 @@ public class DoubleIntervalLattice
 
         if (isTop())
             return -1;
+
         int lowCompare = this.getLow().compareTo(o.getLow());
         if (lowCompare != 0)
             return this.getHigh().compareTo(o.getHigh());

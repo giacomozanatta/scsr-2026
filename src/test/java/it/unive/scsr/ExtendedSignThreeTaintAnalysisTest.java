@@ -13,14 +13,14 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
-import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaint;
+import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignThreeTaint;
 
-import it.unive.scsr.checkers.ExtendedSignTaintSinkChecker;
+import it.unive.scsr.checkers.ExtendedSignThreeTaintSinkChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
-public class ExtendedSignTaintAnalysisTest {
+public class ExtendedSignThreeTaintAnalysisTest {
 
     // Funzioni del programma extendedsign_taint.imp
     String[] nameSources    = {"source1"};
@@ -29,13 +29,13 @@ public class ExtendedSignTaintAnalysisTest {
 
     @Test
     public void testExtendedSignTaint() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/extendedsign_taint.imp");
+        Program program = IMPFrontend.processFile("inputs/extendedsign_three_taint.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/extendedsign-taint";
+        conf.workdir = "outputs/extendedsign-three-taint";
         conf.outputs.add(new HtmlResults<>(true));
 
-        conf.analysis = simpleDomain(new PointBasedHeap(), new ExtendedSignTaint(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new ExtendedSignThreeTaint(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 
         for (CFG cfg : program.getAllCFGs()) {
@@ -45,11 +45,11 @@ public class ExtendedSignTaintAnalysisTest {
             } else if (isSanitizer(name)) {
                 cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
             } else if (isSink(name)) {
-                cfg.getDescriptor().addAnnotation(ExtendedSignTaint.SINK_ANNOTATION);
+                cfg.getDescriptor().addAnnotation(ExtendedSignThreeTaint.SINK_ANNOTATION);
             }
         }
 
-        conf.semanticChecks.add(new ExtendedSignTaintSinkChecker<>());
+        conf.semanticChecks.add(new ExtendedSignThreeTaintSinkChecker<>());
 
         conf.outputs.add(new JSONReportDumper());
 

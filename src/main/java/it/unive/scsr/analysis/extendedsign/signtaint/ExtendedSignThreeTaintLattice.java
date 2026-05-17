@@ -18,12 +18,12 @@ import java.util.Objects;
  * Partial order: (s1, t1) <= (s2, t2)  <==>  s1 <= s2  and  t1 <= t2
  * Lub: (s1, t1) lub (s2, t2) = (s1 lub s2, t1 lub t2)
  */
-public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintLattice> {
+public class ExtendedSignThreeTaintLattice implements TaintLattice<ExtendedSignThreeTaintLattice> {
 
 	/**
 	 * Entrambe le componenti sono TOP
 	 */
-	public static final ExtendedSignTaintLattice TOP = new ExtendedSignTaintLattice(
+	public static final ExtendedSignThreeTaintLattice TOP = new ExtendedSignThreeTaintLattice(
 			ExtendedSignLattice.TOP,
 			TaintThreeLevelsLattice.TOP
 	);
@@ -31,7 +31,7 @@ public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintL
 	/**
 	 * Entrambe le componenti sono BOTTOM
 	 */
-	public static final ExtendedSignTaintLattice BOTTOM = new ExtendedSignTaintLattice(
+	public static final ExtendedSignThreeTaintLattice BOTTOM = new ExtendedSignThreeTaintLattice(
 			ExtendedSignLattice.BOTTOM,
 			TaintThreeLevelsLattice.BOTTOM
 	);
@@ -40,7 +40,7 @@ public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintL
 	 * Elemento tainted: segno sconosciuto (TOP), ma taint certo (TAINT).
 	 * Questa costante viene usata per le funzioni "source"
 	 */
-	public static final ExtendedSignTaintLattice TAINTED_ELEM = new ExtendedSignTaintLattice(
+	public static final ExtendedSignThreeTaintLattice TAINTED_ELEM = new ExtendedSignThreeTaintLattice(
 			ExtendedSignLattice.TOP,
 			TaintThreeLevelsLattice.TAINT
 	);
@@ -49,7 +49,7 @@ public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintL
 	 * Elemento sano: segno sconosciuto (TOP), ma sicuramente non taint (CLEAN).
 	 * Questa costante viene usata per le funzioni "sanitizer"
 	 */
-	public static final ExtendedSignTaintLattice CLEAN_ELEM = new ExtendedSignTaintLattice(
+	public static final ExtendedSignThreeTaintLattice CLEAN_ELEM = new ExtendedSignThreeTaintLattice(
 			ExtendedSignLattice.TOP,
 			TaintThreeLevelsLattice.CLEAN
 	);
@@ -57,56 +57,56 @@ public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintL
 	public final ExtendedSignLattice sign;
 	public final TaintThreeLevelsLattice taint;
 
-	public ExtendedSignTaintLattice(ExtendedSignLattice sign, TaintThreeLevelsLattice taint) {
+	public ExtendedSignThreeTaintLattice(ExtendedSignLattice sign, TaintThreeLevelsLattice taint) {
 		this.sign = sign;
 		this.taint = taint;
 	}
 
 	/** Di default restituisco BOTTOM. */
-	public ExtendedSignTaintLattice() {
+	public ExtendedSignThreeTaintLattice() {
 		this(ExtendedSignLattice.BOTTOM, TaintThreeLevelsLattice.BOTTOM);
 	}
 
 	@Override
-	public ExtendedSignTaintLattice top() {
+	public ExtendedSignThreeTaintLattice top() {
 		return TOP;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice bottom() {
+	public ExtendedSignThreeTaintLattice bottom() {
 		return BOTTOM;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice lubAux(ExtendedSignTaintLattice other) throws SemanticException {
+	public ExtendedSignThreeTaintLattice lubAux(ExtendedSignThreeTaintLattice other) throws SemanticException {
 		// (s1, t1) lub (s2, t2) = (s1 lub s2, t1 lub t2)
-		return new ExtendedSignTaintLattice(
+		return new ExtendedSignThreeTaintLattice(
 			this.sign.lub(other.sign),
 			this.taint.lub(other.taint)
 		);
 	}
 
 	@Override
-	public boolean lessOrEqualAux(ExtendedSignTaintLattice other) throws SemanticException {
+	public boolean lessOrEqualAux(ExtendedSignThreeTaintLattice other) throws SemanticException {
 		// (s1, t1) <= (s2, t2)  <==>  s1 <= s2  and  t1 <= t2
 		return this.sign.lessOrEqual(other.sign)
 			&& this.taint.lessOrEqual(other.taint);
 	}
 
 	@Override
-	public ExtendedSignTaintLattice tainted() {
+	public ExtendedSignThreeTaintLattice tainted() {
 		return TAINTED_ELEM;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice clean() {
+	public ExtendedSignThreeTaintLattice clean() {
 		return CLEAN_ELEM;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice or(ExtendedSignTaintLattice other) throws SemanticException {
+	public ExtendedSignThreeTaintLattice or(ExtendedSignThreeTaintLattice other) throws SemanticException {
 		// mi trovo in un caso tipo a + b
-		return new ExtendedSignTaintLattice(
+		return new ExtendedSignThreeTaintLattice(
 			this.sign.lub(other.sign), // qui è giusto utilizzare lub, in quanto devo scegliere l'elemento immediatamente superiore o uguale. lub poi chiama lubAux se necessario
 			this.taint.or(other.taint) // qui è giusto or: nel caso uno dei due sia tain, allora anche il risultato lo è
 		);
@@ -135,7 +135,7 @@ public class ExtendedSignTaintLattice implements TaintLattice<ExtendedSignTaintL
 		if (this == obj) {
 			return true;
 		}
-		if (!(obj instanceof ExtendedSignTaintLattice other)) {
+		if (!(obj instanceof ExtendedSignThreeTaintLattice other)) {
 			return false;
 		}
 		return Objects.equals(this.sign, other.sign)

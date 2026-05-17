@@ -21,8 +21,8 @@ import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.scsr.analysis.extendedsign.base.ExtendedSignLattice;
-import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaint;
-import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaintLattice;
+import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignThreeTaint;
+import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignThreeTaintLattice;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,13 +41,13 @@ import java.util.Set;
  */
 public class TaintedDivisorChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
         SemanticCheck<
-                SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> {
+                SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> {
 
     @Override
     public boolean visit(
-            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> tool,
+            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> tool,
             CFG graph, Statement node) {
         if (node instanceof Division) {
             checkDivision(tool, graph, (Division) node);
@@ -56,12 +56,12 @@ public class TaintedDivisorChecker<H extends HeapValue<H>, T extends TypeValue<T
     }
 
     private void checkDivision(
-            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> tool,
+            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> tool,
             CFG graph, Division div) {
 
-        for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
-            AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> postState =
+        for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
+            AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> postState =
                     res.getAnalysisStateAfter(div.getRight());
 
             Set<SymbolicExpression> reachableIds = new HashSet<>();
@@ -80,10 +80,10 @@ public class TaintedDivisorChecker<H extends HeapValue<H>, T extends TypeValue<T
                         continue;
                     }
 
-                    ValueEnvironment<ExtendedSignTaintLattice> valueState = postState.getExecutionState().valueState;
+                    ValueEnvironment<ExtendedSignThreeTaintLattice> valueState = postState.getExecutionState().valueState;
                     SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-                    ExtendedSignTaint domain = (ExtendedSignTaint) tool.getAnalysis().domain.valueDomain;
-                    ExtendedSignTaintLattice value = domain.eval(valueState, (ValueExpression) s, (ProgramPoint) div, oracle);
+                    ExtendedSignThreeTaint domain = (ExtendedSignThreeTaint) tool.getAnalysis().domain.valueDomain;
+                    ExtendedSignThreeTaintLattice value = domain.eval(valueState, (ValueExpression) s, (ProgramPoint) div, oracle);
 
                     boolean signCouldBeZero = value.sign == ExtendedSignLattice.ZERO
                             || value.sign == ExtendedSignLattice.LTE_ZERO

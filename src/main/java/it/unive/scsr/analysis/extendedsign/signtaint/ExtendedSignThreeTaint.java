@@ -28,46 +28,46 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
  * Per il componente segno, viene usato {@link ExtendedSignUtils}, servizio condiviso con ExtendedSign per evitare codice duplicato.
  * Per il componente taint, viene usato il metodo "or" {@link TaintThreeLevelsLattice}
  */
-public class ExtendedSignTaint extends BaseTaint<ExtendedSignTaintLattice> {
+public class ExtendedSignThreeTaint extends BaseTaint<ExtendedSignThreeTaintLattice> {
 
 	public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
 	public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
 
 	@Override
-	public ExtendedSignTaintLattice top() {
-		return ExtendedSignTaintLattice.TOP;
+	public ExtendedSignThreeTaintLattice top() {
+		return ExtendedSignThreeTaintLattice.TOP;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice bottom() {
-		return ExtendedSignTaintLattice.BOTTOM;
+	public ExtendedSignThreeTaintLattice bottom() {
+		return ExtendedSignThreeTaintLattice.BOTTOM;
 	}
 
 	@Override
-	protected ExtendedSignTaintLattice tainted() {
-		return ExtendedSignTaintLattice.TAINTED_ELEM;
+	protected ExtendedSignThreeTaintLattice tainted() {
+		return ExtendedSignThreeTaintLattice.TAINTED_ELEM;
 	}
 
 	@Override
-	protected ExtendedSignTaintLattice clean() {
-		return ExtendedSignTaintLattice.CLEAN_ELEM;
+	protected ExtendedSignThreeTaintLattice clean() {
+		return ExtendedSignThreeTaintLattice.CLEAN_ELEM;
 	}
 
 	@Override
-	public ExtendedSignTaintLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+	public ExtendedSignThreeTaintLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
-		return new ExtendedSignTaintLattice(ExtendedSignUtils.evalConstant(constant), TaintThreeLevelsLattice.CLEAN);
+		return new ExtendedSignThreeTaintLattice(ExtendedSignUtils.evalConstant(constant), TaintThreeLevelsLattice.CLEAN);
 	}
 
 	@Override
-	public ExtendedSignTaintLattice evalPushAny(PushAny pushAny, ProgramPoint pp, SemanticOracle oracle)
+	public ExtendedSignThreeTaintLattice evalPushAny(PushAny pushAny, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		return tainted();
 	}
 
 	@Override
-	public ExtendedSignTaintLattice evalUnaryExpression(UnaryExpression expression,
-			ExtendedSignTaintLattice arg, ProgramPoint pp, SemanticOracle oracle)
+	public ExtendedSignThreeTaintLattice evalUnaryExpression(UnaryExpression expression,
+	                                                         ExtendedSignThreeTaintLattice arg, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		ExtendedSignLattice signResult;
 		if (expression.getOperator() == NumericNegation.INSTANCE) {
@@ -75,13 +75,13 @@ public class ExtendedSignTaint extends BaseTaint<ExtendedSignTaintLattice> {
 		} else {
 			signResult = ExtendedSignLattice.TOP;
 		}
-		return new ExtendedSignTaintLattice(signResult, arg.taint);
+		return new ExtendedSignThreeTaintLattice(signResult, arg.taint);
 	}
 
 	@Override
-	public ExtendedSignTaintLattice evalBinaryExpression(BinaryExpression expression,
-			ExtendedSignTaintLattice left, ExtendedSignTaintLattice right,
-			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+	public ExtendedSignThreeTaintLattice evalBinaryExpression(BinaryExpression expression,
+	                                                          ExtendedSignThreeTaintLattice left, ExtendedSignThreeTaintLattice right,
+	                                                          ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		ExtendedSignLattice signResult;
 		if (expression.getOperator() instanceof AdditionOperator) {
 			signResult = ExtendedSignUtils.add(left.sign, right.sign);
@@ -106,6 +106,6 @@ public class ExtendedSignTaint extends BaseTaint<ExtendedSignTaintLattice> {
 			taintResult = TaintThreeLevelsLattice.TOP;
 		}
 
-		return new ExtendedSignTaintLattice(signResult, taintResult);
+		return new ExtendedSignThreeTaintLattice(signResult, taintResult);
 	}
 }

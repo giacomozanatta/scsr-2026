@@ -27,8 +27,8 @@ import it.unive.lisa.program.cfg.statement.call.UnresolvedCall;
 import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
-import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaint;
-import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignTaintLattice;
+import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignThreeTaint;
+import it.unive.scsr.analysis.extendedsign.signtaint.ExtendedSignThreeTaintLattice;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,15 +41,15 @@ import java.util.Set;
  * In entrambi i casi viene fornita anche l'informazione sul segno.
  * Nessun warning viene emesso se la variabile è "clean" (CLEAN)
  */
-public class ExtendedSignTaintSinkChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
+public class ExtendedSignThreeTaintSinkChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
         SemanticCheck<
-                SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> {
+                SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> {
 
     @Override
     public boolean visit(
-            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> tool,
+            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> tool,
             CFG graph, Statement node) {
         if (node instanceof UnresolvedCall) {
             UnresolvedCall uc = (UnresolvedCall) node;
@@ -74,18 +74,18 @@ public class ExtendedSignTaintSinkChecker<H extends HeapValue<H>, T extends Type
     }
 
     private void process(
-            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>,
-                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> tool,
+            SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>,
+                    SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> tool,
             UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
-            AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> res) {
+            AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> res) {
 
-        if (!descriptor.getAnnotations().contains(ExtendedSignTaint.SINK_MATCHER)) {
+        if (!descriptor.getAnnotations().contains(ExtendedSignThreeTaint.SINK_MATCHER)) {
             return;
         }
 
         for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
             Expression par = uc.getParameters()[i];
-            AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignTaintLattice>, TypeEnvironment<T>>> postState =
+            AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignThreeTaintLattice>, TypeEnvironment<T>>> postState =
                     res.getAnalysisStateAfter(par);
 
             Set<SymbolicExpression> reachableIds = new HashSet<>();
@@ -104,10 +104,10 @@ public class ExtendedSignTaintSinkChecker<H extends HeapValue<H>, T extends Type
                         continue;
                     }
 
-                    ValueEnvironment<ExtendedSignTaintLattice> valueState = postState.getExecutionState().valueState;
+                    ValueEnvironment<ExtendedSignThreeTaintLattice> valueState = postState.getExecutionState().valueState;
                     SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-                    ExtendedSignTaint domain = (ExtendedSignTaint) tool.getAnalysis().domain.valueDomain;
-                    ExtendedSignTaintLattice value = domain.eval(valueState, (ValueExpression) s, (ProgramPoint) uc, oracle);
+                    ExtendedSignThreeTaint domain = (ExtendedSignThreeTaint) tool.getAnalysis().domain.valueDomain;
+                    ExtendedSignThreeTaintLattice value = domain.eval(valueState, (ValueExpression) s, (ProgramPoint) uc, oracle);
 
                     String sign = value.sign.representation().toString();
                     if (value.isAlwaysTainted()) {

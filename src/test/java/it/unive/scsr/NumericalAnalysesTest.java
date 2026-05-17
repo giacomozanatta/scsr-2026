@@ -177,7 +177,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32FloatAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful-programs/876957-overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

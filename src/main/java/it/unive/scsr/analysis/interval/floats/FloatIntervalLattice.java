@@ -13,7 +13,9 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
 public class FloatIntervalLattice
         implements BaseLattice<FloatIntervalLattice>, Comparable<FloatIntervalLattice> {
 
-    IntInterval i;
+    final IntInterval i;
+
+    private static final MathNumber K = new MathNumber(100);
 
     public static FloatIntervalLattice TOP = new FloatIntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
     public static FloatIntervalLattice BOTTOM = new FloatIntervalLattice(null);
@@ -124,25 +126,29 @@ public class FloatIntervalLattice
         if (this.i == null || other.i == null)
             return BOTTOM;
 
-        MathNumber u1 = this.i.getHigh();
-        MathNumber u2 = other.i.getHigh();
+        MathNumber upperOld = this.i.getHigh();
+        MathNumber upperNew = other.i.getHigh();
 
-        MathNumber uResult = u1;
-        //if(u2.geq(u1))
-        if (!u2.leq(u1))
-            uResult = MathNumber.PLUS_INFINITY;
-
-        MathNumber l1 = this.i.getLow();
-        MathNumber l2 = other.i.getLow();
-
-        MathNumber lResult = l1;
-        //if(l2.leq(l1)) {
-        if (!l2.geq(l1)) {
-            lResult = MathNumber.MINUS_INFINITY;
+        MathNumber upperResult = upperOld;
+        if (upperNew.gt(upperOld)) {
+            if (upperNew.gt(K))
+                upperResult = MathNumber.PLUS_INFINITY;
+            else
+                upperResult = upperNew;
         }
 
-        return new FloatIntervalLattice(lResult, uResult);
+        MathNumber lowerOld = this.i.getLow();
+        MathNumber lowerNew = other.i.getLow();
 
+        MathNumber lowerResult = lowerOld;
+        if (lowerNew.lt(lowerOld)) {
+            if (lowerNew.lt(K.multiply(MathNumber.MINUS_ONE)))
+                lowerResult = MathNumber.MINUS_INFINITY;
+            else
+                lowerResult = lowerNew;
+        }
+
+        return new FloatIntervalLattice(lowerResult, upperResult);
     }
 
     @Override

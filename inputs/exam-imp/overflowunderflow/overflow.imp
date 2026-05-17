@@ -1,0 +1,92 @@
+class overflow {
+
+    // CASE 1: compound interest overflows INT16 range [-32768, 32767]
+    // balance starts at 30000 and is doubled each iteration
+    // Expected: overflow warning on the multiplication
+    bankAccountOverflow() {
+        def balance = 30000;
+        def rate = 2;
+        def i = 0;
+        while (i < 5) {
+            balance = balance * rate;
+            i = i + 1;
+        }
+        return balance;
+    }
+
+    // CASE 2: temperature sensor underflows INT8 range [-128, 127]
+    // temp starts at -100 and subtracts 50 each step
+    // Expected: underflow warning on the subtraction
+    temperatureUnderflow() {
+        def temp = -120;
+        def correction = -50;
+        temp = temp + correction;
+        return temp;
+    }
+
+    // CASE 3: counter bounded by loop guard, always in [0, 10]
+    // Expected: Should be no warning but due to widening higher bound of interval has +inf
+    safeBoundedCounter() {
+        def counter = 0;
+        def max = 10;
+        while (counter < max) {
+            counter = counter + 1;
+        }
+        def delta = counter - max;
+        return delta;
+    }
+
+    // CASE 4: multiplication of two large constants
+    // 1000 * 1000 = 1000000, overflows INT16
+    // Expected: overflow warning on the multiplication
+    constantOverflow() {
+        def a = 1000;
+        def b = 1000;
+        def result = a * b;
+        return result;
+    }
+
+    // CASE 5: subtraction producing negative value within bounds
+    // Expected: NO warning (true negative, result stays in [-10, 10])
+    safeSub() {
+        def x = 5;
+        def y = 10;
+        def result = x - y;
+        return result;
+    }
+
+    // Real-world scenario: an e-commerce cart system computes the total
+    // order price as quantity * unit_price. If an attacker sets quantity
+    // to a large enough value, the multiplication overflows INT32 and the
+    // total wraps around to a large negative number.
+    //
+    //
+    // Example: quantity = 100000, unit_price = 29999
+    //   100000 * 29999 = 2,999,900,000 > INT32_MAX (2,147,483,647)
+    //   wrapped total  ≈ -1,295,067,296  → system issues a negative payment
+    //   of $12,950,672.96 while shipping 100,000 items to the attacker
+    //
+    // Expected: overflow warning on quantity * unit_price
+    //           overflow warning on total + shipping_fee (total is already
+    //           corrupted, adding shipping makes it even more negative)
+    cartPriceOverflow() {
+        // quantity comes from the HTTP request body → attacker-controlled
+        // unit_price is fetched from the product catalogue → TOP (unknown)
+
+        // OVERFLOW: quantity * unit_price wraps around INT32
+        // a legitimate order of 100k items at $2.99 should cost $299,000
+        // but the wrapped result is a large negative number
+        def quantity = 100000;
+        def unit_price = 29999;
+        def total = quantity * unit_price;
+
+        def balance = 10;
+
+        // to simulate C behaviour for example we calculate manually loopback_total as the value of a result of an integer overflow (since imp can't overflow)
+        def loopback_total = -(total - 2147483647);
+
+        balance = balance - loopback_total;
+
+        return loopback_total;
+    }
+}

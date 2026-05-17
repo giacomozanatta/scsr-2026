@@ -1,0 +1,97 @@
+class divbyzero {
+
+    // CASE 1: division by a literal zero
+    // Expected: "definitely division by zero"
+    literalZero() {
+        def x = 10;
+        def result = x / 0;
+        return result;
+    }
+
+   // CASE 2: divisor shrinks toward zero inside a loop
+   // denom: 8 → 5 → 2 → -1 → ...
+   // After widening: denom ∈ [-∞, 8] which includes 0
+   // The division AFTER the loop sees the widened interval
+   // Expected: "may be division by zero" on the post-loop division
+   shrinkingDenominator() {
+       def value = 1000;
+       def denom = 80;
+       while (denom > 0) {
+           denom = denom - 3;
+       }
+       // here denom ∈ [-∞, 0] after the guard refines [-∞, 8]
+       // actually after loop exit: denom <= 0, but includes 0
+       value = value / denom;
+       return value;
+   }
+
+    // CASE 3: division by a known positive constant [16,16]
+    // Expected: NO warning (true negative)
+    safeConstantDivisor() {
+        def total = 256;
+        def size = 16;
+        def idx1 = total / size;
+        def idx2 = 128 / size;
+        def idx3 = 64 / size;
+        return idx1;
+    }
+
+    // CASE 4: unguarded division by external input (TOP interval)
+    // then guarded division — only the unguarded should warn
+    // Expected: warning on first division, silence on second
+    guardedDivision(divisor) {
+        def dividend = 100;
+
+        // unguarded: divisor ∈ TOP → may be zero
+        def unsafe = dividend / divisor;
+
+        // guarded: interval of divisor is refined to exclude 0
+        if (divisor > 0) {
+            def safe = dividend / divisor;
+            return safe;
+        }
+        return unsafe;
+    }
+
+    // CASE 5: product of two non-zero constants used as divisor
+    // [3,3] * [5,5] = [15,15] — provably non-zero
+    // Expected: NO warning (true negative)
+    safeProductDivisor() {
+        def a = 3;
+        def b = 5;
+        def divisor = a * b;
+        def result = 900 / divisor;
+        return result;
+    }
+
+    // Real-world scenario: a rate limiter computes how many requests
+    // are allowed per time window. The window duration comes from
+    // a user-controlled configuration value. If an attacker sets
+    // window_ms = 0 (or the value wraps around to 0 after arithmetic),
+    // the division produces an undefined result — in practice either
+    // an exception that skips the limiter entirely, or integer overflow
+    // producing a huge allowed_rate that grants unlimited access.
+    //
+    // The security impact: if allowed_rate is unchecked after the division,
+    // the subsequent comparison (requests_made <= allowed_rate) is always
+    // true, effectively disabling the rate limiter.
+    //
+    // Expected: "may be division by zero" on budget / window_ms
+    divisionRateLimiterBypass(budget, window_ms) {
+        // both parameters come from external config → TOP
+        // window_ms can be 0 if config is malformed or attacker-controlled
+        def allowed_rate = budget / window_ms;
+
+        // if window_ms = 0: allowed_rate is undefined/exception
+        // a catching framework may default allowed_rate to MAX_INT,
+        // making the check below always pass → unlimited requests
+        def requests_made = 42;
+        if (requests_made <= allowed_rate) {
+            // access granted — potentially unlimited if allowed_rate is corrupt
+            def session_token = budget * window_ms;
+            return session_token;
+        } else {
+            return 0;
+        }
+    }
+}

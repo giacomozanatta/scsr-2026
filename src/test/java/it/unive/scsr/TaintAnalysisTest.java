@@ -124,7 +124,7 @@ public class TaintAnalysisTest {
 		Program program = IMPFrontend.processFile("inputs/signsxtaint.imp");
 
 		LiSAConfiguration conf = new DefaultConfiguration();
-		conf.workdir = "outputs/sign-x-taint1";
+		conf.workdir = "outputs/sign-x-taint";
 		conf.outputs.add(new HtmlResults<>(true));
 		conf.analysis = simpleDomain(new PointBasedHeap(), new SignXTaint(), defaultTypeDomain());
 		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();

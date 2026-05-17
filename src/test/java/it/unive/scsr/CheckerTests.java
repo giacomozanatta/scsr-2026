@@ -53,6 +53,20 @@ public class CheckerTests {
 
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+
+        conf.outputs.add(new JSONReportDumper());
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    @Test
+    public void testDivisionByZeroPentagon() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/checkertests/divisionbyzero_1-2.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/checkers/divisionbyzero-pentagon";
+        conf.outputs.add(new HtmlResults<>(true));
+
+        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintedSign(), defaultTypeDomain());
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
 
         conf.outputs.add(new JSONReportDumper());

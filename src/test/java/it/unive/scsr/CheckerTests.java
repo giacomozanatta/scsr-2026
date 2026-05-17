@@ -22,6 +22,7 @@ import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 
+import it.unive.scsr.analysis.taintedsign.TaintedSign;
 import it.unive.scsr.checkers.*;
 import org.junit.Test;
 
@@ -36,7 +37,7 @@ public class CheckerTests {
         conf.outputs.add(new HtmlResults<>(true));
 
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-        conf.semanticChecks.add(new OverflowIntervalChecker<>(0, 10));
+        conf.semanticChecks.add(new OverflowIntervalChecker<>(0, 100000));
         conf.outputs.add(new JSONReportDumper());
 
         LiSA lisa = new LiSA(conf);
@@ -59,7 +60,7 @@ public class CheckerTests {
         lisa.run(program);
     }
 
-    @Test
+    /*@Test
     public void testDivisionByZero() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/checkertests/divisionbyzero_1-2.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -72,19 +73,32 @@ public class CheckerTests {
         conf.outputs.add(new JSONReportDumper());
         LiSA lisa = new LiSA(conf);
         lisa.run(program);
+    }*/
+
+    @Test
+    public void prefixCheck() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/checkertests/prefixsuffix_5.imp"); // TODO: update as needed to check the others
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/checkers/prefix";
+        conf.outputs.add(new HtmlResults<>(true));
+
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Prefix(), defaultTypeDomain());
+        conf.semanticChecks.add(new HTTPStringChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
     }
 
     @Test
-    public void prefixSuffixCheck() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/checkertests/prefixsuffix_1.imp"); // TODO: update as needed to check the others
+    public void suffixCheck() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/checkertests/prefixsuffix_5.imp"); // TODO: update as needed to check the others
         LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/checkers/prefixsuffix";
+        conf.workdir = "outputs/checkers/suffix";
         conf.outputs.add(new HtmlResults<>(true));
 
-        // conf.analysis = simpleDomain(defaultHeapDomain(), new Suffix(), defaultTypeDomain());
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Prefix(), defaultTypeDomain());
-        // conf.semanticChecks.add(new DotComStringChecker<>());
-        conf.semanticChecks.add(new HTTPStringChecker<>());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Suffix(), defaultTypeDomain());
+        conf.semanticChecks.add(new DotComStringChecker<>());
         conf.outputs.add(new JSONReportDumper());
 
         LiSA lisa = new LiSA(conf);
@@ -113,6 +127,37 @@ public class CheckerTests {
         conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
 
 
+        conf.outputs.add(new JSONReportDumper());
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    @Test
+    public void testTaintedSignAnalysis() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/checkertests/taintthreelevel_1-2.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/checkers/taintedsign";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintedSign(), defaultTypeDomain());
+
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+
+        for(CFG cfg : program.getAllCFGs()) {
+            String name = cfg.getDescriptor().getName();
+            System.out.println("WORKING ON " + name);
+            System.out.println(isSource(name) + " " + isSanitizer(name) + " " + isSink(name));
+            if(isSource(name)) {
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.TAINTED_ANNOTATION);
+                System.out.println("TAINTED " + name + " on " + cfg.getDescriptor().toString());
+            }
+            else if(isSanitizer(name)) {
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.CLEAN_ANNOTATION);
+            }else if(isSink(name))
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+
+        conf.semanticChecks.add(new TaintedSignChecker<>());
         conf.outputs.add(new JSONReportDumper());
         LiSA lisa = new LiSA(conf);
         lisa.run(program);

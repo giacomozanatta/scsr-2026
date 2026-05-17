@@ -25,10 +25,10 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
     @Override
     public ExtendedSignLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
             throws SemanticException {
-        if (constant.getValue() instanceof Integer) {
-            Integer n = (Integer) constant.getValue();
+        if (constant.getValue() instanceof Number) {
+            Double n = ((Number) constant.getValue()).doubleValue();
 
-            if (n == 0) return ExtendedSignLattice.EQ_ZERO;
+            if (n == 0.0) return ExtendedSignLattice.EQ_ZERO;
             if (n < 0) return ExtendedSignLattice.LT_ZERO;
             return ExtendedSignLattice.GT_ZERO;
         }

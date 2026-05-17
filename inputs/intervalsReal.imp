@@ -1,13 +1,12 @@
 class intervals {
-
 	basic() {
 		def i = 2.23;
-		def j = -10;
+		def j = -10.9;
 		def a = i + j;
 		def s = i - j;
-//		def m = i * j;
-//		def d = i / j;
-//      def l = -i;
+		def m = i * j;
+		def d = i / j;
+		def l = -i;
 	}
 
 	branches(b) {
@@ -20,12 +19,22 @@ class intervals {
   }
 
 	loop(b) {
-			def c = 1;
+		def c = 1;
+		while (b < 3) {
+			c = c + 1;
+			b = b + 1;
+		}
+		return c;
+	}
 
-			while (b < 3) {
-				c = c + 1;
-				b = b + 1;
-			}
-			return c;
+	loopReal() {
+		def x = 0.0;
+		def step = 0.5;
+		def i = 0;
+		while (i < 10) {
+			x = x + step;
+			i = i + 1;
+		}
+		return x;
 	}
 }

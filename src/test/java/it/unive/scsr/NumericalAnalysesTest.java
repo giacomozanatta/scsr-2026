@@ -28,13 +28,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-div_by_zero.imp");
+        Program program = IMPFrontend.processFile("inputs/divbyzero_interval/895227_897270_div_by_zero_interval_1.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/div_by_zero";
+        conf.workdir = "outputs/div-by-zero";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -57,13 +57,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-div_by_zero.imp");
+        Program program = IMPFrontend.processFile("inputs/divbyzero_interval/895227_897270_div_by_zero_interval_1.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/div_by_zero";
+        conf.workdir = "outputs/div-by-zero-pentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -87,13 +87,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/divbyzero_interval/895227_897270_div_by_zero_interval_1.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow8";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -117,13 +117,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/divbyzero_interval/895227_897270_div_by_zero_interval_1.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow16";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -147,13 +147,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/876957-overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/divbyzero_interval/895227_897270_div_by_zero_interval_1.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow32";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -183,7 +183,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflowFloat32";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

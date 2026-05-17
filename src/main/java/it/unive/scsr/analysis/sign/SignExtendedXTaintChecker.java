@@ -96,12 +96,11 @@ public class SignExtendedXTaintChecker<H extends HeapValue<H>, T extends TypeVal
 							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
 							LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
-
 							if (abstractValue.second.isAlwaysTainted()) {
 								// checking for abstractValue.TAINT is the same as checking for abstractValue.TOP
-								tool.warnOn(uc, "Definite vulnerability: argument " + (i+1) + " is tainted");
+								tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
 							} else if (abstractValue.second.isPossiblyTainted()) {
-								tool.warnOn(uc, "Possible vulnerability: argument " + (i+1) + " is possibly tainted");
+								tool.warnOn(uc, "There may be a taint value in a sink: " + par.getLocation());
 							}
 						}
 					} catch (SemanticException e) {

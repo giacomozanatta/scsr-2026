@@ -100,9 +100,10 @@ public class SignXTaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> i
 											(ValueExpression) s, (ProgramPoint) uc, oracle);
 
 							if (abstractValue.second.isAlwaysTainted()) {
-								tool.warnOn(uc, "Definite vulnerability: argument " + (i + 1) + " is tainted");
+								// checking for abstractValue.TAINT is the same as checking for abstractValue.TOP
+								tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
 							} else if (abstractValue.second.isPossiblyTainted()) {
-								tool.warnOn(uc, "Possible vulnerability: argument " + (i + 1) + " is possibly tainted");
+								tool.warnOn(uc, "There may be a taint value in a sink: " + par.getLocation());
 							}
 						}
 					} catch (SemanticException e) {

@@ -96,7 +96,7 @@ public class TaintAnalysisTest {
 
 	@Test
 	public void testTaintThreeLevelsAnalysis() throws ParsingException, AnalysisException {
-		Program program = IMPFrontend.processFile("inputs/signsxtaint.imp");
+		Program program = IMPFrontend.processFile("inputs/taint/894579_896954_taintthreelevel_1-2.imp");
 
 		LiSAConfiguration conf = new DefaultConfiguration();
 		conf.workdir = "outputs/taint-threelevels";
@@ -145,7 +145,7 @@ public class TaintAnalysisTest {
 	}
 	@Test
 	public void testSignExtendedXTaintThreeLevelsAnalysis() throws ParsingException, AnalysisException {
-		Program program = IMPFrontend.processFile("inputs/signsxtaint.imp");
+		Program program = IMPFrontend.processFile("inputs/taint/903942_extendedsign_taint.imp");
 
 		LiSAConfiguration conf = new DefaultConfiguration();
 		conf.workdir = "outputs/sign-extended-x-taint";

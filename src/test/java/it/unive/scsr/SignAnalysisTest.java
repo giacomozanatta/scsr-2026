@@ -20,7 +20,7 @@ public class SignAnalysisTest {
     @Test
     public void testSign() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/signsxtaint.imp");
+        Program program = IMPFrontend.processFile("inputs/taint/903942_extendedsign_taint.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -45,7 +45,7 @@ public class SignAnalysisTest {
         @Test
        public void testExtendedSign() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/signs.imp");
+        Program program = IMPFrontend.processFile("inputs/taint/903942_extendedsign_taint.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -58,6 +58,7 @@ public class SignAnalysisTest {
 
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);

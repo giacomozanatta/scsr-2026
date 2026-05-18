@@ -1,4 +1,6 @@
-package it.unive.scsr.analysis.interval;
+package it.unive.scsr.analysis.Extended_Interval;
+
+import java.math.BigDecimal;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
@@ -14,57 +16,62 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
 
-public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
+public class Extended_Interval implements BaseNonRelationalValueDomain<Extended_IntervalLattice>{
 
 	@Override
-	public IntervalLattice top() {
-		return IntervalLattice.TOP;
+	public Extended_IntervalLattice top() {
+		return Extended_IntervalLattice.TOP;
 	}
 
 	@Override
-	public IntervalLattice bottom() {
-		return IntervalLattice.BOTTOM;
+	public Extended_IntervalLattice bottom() {
+		return Extended_IntervalLattice.BOTTOM;
 	}
 	
 	@Override
-	public IntervalLattice 
+	public Extended_IntervalLattice 
 	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		
 		if(constant.getValue() instanceof Integer) {
-			//I need to check the integer value to 
-			// assign the right approx value
 			Integer n = (Integer) constant.getValue();
-
-			return new IntervalLattice(n, n);
+			return new Extended_IntervalLattice(n, n);
+		}
+		else if(constant.getValue() instanceof Double) {
+			Double n = (Double) constant.getValue();
+			return new Extended_IntervalLattice(n, n);
+		}
+		else if(constant.getValue() instanceof Float) {
+			Float n = (Float) constant.getValue();
+			return new Extended_IntervalLattice(n, n);
 		}
 			
-		return IntervalLattice.TOP;
+		return Extended_IntervalLattice.TOP;
 	}
 
 	@Override
-	public IntervalLattice evalUnaryExpression(UnaryExpression expression, IntervalLattice arg, ProgramPoint pp,
+	public Extended_IntervalLattice evalUnaryExpression(UnaryExpression expression, Extended_IntervalLattice arg, ProgramPoint pp,
 			SemanticOracle oracle) throws SemanticException {
 
 		if(arg.i == null)
-			return IntervalLattice.BOTTOM;
+			return Extended_IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
 			MathNumber u = arg.i.getHigh();
 			MathNumber l = arg.i.getLow();
 			
-			return new IntervalLattice(u.multiply(MathNumber.MINUS_ONE),l.multiply(MathNumber.MINUS_ONE));
+			return new Extended_IntervalLattice(u.multiply(MathNumber.MINUS_ONE),l.multiply(MathNumber.MINUS_ONE));
 		}
 	
-		return IntervalLattice.TOP;
+		return Extended_IntervalLattice.TOP;
 	}
 
 	@Override
-	public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
-			IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+	public Extended_IntervalLattice evalBinaryExpression(BinaryExpression expression, Extended_IntervalLattice left,
+			Extended_IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		
 		if(left.i == null || right.i == null)
-			return IntervalLattice.BOTTOM;
+			return Extended_IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() instanceof AdditionOperator) {
 			
@@ -74,7 +81,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l1 = left.i.getLow();
 			MathNumber l2 = right.i.getLow();
 			
-			return new IntervalLattice(l1.add(l2), u1.add(u2));
+			return new Extended_IntervalLattice(l1.add(l2), u1.add(u2));
 			
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
 
@@ -89,10 +96,10 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber newMin = new MathNumber(0);
 			MathNumber newMax = new MathNumber(0);
 
-			Integer m1 = 0;
-			Integer m2 = 0;
-			Integer m3 = 0;
-			Integer m4 = 0;
+			Double m1 = 0.0;
+			Double m2 = 0.0;
+			Double m3 = 0.0;
+			Double m4 = 0.0;
 
 			if(u1.isInfinite() || u2.isInfinite())
 				newMax = MathNumber.PLUS_INFINITY;
@@ -103,21 +110,21 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 			if(u1.isFinite() && u2.isFinite() && l1.isFinite() && l2.isFinite())
 			{
-				m1 = l1.getNumber().intValue() * l2.getNumber().intValue();
-				m2 = l1.getNumber().intValue() * u2.getNumber().intValue();
-				m3 = u1.getNumber().intValue() * l2.getNumber().intValue();
-				m4 = u1.getNumber().intValue() * u2.getNumber().intValue();
+				m1 = l1.getNumber().doubleValue() * l2.getNumber().doubleValue();
+				m2 = l1.getNumber().doubleValue() * u2.getNumber().doubleValue();
+				m3 = u1.getNumber().doubleValue() * l2.getNumber().doubleValue();
+				m4 = u1.getNumber().doubleValue() * u2.getNumber().doubleValue();
 			}
 
 			if(u1.isFinite() && u2.isFinite())
-				newMax = new MathNumber(maximumCounter(m1, m2, m3, m4));
+				newMax = new MathNumber(BigDecimal.valueOf(maximumCounter(m1, m2, m3, m4)));
 			
 			if(l1.isFinite() && l2.isFinite())
-				newMin = new MathNumber(minimumCounter(m1, m2, m3, m4));
+				newMin = new MathNumber(BigDecimal.valueOf(minimumCounter(m1, m2, m3, m4)));
 			
-			return new IntervalLattice(newMin, newMax);
+			return new Extended_IntervalLattice(newMin, newMax);
 
-			// TODO: homework
+			
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			
 			//[a,b] - [c,d] = [a-d, b-c]
@@ -139,17 +146,13 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 			if(u1.isFinite() && u2.isFinite() && l1.isFinite() && l2.isFinite())
 			{
-				newMin = new MathNumber(l1.getNumber().intValue()-u2.getNumber().intValue());
-				newMax = new MathNumber(u1.getNumber().intValue()-l2.getNumber().intValue());
+				newMin = new MathNumber(l1.getNumber().doubleValue()-u2.getNumber().doubleValue());
+				newMax = new MathNumber(u1.getNumber().doubleValue()-l2.getNumber().doubleValue());
 			}
 
-			return new IntervalLattice(newMin, newMax);
+			return new Extended_IntervalLattice(newMin, newMax);
 
-
-
-			// TODO: homework
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
 
 			MathNumber u1 = left.i.getHigh(); //b
 			MathNumber u2 = right.i.getHigh(); //d
@@ -159,10 +162,10 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 			//[a,b] / [c,d] = [min(a/c, a/d, b/c, b/d), max(a/c, a/d, b/c, b/d)]
 
-			Integer m1 = 0;
-			Integer m2 = 0;
-			Integer m3 = 0;
-			Integer m4 = 0;
+			Double m1 = 0.0;
+			Double m2 = 0.0;
+			Double m3 = 0.0;
+			Double m4 = 0.0;
 
 			MathNumber newMin = new MathNumber(0);
 			MathNumber newMax = new MathNumber(0);
@@ -175,13 +178,13 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
 			if(u1.isFinite() && u2.isFinite() && l1.isFinite() && l2.isFinite())
 			{
-				if(l2.getNumber().intValue() <= 0 && u2.getNumber().intValue() >= 0)
-					return IntervalLattice.BOTTOM;
+				if(l2.getNumber().doubleValue() <= 0 && u2.getNumber().doubleValue() >= 0)
+					return Extended_IntervalLattice.BOTTOM;
 
-				m1 = l1.getNumber().intValue() / l2.getNumber().intValue();
-				m2 = l1.getNumber().intValue() / u2.getNumber().intValue();
-				m3 = u1.getNumber().intValue() / l2.getNumber().intValue();
-				m4 = u1.getNumber().intValue() / u2.getNumber().intValue();
+				m1 = l1.getNumber().doubleValue() / l2.getNumber().doubleValue();
+				m2 = l1.getNumber().doubleValue() / u2.getNumber().doubleValue();
+				m3 = u1.getNumber().doubleValue() / l2.getNumber().doubleValue();
+				m4 = u1.getNumber().doubleValue() / u2.getNumber().doubleValue();
 			}
 
 			if(u1.isFinite() && u2.isFinite())
@@ -190,15 +193,15 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			if(l1.isFinite() && l2.isFinite())
 				newMin = new MathNumber(minimumCounter(m1, m2, m3, m4));
 
-			return new IntervalLattice(newMin, newMax);
+			return new Extended_IntervalLattice(newMin, newMax);
 		}
 
-		return IntervalLattice.TOP;
+		return Extended_IntervalLattice.TOP;
 	}
 
-	public int minimumCounter(int a, int b, int c, int d)
+	public double minimumCounter(double a, double b, double c, double d)
 	{
-		int newMin = 0;
+		double newMin = 0;
 		if(Math.min(a,b) < Math.min(c,d))	
 			newMin = Math.min(a,b);
 
@@ -208,9 +211,9 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		return newMin;
 	}
 
-	public int maximumCounter(int a, int b, int c, int d)
+	public double maximumCounter(double a, double b, double c, double d)
 	{
-		int newMax = 0;
+		double newMax = 0;
 		if(Math.max(a,b) > Math.max(c,d))	
 			newMax = Math.max(a,b);
 
@@ -220,3 +223,4 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 		return newMax;
 	}
 }
+

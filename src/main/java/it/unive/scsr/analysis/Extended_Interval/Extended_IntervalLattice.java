@@ -1,5 +1,6 @@
-package it.unive.scsr.analysis.interval;
+package it.unive.scsr.analysis.Extended_Interval;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import it.unive.lisa.analysis.BaseLattice;
@@ -10,39 +11,51 @@ import it.unive.lisa.util.numeric.MathNumber;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
-public class IntervalLattice 
-		implements BaseLattice<IntervalLattice>, Comparable<IntervalLattice> {
+public class Extended_IntervalLattice 
+		implements BaseLattice<Extended_IntervalLattice>, Comparable<Extended_IntervalLattice> {
 	
 	IntInterval i;
 	
-	public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
-	public static IntervalLattice BOTTOM = new IntervalLattice(null);
-	public static IntervalLattice ZERO = new IntervalLattice(0,0);
+	public static Extended_IntervalLattice TOP = new Extended_IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
+	public static Extended_IntervalLattice BOTTOM = new Extended_IntervalLattice(null);
+	public static Extended_IntervalLattice ZERO = new Extended_IntervalLattice(0,0);
 	
-	public IntervalLattice(IntInterval i) {
+	public Extended_IntervalLattice(IntInterval i) {
 		this.i = i;
 	}
+
+	public Extended_IntervalLattice(double l, double u)
+	{
+		this.i = new IntInterval(
+			new MathNumber(BigDecimal.valueOf(l)), new MathNumber(BigDecimal.valueOf(u)));
+	}
+
+	public Extended_IntervalLattice(float l, float u)
+	{
+		this.i = new IntInterval(
+			new MathNumber(BigDecimal.valueOf(l)), new MathNumber(BigDecimal.valueOf(u)));
+	}
 	
-	public IntervalLattice(MathNumber l, MathNumber u) {
+	public Extended_IntervalLattice(MathNumber l, MathNumber u) {
 		this.i = new IntInterval(l, u);
 	}
 	
-	public IntervalLattice(int l, int u) {
+	public Extended_IntervalLattice(int l, int u) {
 		this.i = new IntInterval(l, u);
 	}
 	
-	public IntervalLattice() {
+	public Extended_IntervalLattice() {
 		this(IntInterval.INFINITY);
 	}
 	
 
 	@Override
-	    public IntervalLattice top() {
+	    public Extended_IntervalLattice top() {
 			return TOP;
 	    }
 
 	    @Override
-	    public IntervalLattice bottom() {
+	    public Extended_IntervalLattice bottom() {
 	    	return BOTTOM;
 	    }
 
@@ -58,7 +71,7 @@ public class IntervalLattice
 	    }
 
 	    @Override
-	    public IntervalLattice lubAux(IntervalLattice other) throws SemanticException {
+	    public Extended_IntervalLattice lubAux(Extended_IntervalLattice other) throws SemanticException {
 	
 	    	if(this.i == null || other.i == null)
 	    		return BOTTOM;
@@ -82,11 +95,11 @@ public class IntervalLattice
 	    	else
 	    		uResult = u2;
 	    	
-	    	return new IntervalLattice(lResult,uResult);
+	    	return new Extended_IntervalLattice(lResult,uResult);
 	    }
 	    
 	    @Override
-		public IntervalLattice glbAux(IntervalLattice other) throws SemanticException {
+		public Extended_IntervalLattice glbAux(Extended_IntervalLattice other) throws SemanticException {
 
 	    	if(this.i == null || other.i == null)
 	    		return BOTTOM;
@@ -109,18 +122,18 @@ public class IntervalLattice
 	    	else
 	    		uResult = u2;
 
-			return new IntervalLattice(lResult, uResult);
+			return new Extended_IntervalLattice(lResult, uResult);
 		}
 
 		@Override
-	    public boolean lessOrEqualAux(IntervalLattice other) throws SemanticException {
+	    public boolean lessOrEqualAux(Extended_IntervalLattice other) throws SemanticException {
 			if(this.i == null || other.i == null)
 				return false;
-	    	return this.i.includes(other.i);
+	    	return other.i.includes(this.i);
 	    }
 
 		@Override
-		public IntervalLattice wideningAux(IntervalLattice other) throws SemanticException {
+		public Extended_IntervalLattice wideningAux(Extended_IntervalLattice other) throws SemanticException {
 			
 	    	if(this.i == null || other.i == null)
 	    		return BOTTOM;
@@ -129,18 +142,18 @@ public class IntervalLattice
 			MathNumber u2 = other.i.getHigh();
 			
 			MathNumber uResult = u1;
-			if(u2.geq(u1))
+			if(u2.gt(u1))
 				uResult = MathNumber.PLUS_INFINITY;
 			
 			MathNumber l1 = this.i.getLow();
 			MathNumber l2 = other.i.getLow();
 			
 			MathNumber lResult = l1;
-			if(l2.leq(l1)) {
+			if(l2.lt(l1)) {
 				lResult = MathNumber.MINUS_INFINITY;
 			}
 			
-			return new IntervalLattice(lResult, uResult);
+			return new Extended_IntervalLattice(lResult, uResult);
 			
 		}
 
@@ -157,12 +170,12 @@ public class IntervalLattice
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			IntervalLattice other = (IntervalLattice) obj;
+			Extended_IntervalLattice other = (Extended_IntervalLattice) obj;
 			return Objects.equals(i, other.i);
 		}
 
 		@Override
-		public int compareTo(IntervalLattice o) {
+		public int compareTo(Extended_IntervalLattice o) {
 			if(isBottom())
 				return o.isBottom() ? 0 : -1; 
 			if(isTop())

@@ -1,4 +1,4 @@
-package test.java.it.unive.scsr;
+package it.unive.scsr;
 
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;

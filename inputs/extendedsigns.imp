@@ -1,0 +1,173 @@
+class extended_signs_test {
+
+	// 1. Testing Arithmetic and Powerset
+	testArithmetic() {
+		def pos = 5; // >0 (GT_ZERO)
+		def neg = -3; // <0 (LT_ZERO)
+		def zero = 0; // =0 (EQ_ZERO)
+
+		// Translates to (+ ADD +), preserving >0
+		def sub_precise = pos - neg;
+
+		// Both domains determine this is >0
+		def mul_negatives = neg * neg;
+
+		// pos + zero evaluates to >=0 (NON_NEG)
+		// NON_NEG * <0 should evaluate to <=0 (NON_POS)
+		def intermediate_geq = pos + zero;
+		def complex_mul = intermediate_geq * neg;
+
+		// Remainder and Modulo Check
+		def rem_result = neg % pos;
+	}
+
+	// 2. Testing Assume/Satisfies
+	testBranchesAndRefinement(x) {
+		// Variable 'x' enters as TOP
+
+		// INSIDE IF BRANCH
+		if (x != 0) {
+			// NON_ZERO * NON_ZERO = NON_ZERO
+			def square = x * x;
+
+		// INSIDE ELSE BRANCH
+		} else {
+			// ZERO + POS = POS
+			def fine_add = x + 10;
+		}
+	}
+
+	// 3. Testing Loop Invariants, LUB Fixpoints, and Widening Bounds
+	testLoopsAndFixpoints() {
+		def i = 0;		// =0 (EQ_ZERO)
+		def step = 1;   // >0 (GT_ZERO)
+
+		// Loop
+		// Iteration 0: i = ZERO
+		// Iteration 1: i = ZERO + POS = POS
+		// LUB(ZERO, POS) = NON_NEG  -->  NON_NEG
+		// Iteration 2+: NON_NEG + POS = POS is contained in NON_NEG ->  stable
+		while (i < 100) {
+			i = i + step;
+		}
+
+		// When exit i is NON_NEG (>=0)
+		return i;
+	}
+
+	// 4. Testing Soundness Bounds and Error Unreachability (BOTTOM Tracking)
+	testDivisionAndBottom(y) {
+		// If y is constrained to be exactly zero
+		if (y == 0) {
+			// Division by ZERO -> BOTTOM (dead code from this point on)
+			def dead_path = 10 / y;
+
+			// Stays BOTTOM -> any operation on BOTTOM is BOTTOM
+			def continuous_bottom = dead_path + 5;
+		}
+	}
+
+	// 5. Test NON_NEG (>=0)
+	testNonNeg(x) {
+		if (x >= 0) {
+			// x: NON_NEG (>=0)
+
+			// NON_NEG + NON_NEG = NON_NEG
+			def double_x = x + x;
+
+			// NON_NEG * NON_NEG = NON_NEG
+			def square_x = x * x;
+
+			// 0 - NON_NEG = NON_POS
+			def neg_x = 0 - x;
+
+			// NON_NEG + POS = POS
+			def shifted = x + 1;
+
+			// NON_NEG / POS = NON_NEG
+			def halved = x / 2;
+
+			// NON_NEG * NEG = NON_POS
+			def flipped = x * (-1);
+		}
+	}
+
+	// 6. Test NON_POS (<=0)
+	testNonPos(x) {
+		if (x <= 0) {
+			// x: NON_POS (<=0)
+
+			// NON_POS + NON_POS = NON_POS
+			def double_x = x + x;
+
+			// NON_POS * NON_POS = NON_NEG
+			def square_x = x * x;
+
+			// 0 - NON_POS = NON_NEG
+			def neg_x = 0 - x;
+
+			// NON_POS * POS = NON_POS
+			def scaled = x * 2;
+
+			// NON_POS + POS = TOP
+			def shifted = x + 5;
+
+			// NON_POS * NEG = NON_NEG
+			def negated_scale = x * (-2);
+		}
+	}
+
+	// 7. Test NON_ZERO (!=0)
+	testNonZero(x) {
+		if (x != 0) {
+			// x: NON_ZERO (!=0)
+
+			// NON_ZERO * NON_ZERO = NON_ZERO
+			def square_x = x * x;
+
+			// NON_ZERO + NON_ZERO = TOP
+			def double_x = x + x;
+
+			// 0 - NON_ZERO = NON_ZERO
+			def neg_x = 0 - x;
+
+			// POS / NON_ZERO = TOP
+			def guarded_div = 10 / x;
+
+			// NON_ZERO * POS = NON_ZERO
+			def scaled = x * 3;
+		}
+	}
+
+	// 8. Cross-element interactions
+	testCrossElement(a, b) {
+		if (a >= 0) {
+			if (b <= 0) {
+				// Here we have
+				// - a: NON_NEG
+				// - b: NON_POS
+
+				// NON_NEG * NON_POS = NON_POS  (>=0 * <=0 = <=0)
+				def product = a * b;
+
+				// NON_NEG - NON_POS = NON_NEG
+				def diff = a - b;
+
+				// NON_NEG + NON_POS = TOP
+				def sum = a + b;
+			}
+		}
+
+		if (a != 0) {
+			if (b != 0) {
+				// Both NON_ZERO
+
+				// NON_ZERO * NON_ZERO = NON_ZERO
+				def product = a * b;
+
+				// NON_ZERO / NON_ZERO = TOP
+				def quotient = a / b;
+			}
+		}
+	}
+}

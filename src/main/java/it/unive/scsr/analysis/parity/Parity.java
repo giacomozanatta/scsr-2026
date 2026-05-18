@@ -55,6 +55,9 @@ public class Parity implements
     @Override
     public ParityLattice evalBinaryExpression(BinaryExpression expression, ParityLattice left, ParityLattice right,
                                                                             ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+
+        if(left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM) return ParityLattice.BOTTOM;
+
         if(expression.getOperator() instanceof AdditionOperator
                 || expression.getOperator() instanceof SubtractionOperator) {
             if(left == ParityLattice.ODD && right == ParityLattice.ODD
@@ -63,8 +66,6 @@ public class Parity implements
             if(left == ParityLattice.ODD && right == ParityLattice.EVEN
                     || left == ParityLattice.EVEN && right == ParityLattice.ODD)
                 return ParityLattice.ODD;
-            if(left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM)
-                return ParityLattice.BOTTOM;
             if(left == ParityLattice.TOP || right == ParityLattice.TOP)
                 return ParityLattice.TOP;
 
@@ -75,19 +76,17 @@ public class Parity implements
                     || left == ParityLattice.EVEN && right == ParityLattice.ODD
                     || left == ParityLattice.EVEN && right == ParityLattice.EVEN)
                 return ParityLattice.EVEN;
-            if(left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM)
-                return ParityLattice.BOTTOM;
             if(left == ParityLattice.TOP || right == ParityLattice.TOP)
                 return ParityLattice.TOP;
 
-        } else if (expression.getOperator() instanceof DivisionOperator
-                || expression.getOperator() instanceof ModuloOperator
+        } else if (expression.getOperator() instanceof ModuloOperator
                 || expression.getOperator() instanceof RemainderOperator) {
-            if(left == ParityLattice.BOTTOM || right == ParityLattice.BOTTOM)
-                return ParityLattice.BOTTOM;
+            if (right == ParityLattice.EVEN) {
+                return left;
+            }
             return ParityLattice.TOP;
-
         }
+
         return ParityLattice.TOP;
     }
 }

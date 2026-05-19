@@ -1,0 +1,12 @@
+class overflow {
+
+    f0() {
+        def a = 2147483640;
+        def b = 1000;
+        def c = a + b;
+        def d = b + b;
+
+        return;
+    }
+
+}

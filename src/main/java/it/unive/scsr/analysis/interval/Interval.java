@@ -121,6 +121,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
                 return IntervalLattice.TOP;
 
             IntervalLattice res = new IntervalLattice(lsub, usub);
+            return res;
 
         } else if (expression.getOperator() instanceof DivisionOperator) {
             /*if(right.equals(IntervalLattice.ZERO))
@@ -214,9 +215,4 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 
         return IntervalLattice.TOP;
     }
-
-
-
-
-
 }

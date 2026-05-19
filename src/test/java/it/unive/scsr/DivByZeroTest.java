@@ -38,6 +38,6 @@ public class DivByZeroTest {
         lisa.run(program);
 
         System.out.println("Analysis completed for " + "inputs/divbyzero/divbyzero.imp");
-        System.out.println("Check outputs in: outputs/divbyzero/" + "divbyzero");
+        System.out.println("Check outputs in: outputs/" + "divbyzero");
     }
 }

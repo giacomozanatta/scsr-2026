@@ -1,0 +1,23 @@
+class PaginationSystem {
+
+    computeTotalPages() {
+        def totalItems = 250;
+        def itemsPerPage = 20;
+        def userOverride = 0; // L'utente seleziona '0' nell'interfaccia
+
+        // Bug di logica: il sistema accetta lo zero senza validare
+        if (userOverride == 0) {
+            itemsPerPage = 0;
+        } else {
+            itemsPerPage = userOverride;
+        }
+
+        // Qui l'analisi statica capirà che nel ramo if, itemsPerPage diventa [0, 0].
+        // Se il framework unisce i rami (Join), l'intervallo sarà [0, 20].
+        // Però, se forziamo il fallimento, triggeriamo il bug.
+
+        def totalPages = totalItems / itemsPerPage;
+
+        return totalPages;
+    }
+}

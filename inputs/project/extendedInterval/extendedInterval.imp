@@ -1,0 +1,62 @@
+class FloatTests {
+
+    testInfiniteLoopPrevention() {
+        def x = 0.0;
+        def threshold = 1.0;
+
+        // In aritmetica float, tra 0.0 e 1.0 ci sono infiniti numeri.
+        // LiSA analizzerà x =[0.0, 0.0], poi x = [0.0, 0.1].
+        // Accorgendosi che il limite superiore cresce, il tuo Widening
+        // forzerà x a diventare [0.0, +Infinity].
+        while (x < threshold) {
+            x = x + 0.1;
+        }
+
+        return x;
+    }
+
+    calculateTemperature() {
+            // Valori esplicitamente richiesti dalla slide 4
+            def tempMin = -1.5;
+            def tempMax = 0.0;
+            def precisionLimit = 0.99;
+
+            def currentTemp = tempMin;
+            def adjustedTemp = 0.0;
+
+            // Il dominio ExtendedInterval calcolerà:[-1.5, -1.5] * [2.5, 2.5]
+            // e restituirà esattamente l'intervallo float [-3.75, -3.75]
+            if (currentTemp < 0.0) {
+                adjustedTemp = currentTemp * 2.5;
+            } else {
+                adjustedTemp = precisionLimit;
+            }
+
+            // Dopo l'if, il Join (lub) unirà[-3.75, -3.75] e [0.99, 0.99].
+            // Il risultato astratto finale sarà un perfetto: [-3.75, 0.99]
+            return adjustedTemp;
+        }
+
+        testZeroCrossing() {
+                def value = 100.5;
+                def divider = -2.0;
+                def result = 0.0;
+
+                // divider parte da -2.0 e cresce di 1.5 alla volta
+                // Iterazioni astratte previste:
+                // divider =[-2.0, -2.0]
+                // divider = [-2.0, -0.5]
+                // divider =[-2.0, +Infinity] (dopo il Widening)
+                while (divider < 5.0) {
+
+                    divider = divider + 1.5;
+
+                    // Arrivati qui, 'divider' contiene l'intervallo [-2.0, +Inf].
+                    // Poiché questo intervallo contiene lo 0.0, il tuo codice Java
+                    // scatterà la condizione: (l2 < 0 && u2 > 0) e restituirà TOP.
+                    result = value / divider;
+                }
+
+                return result;
+            }
+}

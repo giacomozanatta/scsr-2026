@@ -1,0 +1,24 @@
+/*
+ * Same site tracker, just adds a parameter
+ * to the link to track users on the website
+ */
+class AnalyticsTracker {
+    attachTracking(url) {
+        def tracking = "?source=analytics";
+        return url + tracking;
+    }
+
+    log(msg) {
+            return msg;
+    }
+
+    testTracking() {
+        def target = "https://metrics.example.com";
+        def tracker = this.attachTracking(target);
+        this.log(tracker);
+
+        target = "inches.example.com";
+        tracker = this.attachTracking(target);
+        this.log(tracker);
+    }
+}

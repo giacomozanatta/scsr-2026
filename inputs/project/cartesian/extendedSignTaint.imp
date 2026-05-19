@@ -1,0 +1,82 @@
+class ExtendedSingTaint{
+    /*
+     * TEST 1: Correttezza del prodotto e precisione dei segni.
+     * Obiettivo: Verificare che il dominio restringa correttamente il segno
+     * mantenendo l'informazione di taint.
+     */
+    test1() {
+        def source; // Ipotizziamo che 'source' sia marchiata come Taint (T)
+        source = 10;
+
+        // x eredita il segno POS e il taint T da source
+        def x = source;
+
+        if (x > 0) {
+            // Qui ci aspettiamo: <POS, Taint>
+            x = x + 1;
+        } else {
+            // Ramo irraggiungibile: dovrebbe essere BOTTOM
+            // L'analisi del prodotto dovrebbe accorgersene tramite ExtendedSign
+            x = x - 1;
+        }
+
+        // In uscita dall'if ci aspettiamo <POS, Taint>
+        def sink = x;
+    }
+    /*
+     * TEST 2: Interazione tra operazioni matematiche e Taint.
+     * Obiettivo: Verificare se il prodotto gestisce correttamente lo ZERO
+     * e come questo influenza il taint (moltiplicazione per zero).
+     */
+    test2() {
+        def t = 42; // Taint
+        def zero = 0; // Clean (C)
+
+        // Caso A: Taint * POS -> Taint
+        def res1 = t * 2; // Ci aspettiamo <POS, Taint>
+
+        // Caso B: Taint * 0 -> Taint (o Clean a seconda della policy,
+        // solitamente in LiSA rimane Taint se una sorgente è contaminata)
+        def res2 = t * zero; // Ci aspettiamo <ZERO, Taint>
+
+        if (res2 == 0) {
+            // Qui ExtendedSign sa che res2 è ZERO
+            // Taint sa che è contaminato
+            def check = res2; // <ZERO, Taint>
+        }
+    }
+    /*
+     * TEST 3: Contraddizione logica (Dead Code Detection).
+     * Obiettivo: Verificare che se ExtendedSign va in BOTTOM,
+     * l'intero prodotto cartesiano diventi BOTTOM.
+     */
+    test3() {
+        def secret = 100; // Taint
+
+        if (secret < 0) {
+            // Questo ramo è logicamente impossibile perché secret è 100 (POS)
+            // La assumeBinaryExpression di ExtendedSign restituirà BOTTOM
+            // Quindi il prodotto cartesiano deve essere <BOTTOM, BOTTOM>
+            def unreachable = secret;
+        } else {
+            // Ramo corretto: <POS, Taint>
+            def reachable = secret;
+        }
+    }
+    /*
+     * TEST 4: Modulo e Remainder (Specifici per ExtendedSign).
+     * Verificare se le operazioni implementate nel file ExtendedSign.java
+     * preservano correttamente il taint.
+     */
+    test4() {
+        def s = 15; // Taint
+        def mod = s % 2;
+        // ExtendedSign.java dice: return right (cioè il segno di 2 -> POS)
+        // TaintThreeLevels dovrebbe propagare il taint di s
+        // Risultato atteso: <POS, Taint>
+
+        def rem = s / 0;
+        // ExtendedSign.java restituisce BOTTOM per divisione per zero
+        // L'analisi deve fermarsi qui (BOTTOM)
+    }
+}

@@ -1,0 +1,27 @@
+class SecureRouter {
+
+    routeTraffic(useEuServer) {
+        def targetUrl = "";
+
+        if (useEuServer > 0) {
+            targetUrl = "https://eu-west.amazon.com/api";
+        } else {
+            targetUrl = "https://us-east.amazon.com/api";
+        }
+
+        // COSA SUCCEDE QUI AL NODO DI JOIN?
+        // L'analizzatore deve unire (lubAux) "https://eu-west..." e "https://us-east...".
+        // Nel dominio dei prefissi, il LUB (minimo comune multiplo) è il MASSIMO PREFISSO COMUNE.
+        // Il prefisso comune tra le due stringhe è "https://".
+        // Dato che la stringa risultante è esattamente "https://", il tuo checker
+        // intercetterà correttamente il parametro e lancerà l'allarme!
+
+        this.dispatch(targetUrl);
+
+        return 1;
+    }
+
+    dispatch(endpoint) {
+        return 0;
+    }
+}

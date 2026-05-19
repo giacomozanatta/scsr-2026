@@ -1,0 +1,21 @@
+class WebhookNotifier {
+
+    sendNotification() {
+        // Assegnazione diretta
+        def webhookUrl = "https://hooks.slack.com/services/T000/B000/XXX";
+        def payload = "System is up";
+
+        // Chiamata alla funzione.
+        // param 0: this
+        // param 1: webhookUrl -> QUI DEVE SCATTARE IL WARNING ("... parameters: 1st")
+        // param 2: payload
+        this.postData(webhookUrl, payload);
+
+        return 1;
+    }
+
+    postData(url, data) {
+        // Simulazione funzione nativa/interna
+        return 0;
+    }
+}

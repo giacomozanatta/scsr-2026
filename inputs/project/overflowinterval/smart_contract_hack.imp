@@ -1,0 +1,23 @@
+class SmartContract {
+
+    mintTokens() {
+        def totalSupply = 1000000;
+        def userBalance = 0;
+        def isMinting = 1;
+
+        // Il ciclo while farà scattare il Widening.
+        // L'analizzatore capirà che 'userBalance' cresce costantemente
+        // e lo approssimerà all'intervallo[0, +Infinity].
+        while (isMinting > 0) {
+
+            // Qui avviene l'Addition.
+            // abstractValue = [0, +Inf] + [500, 500] =[500, +Inf]
+            // +Inf è maggiore di representableIntegers.getHigh(), quindi OVERFLOW!
+            userBalance = userBalance + 500;
+
+            totalSupply = totalSupply + 500;
+        }
+
+        return userBalance;
+    }
+}

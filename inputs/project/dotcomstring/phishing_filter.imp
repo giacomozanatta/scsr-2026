@@ -1,0 +1,20 @@
+class PhishingFilter {
+
+    checkRedirect() {
+        // Stringa statica maliziosa
+        def maliciousUrl = "http://secure-login-update.com";
+        def isSafe = 0;
+
+        // Chiamata a funzione. In IMP, "this" conta come parametro 0.
+        // maliciousUrl sarà il parametro di indice 1.
+        // Il checker deve lanciare: "The function uses a .com in the following parameters: 1st"
+        this.logRedirect(maliciousUrl, isSafe);
+
+        return 1;
+    }
+
+    logRedirect(url, status) {
+        // Simulazione di una funzione interna
+        return 0;
+    }
+}

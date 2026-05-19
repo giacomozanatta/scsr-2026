@@ -1,0 +1,201 @@
+// ================================================================
+//  STRING ANALYSIS TEST SUITE
+//  Target checkers:
+//    - HTTPStringChecker   (uses Prefix domain / StrPrefix)
+//    - DotComStringChecker (uses Suffix domain / StrSuffix)
+//
+//  Each class documents:
+//    [HTTP]    expected result from HTTPStringChecker
+//    [DOTCOM]  expected result from DotComStringChecker
+//
+//  Both checkers inspect function call parameters only.
+//    HTTPStringChecker   -> fires when prefix starts with "http://" or "https://"
+//    DotComStringChecker -> fires when suffix ends with ".com"
+// ================================================================
+
+
+// ----------------------------------------------------------------
+//  TEST 1 - Direct HTTPS URL passed to a network call
+//
+//  Real-world inspiration: web scraper / HTTP client that accepts
+//  a target URL. Passing a hardcoded "https://..." URL as argument
+//  is detectable by the Prefix domain because the full literal is
+//  the known prefix.
+//
+//  [HTTP]    WARNING on  this.fetch(url)  - prefix "https://api.example.com/v1/data"
+//            WARNING on  this.fetch(url2) - prefix "http://legacy.example.com/endpoint"
+//  [DOTCOM]  NO warning  (suffix of "https://api.example.com/v1/data"
+//                         ends with "/data", not ".com")
+// ----------------------------------------------------------------
+class WebScraper {
+
+    fetch(url) {
+        return url;
+    }
+
+    testHttpsUrl() {
+        def url = "https://api.example.com/v1/data";
+        def result = this.fetch(url);    // WARNING [HTTP]: prefix "https://..."
+        return result;
+    }
+
+    testHttpUrl() {
+        def url2 = "http://legacy.example.com/endpoint";
+        def result = this.fetch(url2);   // WARNING [HTTP]: prefix "http://..."
+        return result;
+    }
+
+    testSafeRelativePath() {
+        def path = "/api/v1/data";
+        def result = this.fetch(path);   // SAFE [HTTP]: no http prefix
+        return result;
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 2 - .com domain passed to a DNS resolver
+//
+//  Real-world inspiration: DNS lookup utility that resolves a
+//  hostname. Passing a ".com" domain is detectable by the Suffix
+//  domain because the full literal is the known suffix.
+//
+//  [HTTP]    NO warning  (prefix of "google.com" does not start
+//                         with "http://" or "https://")
+//  [DOTCOM]  WARNING on  this.resolve(domain)  - suffix ".com"
+//            NO warning  on this.resolve(safe)  - suffix ".edu"
+// ----------------------------------------------------------------
+class DnsResolver {
+
+    resolve(domain) {
+        return domain;
+    }
+
+    testDotComDomain() {
+        def domain = "google.com";
+        def result = this.resolve(domain);     // WARNING [DOTCOM]: ends with ".com"
+        return result;
+    }
+
+    testSafeDomain() {
+        def safe = "university.edu";
+        def result = this.resolve(safe);       // SAFE [DOTCOM]: ends with ".edu"
+        return result;
+    }
+
+    testOrgDomain() {
+        def org = "wikipedia.org";
+        def result = this.resolve(org);        // SAFE [DOTCOM]: ends with ".org"
+        return result;
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 3 - Both checkers fire on the same argument
+//
+//  Real-world inspiration: redirect function that forwards to a
+//  .com website over HTTPS. The string "https://google.com" has
+//  prefix "https://" AND suffix ".com", so both checkers fire
+//  on the same call site.
+//
+//  [HTTP]    WARNING on  this.redirect(url)  - prefix "https://google.com"
+//  [DOTCOM]  WARNING on  this.redirect(url)  - suffix ".com"
+// ----------------------------------------------------------------
+class Redirector {
+
+    redirect(url) {
+        return url;
+    }
+
+    testHttpsDotCom() {
+        def url = "https://google.com";
+        def result = this.redirect(url);  // WARNING [HTTP] + WARNING [DOTCOM]
+        return result;
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 4 - URL built via string concatenation
+//
+//  Real-world inspiration: URL builder that prepends the scheme
+//  to a hostname parameter. The Prefix domain propagates "https://"
+//  as the known prefix of the concatenated result, even though
+//  the full string is not a literal.
+//  The Suffix domain cannot determine the suffix because it depends
+//  on the unknown parameter `host` (TOP -> empty suffix).
+//
+//  [HTTP]    WARNING on  this.call(fullUrl)  - prefix "https://"
+//  [DOTCOM]  NO warning  (suffix of host is unknown -> TOP)
+// ----------------------------------------------------------------
+class UrlBuilder {
+
+    call(fullUrl) {
+        return fullUrl;
+    }
+
+    buildAndCall(host) {
+        def scheme = "https://";
+        def fullUrl = scheme + host;
+        def result = this.call(fullUrl);  // WARNING [HTTP]: prefix "https://"
+        return result;                    // SAFE   [DOTCOM]: suffix of host is unknown
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 5 - Domain built via string concatenation
+//
+//  Real-world inspiration: domain name builder that appends ".com"
+//  to a brand name parameter. The Suffix domain propagates ".com"
+//  as the known suffix of the concatenated result.
+//  The Prefix domain cannot determine the prefix because it depends
+//  on the unknown parameter `brand` (TOP -> empty prefix).
+//
+//  [HTTP]    NO warning  (prefix of brand is unknown -> TOP)
+//  [DOTCOM]  WARNING on  this.lookup(domain)  - suffix ".com"
+// ----------------------------------------------------------------
+class DomainBuilder {
+
+    lookup(domain) {
+        return domain;
+    }
+
+    buildAndLookup(brand) {
+        def tld = ".com";
+        def domain = brand + tld;
+        def result = this.lookup(domain);  // SAFE    [HTTP]:   prefix unknown
+        return result;                     // WARNING [DOTCOM]: suffix ".com"
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 6 - Safe strings: no warnings from either checker
+//
+//  Generic strings (relative paths and file names) that have
+//  neither an http prefix nor a .com suffix. Both checkers
+//  must remain silent, verifying absence of false positives.
+//
+//  [HTTP]    NO warning
+//  [DOTCOM]  NO warning
+// ----------------------------------------------------------------
+class SafeRouter {
+
+    route(path) {
+        return path;
+    }
+
+    testRelativePath() {
+        def path = "/dashboard/settings";
+        def result = this.route(path);      // SAFE [HTTP] + SAFE [DOTCOM]
+        return result;
+    }
+
+    testFileExtension() {
+        def file = "report.pdf";
+        def result = this.route(file);      // SAFE [HTTP] + SAFE [DOTCOM]
+        return result;
+    }
+}

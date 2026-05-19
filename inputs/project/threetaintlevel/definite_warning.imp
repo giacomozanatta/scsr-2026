@@ -1,0 +1,25 @@
+class DefiniteTaintTest {
+
+    // Sorgente: LiSA valuterà il ritorno di questa funzione come TAINT.
+    @lisa.taint.Source
+    readSecretFile() {
+        return "password123";
+    }
+
+    // Pozzo: Il tuo checker intercetta questa funzione grazie all'annotazione.
+    @lisa.taint.Sink
+    sendToExternalServer(data) {
+        return 0;
+    }
+
+    testDefinite() {
+        // x diventa matematicamente TAINTED
+        def x = this.readSecretFile();
+
+        // Passando x al Sink, il Checker vedrà TAINT e lancerà:
+        // "DEFINITE WARNING: Tainted value at..."
+        this.sendToExternalServer(x);
+
+        return 1;
+    }
+}

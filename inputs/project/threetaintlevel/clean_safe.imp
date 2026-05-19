@@ -1,0 +1,21 @@
+class CleanTaintTest {
+
+    @lisa.taint.Sink
+    writeToDatabase(query) {
+        return 0;
+    }
+
+    testCleanSafe() {
+        // Questa è una costante. L'evalConstant del BaseTaint restituisce CLEAN.
+        def safeQuery = "SELECT * FROM public_data";
+
+        // Il checker controlla l'argomento.
+        // Trova CLEAN.
+        // CLEAN.isAlwaysTainted() è FALSE.
+        // CLEAN.isPossiblyTainted() è FALSE.
+        // NESSUN WARNING VIENE EMESSO! Il programma è sicuro.
+        this.writeToDatabase(safeQuery);
+
+        return 1;
+    }
+}

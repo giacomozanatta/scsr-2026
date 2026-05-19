@@ -1,0 +1,88 @@
+class ExtendedSignTests {
+
+    // TEST 1: Regole Matematiche di Base (evalBinaryExpression)
+    // Obiettivo: Dimostrare che il dominio sa che NEG * NEG = POS
+    testMath() {
+        def a = -5;      // Stato: NEG
+        def b = -10;     // Stato: NEG
+
+        // Il tuo evalBinaryExpression farà: NEG * NEG = POS
+        def c = a * b;
+
+        // POS + POS = POS
+        def d = c + 5;
+
+        def zeroVal = 0; // Stato: ZERO
+
+        // NEG * ZERO = ZERO
+        def e = a * zeroVal;
+
+        return c;
+    }
+
+    // TEST 2: L'operatore di JOIN / LUB (lubAux)
+    // Obiettivo: Dimostrare che l'unione di POS e NEG genera NEQZERO (!= 0)
+    testJoin(flag) {
+        def x = 0;
+
+        if (flag > 0) {
+            x = 10;  // Ramo IF -> x diventa POS
+        } else {
+            x = -10; // Ramo ELSE -> x diventa NEG
+        }
+
+        // COSA SUCCEDE QUI NELL'ANALISI STATICA?
+        // Alla fine dell'if, LiSA chiama il tuo metodo lubAux() per unire i rami.
+        // POS lub NEG = NEQZERO.
+        // L'analizzatore saprà per certo che 'x' NON È ZERO, e quindi
+        // non segnalerà nessuna divisione per zero qui!
+        def result = 100 / x;
+
+        return result;
+    }
+
+    // TEST 3: L'operatore di MEET e FILTRAGGIO (glbAux e assumeBinaryExpression) 🏆
+    // Obiettivo: Mostrare la precisione del dominio nei rami if annidati
+    testAssume(unknownInput) {
+        def val = unknownInput; // Stato iniziale: TOP
+        def safe = 0;
+
+        // Il tuo assumeBinaryExpression filtra lo stato TOP e lo fa diventare GEQZERO (>= 0)
+        if (val >= 0) {
+
+            // Ora val è GEQZERO. Se entra in questo secondo if, chiami glbAux().
+            // Il tuo glbAux farà: GEQZERO glb NEQZERO = POS (> 0)
+            if (val != 0) {
+                // Qui l'analizzatore sa che 'val' è strettamente POSITIVO
+                safe = 100 / val;
+            } else {
+                // Nel ramo else di (val != 0), val deve essere per forza ZERO
+                safe = -1;
+            }
+
+        } else {
+            // Nel ramo else di (val >= 0), lo stato viene filtrato a NEG (< 0)
+            safe = 100 / val;
+        }
+
+        return safe;
+    }
+
+    // TEST 4: Cicli While (Convergenza e Widening)
+    // Obiettivo: Mostrare come il dominio gestisce la crescita in un ciclo
+    testLoop() {
+        def counter = 0; // Inizia come ZERO
+
+        // All'interno del ciclo, counter riceve continue addizioni (+1).
+        // Il calcolo astratto farà: ZERO + POS = POS.
+        // Poi il LUB del ciclo unirà lo stato iniziale (ZERO) con lo stato del ciclo (POS).
+        // ZERO lub POS = GEQZERO (>= 0).
+        while (counter < 10) {
+            counter = counter + 1;
+        }
+
+        // Quando esce dal ciclo, l'analizzatore avrà associato a 'counter'
+        // lo stato stabile GEQZERO.
+        return counter;
+    }
+}

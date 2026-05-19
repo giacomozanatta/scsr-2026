@@ -1,0 +1,28 @@
+class CloudRouter {
+
+    routeTraffic(load) {
+        def targetServer = "";
+
+        if (load > 80) {
+            targetServer = "https://backup-server.amazon.com";
+        } else {
+            targetServer = "https://main-server.amazon.com";
+        }
+
+        // COSA SUCCEDE QUI NELL'ANALISI STATICA?
+        // LiSA esce dall'if ed esegue il "Join" (lubAux) dei due stati.
+        // Qual è il Join (il minimo comune denominatore dei suffissi)
+        // tra "backup-server.amazon.com" e "main-server.amazon.com"?
+        // Il risultato è il suffisso condiviso: "-server.amazon.com".
+        // Poiché "-server.amazon.com" finisce con ".com", l'analisi
+        // DOVRÀ generare il warning in questa riga per il 1st parameter!
+
+        this.connectTo(targetServer);
+
+        return 1;
+    }
+
+    connectTo(endpoint) {
+        return 0;
+    }
+}

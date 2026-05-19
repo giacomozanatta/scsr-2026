@@ -1,0 +1,24 @@
+class ECommerce {
+
+    applyDynamicDiscount() {
+        def cartTotal = 1000;
+        def daysToExpiration = 5;
+        def finalPrice = 0;
+
+        // Il timer scade e va anche in negativo (es. offerta scaduta)
+        while (daysToExpiration > -5) {
+
+            // Quando daysToExpiration arriva a 0, avviene una divisione per zero.
+            // L'analizzatore vedrà l'intervallo di daysToExpiration allargarsi
+            // per via del ciclo (probabilmente [-inf, 5] o [-4, 5]),
+            // quindi includerà lo 0 e lancerà il "possible division by zero".
+            def priceRatio = cartTotal / daysToExpiration;
+
+            finalPrice = finalPrice + priceRatio;
+            daysToExpiration = daysToExpiration - 1;
+        }
+
+        return finalPrice;
+    }
+}
+}

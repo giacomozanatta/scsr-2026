@@ -1,0 +1,112 @@
+class ExtendedSignTaintTests {
+
+    // I sink sensibili che il nostro CartesianTaintChecker sta monitorando
+    db_query(val) { return 0; }
+    system_exec(val) { return 0; }
+
+    // Il sanitizer restituisce 0.
+    // Essendo 0 una costante, LiSA lo valuterà come CLEAN!
+    sanitizer1(v){
+        return 0;
+    }
+
+    source1(){
+        return 42;
+    }
+
+    sink1(val){
+        return;
+    }
+    /*
+     * TEST 1: Taint standard e Segno Positivo
+     */
+    testPositivo(userInput) {
+        // userInput arriva dall'esterno. Stato inziale: <#TOP#, #TOP#>
+        def x = userInput;
+
+        if (x > 0) {
+            // Dopo l'if, lo stato di x diventa: <POS, #TOP#>
+            this.db_query(x); // ATTESO: Warning (Taint raggiunge Sink)
+        }
+    }
+
+    /*
+     * TEST 2: Dead Code Detection (No False Positive)
+     */
+    testRamoMorto(userInput) {
+        def s = 50;           // <POS, Clean>
+        def t = this.source1();    // <#TOP#, #TOP#>
+
+        if (s < 0) {
+            // L'analisi sa che s è POS, quindi s < 0 è impossibile.
+            // Questo ramo diventa BOTTOM.
+            this.db_query(t); // NESSUN Warning (Il nodo è morto/irraggiungibile)
+        } else {
+            def ok = s + 1;
+            // ok è un'operazione tra dati Clean, quindi rimane Clean.
+            this.db_query(ok); // NESSUN Warning (Il dato è pulito)
+        }
+        this.sink1(t);
+    }
+
+    /*
+     * TEST 3: Moltiplicazione per Zero
+     */
+    testZero(secretData) {
+        def z = 0;
+
+        // Moltiplichiamo un dato sporco per 0.
+        // Segno fa: TOP * 0 = ZERO
+        // Taint fa: TOP * Clean = TOP (il dato rimane sporco)
+        def result = secretData * z;
+
+        if (result == 0) {
+            // Qui result è <ZERO, #TOP#>
+            this.db_query(result); // ATTESO: Warning
+        }
+    }
+
+    /*
+     * TEST 4: Inversione di Segno e Taint
+     */
+    testInversione(val) {
+        // val è <#TOP#, #TOP#>
+        if (val > 0) {
+            // Ora val è <POS, #TOP#>
+
+            def inv = val * -2;
+            // Segno fa: POS * NEG = NEG
+            // Taint fa: TOP * Clean = TOP
+
+            // inv è diventato <NEG, #TOP#>
+            this.db_query(inv); // ATTESO: Warning
+        }
+    }
+
+    /*
+     * TEST 5: Sanitizzazione e Segno
+     */
+    testSanitizer(dirtyData) {
+        // dirtyData entra come TAINTED/TOP
+
+        // La funzione sanitizer1 restituisce '0' (Costante).
+        // Il dominio valuta la costante '0' come <ZERO, CLEAN>.
+        def clean_x = this.sanitizer1(dirtyData);
+
+        if (clean_x <= 0) {
+            // Qui clean_x è <ZERO, CLEAN>
+            this.db_query(clean_x); // NESSUN Warning (Il dato è stato purificato!)
+        }
+    }
+
+    /*
+     * TEST 6: Divisione per Zero (Bottom)
+     */
+    testBottom(t) {
+        // Questa divisione per zero uccide il flusso di esecuzione
+        def errore = 10 / 0; // Diventa <BOTTOM, BOTTOM>
+
+        // LiSA fermerà l'analisi di questo ramo
+        this.db_query(t); // NESSUN Warning (Unreachable code)
+    }
+}

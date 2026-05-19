@@ -1,0 +1,19 @@
+class PossibleTaintTest {
+
+    @lisa.taint.Sink
+    executeSystemCommand(cmd) {
+        return 0;
+    }
+
+    // userInput è un parametro. Non sappiamo chi lo chiami, quindi LiSA lo valuta come #TOP#.
+    testPossible(userInput) {
+
+        // Il checker vedrà che l'argomento è #TOP# e, leggendo il tuo codice:
+        // else if (abstractValue.isPossiblyTainted()) { ... }
+        // Lancerà il messaggio:
+        // "POSSIBLE WARNING: Uncertain value at..."
+        this.executeSystemCommand(userInput);
+
+        return 1;
+    }
+}

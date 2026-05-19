@@ -1,0 +1,29 @@
+class NetworkSync {
+
+    calculateLossRatio() {
+        def received = 0;
+        def sent = 5; // Partiamo con 5 pacchetti inviati in più
+        def ratio = 0;
+
+        // Entrambi crescono della stessa quantità.
+        // Matematicamente, 'sent' sarà sempre > 'received'.
+        while (received < 100) {
+            received = received + 1;
+            sent = sent + 1;
+
+            def difference = sent - received;
+
+            // QUI C'È LA MAGIA:
+            // 1. Il dominio degli Intervalli classico fallisce qui: vede che 'sent' è in [5, 105] e
+            //    'received' è in [0, 100]. La loro sottrazione fa un intervallo[-95, 105] che include lo ZERO!
+            //    Quindi l'Interval Checker darebbe un falso allarme.
+            // 2. Il Pentagono INVECE ricorda la relazione (received < sent). Se l'implementazione in LiSA
+            //    è abbastanza avanzata, userà questa informazione per capire che 'difference' non
+            //    può mai essere 0, e non genererà nessun warning!
+
+            ratio = 1000 / difference;
+        }
+
+        return ratio;
+    }
+}

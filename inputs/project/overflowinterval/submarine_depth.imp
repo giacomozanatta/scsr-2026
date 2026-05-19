@@ -1,0 +1,20 @@
+class SubmarineNavigation {
+
+    calculateDepth() {
+        def currentAltitude = 0; // Livello del mare
+        def diveRate = 15;
+        def sensorActive = 1;
+
+        // Simuliamo un sensore bloccato che continua a far scendere il sottomarino
+        while (sensorActive == 1) {
+
+            // Qui avviene la Subtraction.
+            // L'intervallo di currentAltitude diventerà [-Infinity, 0].
+            // -Infinity è minore di representableIntegers.getLow(), quindi UNDERFLOW!
+            currentAltitude = currentAltitude - diveRate;
+
+        }
+
+        return currentAltitude;
+    }
+}

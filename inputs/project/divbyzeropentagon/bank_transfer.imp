@@ -1,0 +1,15 @@
+class BankSystem {
+
+    calculateFee() {
+        def accountBalance = 0; // Conto bloccato/vuoto
+        def transferLimit = accountBalance; // Pentagono traccia transferLimit == accountBalance
+
+        // L'analizzatore deduce che transferLimit è esattamente[0,0]
+        def baseFee = 50;
+
+        // Genera: "This is definitly a division by zero"
+        def feeRatio = baseFee / transferLimit;
+
+        return feeRatio;
+    }
+}

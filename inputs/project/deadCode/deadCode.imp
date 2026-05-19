@@ -1,0 +1,40 @@
+class DeadCodeTests {
+
+    // TEST 1: Condizione IF impossibile
+    testUnreachableBranch() {
+        def age = 25;
+        def discount = 0;
+
+        // Il tuo ExtendedSign valuterà 'age' come POS (> 0)
+
+        if (age < 0) {
+            // L'analisi intersecherà POS con NEG, ottenendo BOTTOM.
+            // Lo stato del programma per questo blocco diventerà BOTTOM.
+            // Il DeadCodeChecker ispezionerà questa istruzione e lancerà l'allarme!
+            discount = 100;
+
+        } else {
+            discount = 10;
+        }
+
+        return discount;
+    }
+
+    // TEST 2: Ciclo WHILE impossibile
+    testUnreachableLoop() {
+        def balance = -50; // Stato iniziale: NEG
+        def attempts = 0;
+
+        // Il loop richiede che balance sia >= 0 (GEQZERO)
+        // Ma balance è NEG. L'intersezione fa BOTTOM!
+        while (balance >= 0) {
+
+            // Il corpo del loop è Dead Code. Scatterà il warning qui!
+            attempts = attempts + 1;
+            balance = balance - 10;
+
+        }
+
+        return attempts;
+    }
+}

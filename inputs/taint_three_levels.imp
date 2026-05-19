@@ -1,0 +1,75 @@
+class TaintTest {
+
+    sink(val) {
+        return;
+    }
+
+    source() {
+        return 42;
+    }
+
+    test() {
+        def a = 0;
+        def b = this.source();
+
+        // Caso 1: Sicuramente Clean
+        this.sink(a);
+
+        // Caso 2: Sicuramente Tainted (Definite Warning)
+        this.sink(b);
+
+        // Caso 3: Incertezza (Possible Warning - TOP)
+        def c = 0;
+        if (a == 0) {
+            c = b;
+        } else {
+            c = a;
+        }
+        this.sink(c);
+    }
+
+    source1(){
+       return -99;
+    }
+
+    sanitizer1(v){
+       return 0;
+    }
+
+    sink1(v){
+       return;
+    }
+
+    basic1() {
+       def c = 0;
+       this.sink1(c);
+    }
+
+    basic2() {
+       def t = this.source1();
+       this.sink1(t);
+    }
+
+    basic3() {
+       def t = this.source1();
+       def s = this.sanitizer1(t);
+       this.sink1(s);
+    }
+
+    basic4() {
+       def t1 = this.source1();
+       def t2 = 0;
+       def t3 = t1+t2;
+       this.sink1(t3);
+    }
+
+    branch(b) {
+       def m = 0;
+       if(b) {
+          m = this.source1();
+       } else {
+         m = 5;
+       }
+       this.sink1(m);
+    }
+}

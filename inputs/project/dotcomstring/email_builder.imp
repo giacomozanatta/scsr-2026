@@ -1,0 +1,27 @@
+class EmailSystem {
+
+    sendNewsletter() {
+        def username = "mario.rossi";
+        def at = "@";
+        def companyDomain = "enterprise.com";
+
+        // CONCATENAZIONE! L'analisi statica deve calcolare l'espressione.
+        // Il dominio Suffix farà: Suffix("") + Suffix("@") + Suffix("enterprise.com")
+        // Il risultato astratto finale sarà un suffisso che finisce in ".com"
+        def fullAddress = username + at + companyDomain;
+
+        def subject = "Benvenuto";
+
+        // In questa chiamata:
+        // Param 0 = this
+        // Param 1 = subject
+        // Param 2 = fullAddress -> QUI DEVE SCATTARE L'ALLARME ("... parameters: 2nd")
+        this.dispatchEmail(subject, fullAddress);
+
+        return 1;
+    }
+
+    dispatchEmail(title, recipient) {
+        return 0;
+    }
+}

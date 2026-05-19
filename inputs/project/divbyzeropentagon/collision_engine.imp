@@ -1,0 +1,24 @@
+class PhysicsEngine {
+
+    computeGravity() {
+        def playerPos = 10;
+        def enemyPos = 0;
+        def force = 0;
+
+        // I due oggetti si muovono l'uno verso l'altro
+        while (enemyPos < 15) {
+
+            // La distanza diminuisce ad ogni iterazione.
+            // Quando enemyPos arriva a 10, distance = 0.
+            def distance = playerPos - enemyPos;
+
+            // L'intervallo di 'distance' si allargherà fino a coprire valori negativi e positivi.
+            // Il checker leggerà l'intervallo e lancerà "possible division by zero".
+            force = 1000 / distance;
+
+            enemyPos = enemyPos + 1;
+        }
+
+        return force;
+    }
+}

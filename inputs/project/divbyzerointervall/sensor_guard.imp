@@ -1,0 +1,29 @@
+class ThermalSensor {
+
+    processTemperature() {
+        def tempReading = 10;
+        def i = 0;
+
+        // Simuliamo una lettura che fluttua scendendo fino a -10
+        while (i < 20) {
+            tempReading = tempReading - 1;
+            i = i + 1;
+        }
+
+        // A questo punto, dopo il ciclo, tempReading è un intervallo che include lo 0 (es. [-10, 10])
+
+        def calibration = 0;
+
+        // GUARDIA DI SICUREZZA: Il programmatore ha gestito lo 0!
+        if (tempReading != 0) {
+            // Se l'analizzatore non è precisissimo (non filtra l'intervallo togliendo lo 0),
+            // lancerà un FALSO POSITIVO qui dicendo "possible division by zero",
+            // anche se a runtime è impossibile che avvenga.
+            calibration = 500 / tempReading;
+        } else {
+            calibration = -1; // Fallback sicuro
+        }
+
+        return calibration;
+    }
+}

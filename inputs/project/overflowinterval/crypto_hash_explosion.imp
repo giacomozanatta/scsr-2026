@@ -1,0 +1,20 @@
+class CryptoMiner {
+
+    calculateHashRate(inputA, inputB) {
+        // Immaginiamo che l'analizzatore riceva inputA in[1000, 50000]
+        // e inputB in [1000, 50000] (valori già grandi, ma sicuri).
+
+        def nonce1 = 50000;
+        def nonce2 = 100000;
+
+        // La moltiplicazione in analisi statica fa letteralmente esplodere i limiti.
+        // nonce1 * nonce2 genera[5.000.000.000, 5.000.000.000].
+        // Se il tuo checker usa il limite dei 32-bit (2.147.483.647),
+        // l'operazione qui sotto scatterà immediatamente come OVERFLOW
+        // senza nemmeno aver bisogno del ciclo while o del widening!
+
+        def hashResult = nonce1 * nonce2;
+
+        return hashResult;
+    }
+}

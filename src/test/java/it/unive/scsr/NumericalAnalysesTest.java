@@ -26,13 +26,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/project/divbyzerointervall/countdown_discount.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/divbyzerointerval";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -55,13 +55,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/project/divbyzeropentagon/bank_transfer.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/divbyzeropentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -85,13 +85,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/project/overflowinterval/crypto_hash_explosion.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/8bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -115,13 +115,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/project/overflowinterval/crypto_hash_explosion.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/16bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -145,13 +145,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/project/overflowinterval/crypto_hash_explosion.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/32bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

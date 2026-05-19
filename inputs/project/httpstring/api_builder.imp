@@ -1,0 +1,23 @@
+class ApiClient {
+
+    fetchUserData(userId) {
+        def protocol = "https://";
+        def domain = "api.mycompany.internal";
+        def path = "/v1/users/";
+
+        // CONCATENAZIONE ASTRATTA:
+        // L'analizzatore sommerà i prefissi.
+        // Prefix("https://") + Prefix("api...") = Prefix("https://api...")
+        def fullEndpoint = protocol + domain + path + userId;
+
+        // Passiamo la stringa concatenata.
+        // Poiché il prefisso calcolato inizia con "https://", il checker DEVE lanciare l'allarme.
+        this.makeRequest(fullEndpoint);
+
+        return 1;
+    }
+
+    makeRequest(target) {
+        return 0;
+    }
+}

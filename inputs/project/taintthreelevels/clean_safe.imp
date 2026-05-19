@@ -1,0 +1,62 @@
+class CleanTaintTest {
+
+    writeToDatabase(query) {
+        return 0;
+    }
+
+    testCleanSafe() {
+        // Questa è una costante. L'evalConstant del BaseTaint restituisce CLEAN.
+        def safeQuery = "SELECT * FROM public_data";
+
+        // Il checker controlla l'argomento.
+        // Trova CLEAN.
+        // CLEAN.isAlwaysTainted() è FALSE.
+        // CLEAN.isPossiblyTainted() è FALSE.
+        // NESSUN WARNING VIENE EMESSO! Il programma è sicuro.
+        this.writeToDatabase(safeQuery);
+
+        return 1;
+    }
+}
+
+class DefiniteTaintTest {
+
+    // Sorgente: LiSA valuterà il ritorno di questa funzione come TAINT.
+    readSecretFile() {
+        return "password123";
+    }
+
+    // Pozzo: Il tuo checker intercetta questa funzione grazie all'annotazione.
+    sendToExternalServer(data) {
+        return 0;
+    }
+
+    testDefinite() {
+        // x diventa matematicamente TAINTED
+        def x = this.readSecretFile();
+
+        // Passando x al Sink, il Checker vedrà TAINT e lancerà:
+        // "DEFINITE WARNING: Tainted value at..."
+        this.sendToExternalServer(x);
+
+        return 1;
+    }
+}
+
+class PossibleTaintTest {
+    executeSystemCommand(cmd) {
+        return 0;
+    }
+
+    // userInput è un parametro. Non sappiamo chi lo chiami, quindi LiSA lo valuta come #TOP#.
+    testPossible(userInput) {
+
+        // Il checker vedrà che l'argomento è #TOP# e, leggendo il tuo codice:
+        // else if (abstractValue.isPossiblyTainted()) { ... }
+        // Lancerà il messaggio:
+        // "POSSIBLE WARNING: Uncertain value at..."
+        this.executeSystemCommand(userInput);
+
+        return 1;
+    }
+}

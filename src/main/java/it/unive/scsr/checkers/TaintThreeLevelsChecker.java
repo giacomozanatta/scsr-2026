@@ -69,7 +69,8 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
             SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> tool,
             UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
             AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> res) {
-        if (descriptor.getAnnotations().contains(TaintThreeLevels.SINK_MATCHER)) { // check if the called function is annotated as sink
+        if (descriptor.getAnnotations().contains(TaintThreeLevels.SINK_MATCHER)) { // check if the called function is
+            // annotated as sink
             for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
                 Expression par = uc.getParameters()[i];
                 AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> postState = res
@@ -88,7 +89,7 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 
                             if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
                                 continue;
-                            //extraction of the abstract value
+                            // extraction of the abstract value
                             ValueEnvironment<TaintThreeLevelsLattice> valueState = postState.getExecutionState().valueState;
                             TaintThreeLevels signAnalysisValueDomain = (TaintThreeLevels) tool.getAnalysis().domain.valueDomain;
                             SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
@@ -100,7 +101,7 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
                             }
                             // possible warning? can't seem to find anything not warnOn
                             if (abstractValue == TaintThreeLevelsLattice.Top) {
-                                tool.warnOn(uc, "There is a top value in a sink: " + par.getLocation());
+                                tool.warnOn(uc, "There is a possible tainted value in a sink: " + par.getLocation());
                             }
                         }
                     } catch (SemanticException e) {

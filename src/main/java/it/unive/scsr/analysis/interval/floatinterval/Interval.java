@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.interval;
+package it.unive.scsr.analysis.interval.floatinterval;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
@@ -34,12 +34,11 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
 		
-		if(constant.getValue() instanceof Integer) {
+		if(constant.getValue() instanceof Number n) {
 			//I need to check the integer value to 
 			// assign the right approx value
-			Integer n = (Integer) constant.getValue();
 
-			return new IntervalLattice(n, n);
+            return new IntervalLattice(n, n);
 		}
 			
 		return IntervalLattice.TOP;
@@ -49,12 +48,12 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	public IntervalLattice evalUnaryExpression(UnaryExpression expression, IntervalLattice arg, ProgramPoint pp,
 			SemanticOracle oracle) throws SemanticException {
 
-		if(arg.i == null)
+		if(arg.interval == null)
 			return IntervalLattice.BOTTOM;
 		
 		if(expression.getOperator() == NumericNegation.INSTANCE) {
-			MathNumber u = arg.i.getHigh();
-			MathNumber l = arg.i.getLow();
+			MathNumber u = arg.interval.getHigh();
+			MathNumber l = arg.interval.getLow();
 			
 			return new IntervalLattice(u.multiply(MathNumber.MINUS_ONE),l.multiply(MathNumber.MINUS_ONE));
 		}
@@ -66,13 +65,14 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
 			IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 		
-		if(left.i == null || right == null)
+		if(left.interval == null || right.interval == null)
 			return IntervalLattice.BOTTOM;
-		MathNumber ll = left.i.getLow();
-		MathNumber lu = left.i.getHigh();
 
-		MathNumber rl = right.i.getLow();
-		MathNumber ru = right.i.getHigh();
+		MathNumber ll = left.interval.getLow();
+		MathNumber lu = left.interval.getHigh();
+
+		MathNumber rl = right.interval.getLow();
+		MathNumber ru = right.interval.getHigh();
 
 		if(expression.getOperator() instanceof AdditionOperator) {
 			return new IntervalLattice(ll.add(rl), lu.add(ru));
@@ -122,10 +122,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 				if (max.compareTo(div) < 0) max = div;
 			}
 
-			// SHould we round the extremities since we are dealing with integers only?
-			// Should we perhaps return bottom when dividing by a non-integer?
-//			return new IntervalLattice(min, max);
-			return new IntervalLattice(min.roundDown(), max.roundUp());
+			return new IntervalLattice(min, max);
 
 		}
 		

@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.interval;
+package it.unive.scsr.analysis.interval.floatinterval;
 
 import it.unive.lisa.util.numeric.MathNumber;
 

@@ -34,19 +34,19 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterv
 	public boolean visit(
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
-		
+
 		if(node instanceof Division) {
 			checkDivision(tool, graph, (Division) node);
 		}
 		return true;
 	}
-	
+
 	private void checkDivision(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Division div) {
 
 		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
 				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
-			
+
 				Set<SymbolicExpression> reachableIds = new HashSet<>();
 				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
 				if (comExprIterator.hasNext()) {
@@ -63,14 +63,14 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterv
 								continue;
 							//extraction of the abstract value
 							var valueState = postState.getExecutionState().valueState;
-	
+
 							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-							
+
 							Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
-							
+
 							IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) div, oracle);
-						
+
 							if(abstractValue.equals(new IntInterval(0, 0)))
 								tool.warnOn(div, "This is definitly a division by zero");
 							else if(abstractValue.includes(new IntInterval(0, 0)))

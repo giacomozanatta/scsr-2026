@@ -68,13 +68,16 @@ public class TaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> implem
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintLattice>, TypeEnvironment<T>>> tool,
 			UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
 			AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintLattice>, TypeEnvironment<T>>> res) {
+
 		if (descriptor.getAnnotations().contains(Taint.SINK_MATCHER)) { // check if the called function is annotated as sink
 			for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
 				Expression par = uc.getParameters()[i];
 				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintLattice>, TypeEnvironment<T>>> postState = res
 						.getAnalysisStateAfter(par); // compute the post state related to each parameter
+
 				Set<SymbolicExpression> reachableIds = new HashSet<>();
 				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+
 				if (comExprIterator.hasNext()) {
 
 					SymbolicExpression boolExpr = comExprIterator.next();

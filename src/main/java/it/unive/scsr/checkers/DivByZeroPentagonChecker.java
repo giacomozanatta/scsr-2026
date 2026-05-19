@@ -67,7 +67,7 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonL
 								IntInterval i = interval.function.get(s);
 								if(i != null) {
 									if(i.equals(new IntInterval(0, 0)))
-										tool.warnOn(div, "This is definitly a division by zero");
+										tool.warnOn(div, "This is definitely a division by zero");
 									else if(i.includes(new IntInterval(0, 0)))
 										tool.warnOn(div, "This may be possible division by zero");
 								}

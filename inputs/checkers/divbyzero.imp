@@ -1,0 +1,52 @@
+class divbyzero{
+    // Funky utils
+    get_zero(){
+        return 0+1-1;
+    }
+
+    // Basic types
+    p1() {
+        def denom = 0/2;
+        def err = denom/(denom + 0);
+    }
+
+    p2() {
+        def denom = 2;
+        def err = 1/(denom - denom/1);
+    }
+
+    // Function call
+    p3() {
+        def denom = 2/this.get_zero();
+    }
+
+    p4(){
+        def i = this.get_zero();
+        def x = 4;
+        if(i > 0){
+            x = 1;
+        }
+        else{
+            x = 0;
+        }
+
+        def err = 1/x;
+    }
+
+    // Array access
+    p5(){
+        def arr = new int[1];
+        arr[0] = 0;
+
+        def err = 1/arr[0];
+    }
+
+    //Looping
+    p6(){
+        def err = 0;
+        for (def i = 0; i < 20; i = i + 1){
+            err = 1/(i - i);
+        }
+    }
+
+}

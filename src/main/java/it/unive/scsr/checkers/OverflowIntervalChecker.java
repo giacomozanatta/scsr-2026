@@ -83,8 +83,9 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterv
 									(ProgramPoint) node, oracle);
 						
 							if(!representableIntegers.includes(abstractValue)) {
-								boolean overflow = abstractValue.getHigh().lt(representableIntegers.getHigh()); 
+								boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
 								boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
+								System.out.println(abstractValue.getLow());
 								String sep = overflow && underflow ? "/" : "";
 								tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep + (underflow ? "under" : "") + "flow");
 							}

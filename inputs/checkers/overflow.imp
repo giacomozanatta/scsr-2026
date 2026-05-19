@@ -1,0 +1,10 @@
+class overflow{
+    // Bytes
+    byte_1(){
+        def byte = 0;
+        byte = byte + 128;
+        byte = 0;
+        byte = byte - 129;
+        return byte;
+    }
+}

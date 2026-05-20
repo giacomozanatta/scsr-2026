@@ -32,7 +32,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow-div-by-zero";
+        conf.workdir = "outputs/overflow/div-by-zero";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -61,7 +61,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow-div-by-zero-pentagon";
+        conf.workdir = "outputs/overflow/div-by-zero-pentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -91,7 +91,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow-interval-8bits";
+        conf.workdir = "outputs/overflow/interval-8bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -121,7 +121,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow-interval-16bits";
+        conf.workdir = "outputs/overflow/interval-16bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -151,7 +151,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow-interval-32bits";
+        conf.workdir = "outputs/overflow/interval-32bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

@@ -1,0 +1,217 @@
+/*
+ * WebApiClient with routing, transport, and audit layers of an HTTP/1.1 client library.
+ *
+ * This models a client that: 
+ * 1. Auths via OAuth,
+ * 2. Dispatches webhooks,
+ * 3. Polls health endpoints, 
+ * 4. Routes requests across CDN regions, and 
+ * 5. Records an audit trail.
+ *
+ * Note that URLs are chosen to reflect real service patterns.
+ *
+ * Checkers that should be involved on this file:
+ *
+ *   HTTPStringChecker (Prefix analysis)
+ *     - fires when a call argument has a known prefix starting with "http://" or "https://".
+ *
+ *   DotComStringChecker (Suffix analysis)
+ *     - fires when a call argument has a known suffix ending with ".com".
+ *
+ */
+class WebApiClient {
+
+    fetchResource(url) { }
+
+    dial(host, port) { }
+
+    dispatchEvent(webhook, payload) { }
+
+    recordAudit(label, url) { }
+
+    routeRequest(url) { }
+
+
+    // 1. Prefix analysis with cases for HTTPStringChecker
+
+    /*
+     * Metrics dashboard 
+     *
+     * Prefix = "http://dashboard.cluster.internal/v2/metrics" -> WARNING: URL starts with "http://"
+     */
+    fetchMetricsDashboard() {
+        def url = "http://dashboard.cluster.internal/v2/metrics";
+        this.fetchResource(url);
+    }
+
+    /*
+     * Refreshes of Auth Token
+     *
+     * Prefix = "https://auth.company.io/oauth2/token" -> WARNING: URL sent to fetchResource starts with "https://"
+     */
+    refreshOAuthToken() {
+        def tokenEndpoint = "https://auth.company.io/oauth/token";
+        this.fetchResource(tokenEndpoint);
+    }
+
+    /*
+     * Builds Artifcat Download
+     *
+     * Here not HTTP is involved
+     *
+     * Prefix = "ftp://artifacts.build.internal/releases/app-2.1.jar" -> NO WARNING (trivially)
+     */
+    downloadBuildArtifact() {
+        def artifactUrl = "ftp://artifacts.build.internal/releases/app-2.1.jar";
+        this.fetchResource(artifactUrl);
+    }
+
+    /*
+     * Dials the Service Mesh
+     *
+     * This is a raw IP address, so no protocol prefix
+     *
+     * host = "10.0.4.22" -> NO WARNING
+     */
+    dialServiceMesh() {
+        def host = "10.0.4.22";
+        def port = 9090;
+        this.dial(host, port);
+    }
+
+    /*
+     * Resolves a Failover with either Active of Passive approach
+     * It changes the endpoint based on the region
+     * 
+     * Prefix (after lub) = "http://" -> WARNING: both have "http://" 
+     */
+    resolveWithFailover(usePrimary) {
+        def endpoint = "http://api.us-east.company.io";
+    
+        if (usePrimary)
+            endpoint = "http://api.eu-west.company.io";
+    
+        this.fetchResource(endpoint);
+    }
+
+    /*
+     * Switches protocol
+     * It changes the endpoint from http to ftp if useHttp is true 
+     *
+     * No Warning if it enters the branhc
+     */
+    resolveWithProtocolSwitch(useHttp) {
+        def endpoint = "http://cdn.company.io/assets";
+        if (useHttp)
+            endpoint = "ftp://legacy-cdn.company.io/assets";
+        this.fetchResource(endpoint);
+    }
+
+    /*
+     * Notifies to Deploy the Pipeline on Dispatch
+     * This generates a warning when dispatched
+     */
+    notifyDeployPipeline(buildId) {
+        def webhook = "https://hooks.ci.company.io/deploy/trigger";
+        this.dispatchEvent(webhook, buildId);
+    }
+
+    /*
+     * Polls Health endpoints
+     * This probes the same endpoint repeatedly
+     * 
+     * It generates multiple warnings
+     */
+    pollHealthEndpoints() {
+        def base = "http://healthcheck.cluster.internal/status";
+        def i = 0;
+
+        while (i < 3) {
+            this.recordAudit("health", base);
+            i = i + 1;
+        }
+    }
+
+    // 2. Suffix analysis with cases for DotComStringChecker
+
+    /*
+     * Connnects to Payment Gateway 
+     * 
+     * This ends up in a warning for Dotcom presence
+     * 
+     */
+    connectPaymentGateway() {
+        def host = "api.stripe.com";
+        this.dial(host, 443);
+    }
+
+    /*
+     * Connects to internal secrete manager
+     *
+     * It triggers no warning
+     */
+    connectSecretManager() {
+        def host = "vault.secrets.internal";
+        this.dial(host, 8200);
+    }
+
+    /*
+     * Connects to Package Registry 
+     * 
+     * No warning is expected
+     */
+    connectPackageRegistry() {
+        def host = "registry.npmjs.org";
+        this.dial(host, 443);
+    }
+
+    /*
+     * Switches between Active or Passive Region Routes
+     * 
+     * It expects to trigger a warning for the dotcom presence
+     */
+    routeToActiveRegion(isPrimary) {
+        def target = "eu-west.api.company.com";
+
+        if (isPrimary)
+            target = "us-east.api.company.com";
+
+        this.routeRequest(target);
+    }
+
+    /*
+     * Routs based on the Environment  
+     * 
+     * It triggers a dotcom warning if it does not enter in branch
+     */
+    routeByEnvironment(isProduction) {
+        def target = "api.company.com";
+
+        if (isProduction)
+            target = "api.company.io";
+
+        this.routeRequest(target);
+    }
+
+    // 3. Combined test cases
+
+    /*
+     * Send Transaction Email
+     * Send a transaction email that should trigger both checkers
+     */
+    sendTransactionalEmail() {
+        def url = "https://api.sendgrid.com";
+        this.fetchResource(url);
+    }
+
+    /*
+     * Downloads Presigned Asset
+     * 
+     * This fetches a resource that should trigger the https presence but not the dot com
+     */
+    downloadPresignedAsset() {
+        def url = "https://mybucket.s3.amazonaws.com/reports/2026/export.csv";
+        this.fetchResource(url);
+    }
+
+}

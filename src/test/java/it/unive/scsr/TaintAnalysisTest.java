@@ -28,9 +28,9 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class TaintAnalysisTest {
 
-	String[] nameSource = {"source1", "GetRequest"};
-	String[] nameSanitizers = {"sanitizer1"};
-	String[] nameSinks = {"sink1", "runQueryDB"};
+	String[] nameSource = {"source1", "GetRequest", "getUserInput"};
+	String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml"};
+	String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail"};
 	
 	
     @Test

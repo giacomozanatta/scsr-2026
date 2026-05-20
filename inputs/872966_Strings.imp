@@ -133,7 +133,7 @@ class WebApiClient {
         }
     }
 
-    // 2. Suffix analysis with cases for DotComStringChecker
+    // 2. Suffix analysis with cases for DotComStringChecker and InternalHostChecker
 
     /*
         Connnects to Payment Gateway 
@@ -146,13 +146,67 @@ class WebApiClient {
     }
 
     /*
-        Connects to internal secrete manager
-        
-        It triggers no warning
+        Connects to internal secret manager (bare hostname)
+
+        host = "vault.secrets.internal" -> suffix = ".internal"
+        DotComStringChecker -> NO WARNING (.internal != .com)
+        InternalHostChecker -> WARNING (suffix ends with ".internal")
      */
     connectSecretManager() {
         def host = "vault.secrets.internal";
         this.dial(host, 8200);
+    }
+
+    /*
+        Dials internal metrics collector (bare hostname)
+
+        host = "prometheus.monitoring.internal" -> suffix = ".internal"
+        InternalHostChecker -> WARNING
+     */
+    dialMetricsCollector() {
+        def host = "prometheus.monitoring.internal";
+        this.dial(host, 9090);
+    }
+
+    /*
+        Routes audit record to internal log aggregator (bare hostname)
+
+        host = "loki.logging.internal" -> suffix = ".internal"
+        InternalHostChecker -> WARNING on second parameter of recordAudit
+     */
+    auditToInternalSink() {
+        def sink = "loki.logging.internal";
+        this.recordAudit("request", sink);
+    }
+
+    /*
+        Failover between two internal hosts (branch, both .internal)
+
+        InternalHostChecker -> WARNING: suffix preserved across branch
+     */
+    resolveInternalWithFailover(usePrimary) {
+        def host = "cache-a.internal";
+
+        if (usePrimary)
+            host = "cache-b.internal";
+
+        this.dial(host, 6379);
+    }
+
+    /*
+        Failover between internal and external host (branch, mixed)
+
+        "cache.internal" vs "cache.cdn.com" -> suffix lub = "" (lost)
+        InternalHostChecker -> NO WARNING: analysis loses suffix at branch join
+        (demonstrates precision loss on mixed-domain failover)
+     */
+    resolveWithMixedFailover(useInternal) {
+        def host = "cache.cdn.com";
+
+        if (useInternal)
+            host = "cache.internal";
+
+        this.dial(host, 6379);
     }
 
     /*

@@ -3,10 +3,10 @@
 //
 //  Sources, sanitizers and sinks are identified by function name
 //  in the Java test configuration:
-//    sources    -> GetRequest, getUserInput
-//    sanitizers -> sanitizeInput, escapeHtml
-//    sinks      -> runQueryDB, renderHtml, sendEmail
-//
+//    add these to String[] nameSource    -> GetRequest, getUserInput 
+//    add these to tring[] nameSanitizers -> sanitizeInput, escapeHtml
+//    add these to String[] nameSinks    -> runQueryDB, renderHtml, sendEmail
+// if you don't add these new names to the list results won't be the same
 //  The three-level lattice is:
 //    TAINT  -> value is definitely tainted  (DEFINITE warning)
 //    TOP    -> value may or may not be tainted (POSSIBLE warning)

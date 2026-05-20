@@ -1,23 +1,25 @@
 class http{
-    string_1(){
-        def obvious = "http://www.dfos.com";
+    func(s){
+        return 0;
     }
 
-    string_array_concat(){
-        def base = "://www.dfos.com";
-        def arr = new string[4];
+    string_1(){
+        def obvious = "http://www.dfos.com";
+        this.func(obvious);
+    }
+
+    string_concat(){
+        def base = "www.hi.com";
+        def protocol = "https://";
+        def res = strcat(base, protocol); // Only returns the first argument for some reason
+        this.func(res);
+    }
+
+    string_array(){
+        def arr = new string[2];
         arr[0] = "h";
         arr[1] = "t";
-        arr[2] = "t";
-        arr[3] = "p";
-        def res = "";
-        res = arr[0];
-        res = res + arr[1];
-        res = res + arr[2];
-        res = res + arr[3];
-        res = res + base;
-
-        return res;
+        this.func(arr[0]);
     }
 
 }

@@ -98,6 +98,7 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix
 							StrPrefix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
+							System.out.println(abstractValue.prefix + "###---------------------------------");
 							//check the abstractValue of the parameter
 							if (abstractValue.prefix.startsWith("http://") || abstractValue.prefix.startsWith("https://"))
 								paramsToWarn[i] = true;

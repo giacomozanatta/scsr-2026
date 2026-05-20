@@ -1,50 +1,83 @@
 class taint {
 
-	source1(){
-		return -99;
-	}
+    source1() {
+        return -99;
+    }
+    sanitizer1(v) {
+        return 0;
+    }
+    sink1(v) {
+    }
 
-	sanitizer1(v){
-		return 0;
-	}
+    // NO WARN: clean constant goes to sink
+    basic1() {
+        def c = 0;
+        this.sink1(c);
+    }
 
+    // WARN (definite): tainted value flows directly to sink
+    basic2() {
+        def t = this.source1();
+        this.sink1(t);
+    }
 
-	sink1(v){
-	}
+    // NO WARN: sanitized before reaching sink
+    basic3() {
+        def t = this.source1();
+        def s = this.sanitizer1(t);
+        this.sink1(s);
+    }
 
+    // WARN (possible): taint depends on branch —
+    // one branch taints m, other keeps it clean
+    // lub(Tainted, Clean) = Top → possible warning
+    branch(b) {
+        def m = 0;
+        if (b) {
+            m = this.source1();
+        } else {
+            m = 5;
+        }
+        this.sink1(m);
+    }
 
-	basic1() {
-		def c = 0;
+    // WARN (definite): taint propagates through arithmetic
+    // t is tainted, result of t+1 is also tainted
+    arithmetic() {
+        def t = this.source1();
+        def x = t + 1;
+        this.sink1(x);
+    }
 
-		this.sink1(c);  // the value is clean
-	}
+    // WARN (definite): taint flows through multiple assignments
+    // before reaching sink — tests multi-step propagation
+    multiStep() {
+        def t = this.source1();
+        def a = t + 1;
+        def b = a * 2;
+        def c = b - 3;
+        this.sink1(c);
+    }
 
-	basic2() {
-		def t = this.source1();
+    // NO WARN: tainted value is sanitized mid-chain
+    sanitizedMidChain() {
+        def t = this.source1();
+        def a = t + 1;
+        def b = this.sanitizer1(a);
+        def c = b * 2;
+        this.sink1(c);
+    }
 
-		this.sink1(t); // a tainted value flows in a sink!
-	}
-
-	basic3() {
-		def t = this.source1();
-
-		def s = this.sanitizer1(t);
-
-		this.sink1(s);  // the value is clean due to sanitization
-	}
-
-	branch(b) {
-		def m = 0;
-
-		if(b) {
-			m = this.source1();
-		} else {
-		  m = 5;
-		}
-
-		this.sink1(m); // the value may be tainted
-	}
-
-
-
+    // WARN (possible): loop accumulates value from source
+    // after loop, m is lub of clean (initial) and tainted (from source)
+    // = Top → possible warning
+    loopTaint(n) {
+        def m = 0;
+        def i = 0;
+        while (i < n) {
+            m = this.source1();
+            i = i + 1;
+        }
+        this.sink1(m);
+    }
 }

@@ -1,42 +1,65 @@
 class overflow {
 
-    // 8-bit overflow: 100 * 100 = 10000, exceeds Byte.MAX_VALUE (127)
+    // WARN (8-bit overflow): 100 * 100 = 10000 > 127
     testOverflow8bit() {
         def x = 100;
-        def y = x * x;    // WARN (8-bit): 10000 > 127
+        def y = x * x;
         return y;
     }
 
-    // 16-bit overflow: 200 * 200 = 40000, exceeds Short.MAX_VALUE (32767)
+    // WARN (16-bit overflow): 200 * 200 = 40000 > 32767
     testOverflow16bit() {
         def x = 200;
-        def y = x * x;    // WARN (16-bit): 40000 > 32767
+        def y = x * x;
         return y;
     }
 
-    // 32-bit overflow: x doubles each iteration, widening sends it to [1,+inf)
-    // Use a bounded counter so the loop has a concrete exit condition
+    // WARN (32-bit overflow): x doubles each iteration,
+    // widening pushes interval to [1, +inf) which exceeds INT_MAX
     testOverflow32bit() {
         def x = 1;
         def i = 0;
         while (i < 40) {
-            x = x * 2;    // WARN (32-bit): interval widens to [1,+inf) > INT_MAX
+            x = x * 2;
             i = i + 1;
         }
         return x;
     }
 
+    // WARN (underflow): -200 * -200... wait, let's do subtraction
+    // -100 - 100 = -200 < -128 for int8
+    testUnderflow8bit() {
+        def x = -100;
+        def y = x - 100;
+        return y;
+    }
 
+    // WARN (definite division by zero): denominator is exactly 0
 
-    // Possible division by zero: loop counter starts at 0,
-    // so after widening i is in [0,+inf) which includes 0
+    testDefiniteDivZero() {
+            def x = 10;
+            def y = 5;
+            def d = y - 5;   // d = [0,0], computed — not a literal
+            return x / d;    // WARN: d = [0,0] → definite division by zero
+    }
+
+    // WARN (possible division by zero): i crosses zero inside loop
+    // widening gives i = [-3, +inf) at loop head
+    // assume i < 3 gives i = [-3, 2] which includes 0
     testPossibleDivZero() {
         def x = 100;
-        def i = 0;
-        def n = 10;
-        while (i < n) {
+        def i = -3;
+        while (i < 3) {
+            x = x / i;   // WARN: i ∈ [-3, 2], includes 0
             i = i + 1;
         }
-        return x / i;     // WARN: "This may be a possible division by zero"
+        return x;
+    }
+
+    // NO WARN: denominator is provably positive
+    testSafeDivision() {
+        def x = 100;
+        def d = 5;
+        return x / d;   // safe: d = [5,5], 0 not included
     }
 }

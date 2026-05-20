@@ -1,0 +1,91 @@
+class parity {
+
+    // Sinks that require even-sized arguments
+    allocateBuffer(size) {
+        def result = size * 2;
+        return result;
+    }
+    writeUTF16(size) {
+        def result = size * 2;
+        return result;
+    }
+    dmaTransfer(size) {
+        def result = size * 2;
+        return result;
+    }
+
+    // NO WARN: 256 is even → safe allocation ✅
+    testSafeAllocation() {
+        def size = 256;
+        this.allocateBuffer(size);
+    }
+
+    // WARN (definite): 255 is odd → misalignment bug ⛔
+    testOddAllocation() {
+        def size = 255;
+        this.allocateBuffer(size);
+    }
+
+    // WARN (definite): even + odd = odd → misalignment ⛔
+    testComputedOdd() {
+        def base = 254;
+        def size = base + 1;      // EVEN + ODD = ODD
+        this.allocateBuffer(size);
+    }
+
+    // NO WARN: odd * odd = odd, but then * 2 = even ✅
+    testOddTimesTwo() {
+        def base = 3;
+        def size = base * 2;      // ODD * EVEN = EVEN
+        this.allocateBuffer(size);
+    }
+
+    // WARN (definite): loop adds 2 each time (even),
+    // starts at 1 (odd) → always odd ⛔
+    testLoopOdd() {
+        def size = 1;
+        def i = 0;
+        while (i < 10) {
+            size = size + 2;      // ODD + EVEN = ODD, always odd
+            i = i + 1;
+        }
+        this.allocateBuffer(size);
+    }
+
+    // NO WARN: loop adds 2 each time (even),
+    // starts at 0 (even) → always even ✅
+    testLoopEven() {
+        def size = 0;
+        def i = 0;
+        while (i < 10) {
+            size = size + 2;      // EVEN + EVEN = EVEN, always even
+            i = i + 1;
+        }
+        this.allocateBuffer(size);
+    }
+
+    // WARN (possible): branch makes parity unknown
+    // lub(EVEN, ODD) = TOP → unknown ⚠️
+    testBranchUnknown(b) {
+        def size = 0;
+        if (b) {
+            size = 128;   // EVEN
+        } else {
+            size = 127;   // ODD
+        }
+        this.allocateBuffer(size);  // TOP → possible warning
+    }
+
+    // WARN (definite): UTF-16 needs even size, 101 is odd ⛔
+    testUTF16Odd() {
+        def chars = 101;
+        def size = chars * 2;     // ODD * EVEN = EVEN... wait this is fine!
+        this.writeUTF16(size);    // NO WARN ✅ (101 * 2 = 202, even)
+    }
+
+    // WARN (definite): DMA transfer with odd size ⛔
+    testDMAOdd() {
+        def size = 3;
+        this.dmaTransfer(size);   // ODD → definite warning
+    }
+}

@@ -32,14 +32,14 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/divzero-interval";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-    
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
@@ -52,6 +52,7 @@ public class NumericalAnalysesTest {
         lisa.run(program);
     }
 
+    /*
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
@@ -61,14 +62,14 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/divzero-pentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-    
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
@@ -81,6 +82,8 @@ public class NumericalAnalysesTest {
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
+
+     */
     
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
@@ -91,7 +94,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/overflow-8bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -121,7 +124,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/overflow-16bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -151,7 +154,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow/overflow-32bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

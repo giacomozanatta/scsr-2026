@@ -1,0 +1,49 @@
+class nullability {
+
+    process(x) {
+        def result = x + 1;
+        return result;
+    }
+    display(msg) {
+        def out = "value: " + msg;
+        return out;
+    }
+
+    // NO WARN: x is always non-null (constant)
+    testSafe() {
+        def x = 42;
+        this.process(x);         // NON_NULL → safe ✅
+    }
+
+    // WARN (definite): null passed directly to function
+    testDefiniteNull() {
+        def x = null;
+        this.process(x);         // ⛔ NULL → definite warning
+    }
+
+    // WARN (possible): branch makes x either null or non-null
+    // lub(NULL, NON_NULL) = MaybeNull → possible warning
+    testBranchNull(b) {
+        def x = 0;
+        if (b) {
+            x = null;
+        } else {
+            x = 5;
+        }
+        this.process(x);         // ⚠️ MaybeNull → possible warning
+    }
+
+    // NO WARN: null assigned but then overwritten before use
+    testOverwritten() {
+        def x = null;
+        x = 10;
+        this.process(x);         // NON_NULL → safe ✅
+    }
+
+    // WARN (definite): null flows through multiple steps
+    testNullPropagation() {
+        def x = null;
+        def y = x;
+        this.process(y);         // ⛔ NULL propagates through assignment
+    }
+}

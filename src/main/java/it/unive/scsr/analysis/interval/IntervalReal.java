@@ -13,16 +13,16 @@ TASK REQUEST: To extend interval domain in LiSA to support real numbers (double/
 
 
 since this is an extended class i don't need to implement the other methods.
-evalUnaryExpression,evalBinaryExpression ecc..., they use MathNumber to handle calculations
+evalUnaryExpression, ecc..., they use MathNumber to handle calculations
 so they can handle both integers and real numbers and i don't need to override them.
-the only method i need to override is evalConstant to handle float and double cases
+the only methods i need to override for my implementations is evalConstant and evalBinaryExpression.
 */
 
 /*
 in the pdf is mentioned to "re-think the widening operator"
-but since in the lattice we are using MathNumber we can use the same widening operator as before
+but since in the lattice we are using MathNumber we can use the same wideningAux operator as before.
 since MathNumber  can represent integers and real numbers and supports comparisons natively,
- so the same widening logic can be applied.
+ so the same widening logic  as Interval can be appliec.
 
 NOTE: MathNumber has float64 precision so 7.9 -> 7.900000095367432
 
@@ -31,7 +31,7 @@ NOTE: MathNumber has float64 precision so 7.9 -> 7.900000095367432
 public class IntervalReal extends Interval {
 
     @Override
-
+    // override to make the method take Double and Float values
     public IntervalLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
             throws SemanticException {
         // i can use MathNumber to represent real numbers
@@ -50,7 +50,8 @@ public class IntervalReal extends Interval {
     }
 
     @Override
-
+    // Override to remove the rounding from the division branch, the other cases are
+    // handled by the super method in the Interval class
     public IntervalLattice evalBinaryExpression(BinaryExpression expression, IntervalLattice left,
             IntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
         if (expression.getOperator() instanceof DivisionOperator) {

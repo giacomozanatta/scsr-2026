@@ -1,14 +1,15 @@
 /*
     Test Program: Enterprise Data Pipeline
-    Target Checker: Three Taint Analysis
-    The Levels: Source, Sanitizer, Sink
-    Author: Gianmaria Pizzo 872966
 
     Features:
-    1. Taint is stored in class fields and passed via 'this'.
-    2. Taint is propagated through an arra like structure (buffer).
-    3. Logic that skips sanitization for "internal" flags.
-    4. Testing if Level 1 (Raw) becomes Level 2 (safe).
+        1. Taint is stored in class fields and passed via 'this'.
+        2. Taint is propagated through an arra like structure (buffer).
+        3. Logic that skips sanitization for "internal" flags.
+        4. Testing if Level 1 (Raw) becomes Level 2 (safe).
+
+    Target Checker: Three Taint Analysis
+
+    Author: Gianmaria Pizzo 872966
 */
 
 class DataPacket {

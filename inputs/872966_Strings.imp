@@ -1,23 +1,20 @@
 /*
- * WebApiClient with routing, transport, and audit layers of an HTTP/1.1 client library.
- *
- * This models a client that: 
- * 1. Auths via OAuth,
- * 2. Dispatches webhooks,
- * 3. Polls health endpoints, 
- * 4. Routes requests across CDN regions, and 
- * 5. Records an audit trail.
- *
- * Note that URLs are chosen to reflect real service patterns.
- *
- * Checkers that should be involved on this file:
- *
- *   HTTPStringChecker (Prefix analysis)
- *     - fires when a call argument has a known prefix starting with "http://" or "https://".
- *
- *   DotComStringChecker (Suffix analysis)
- *     - fires when a call argument has a known suffix ending with ".com".
- *
+    Test Program: WebApiClient with routing, transport, and audit layers of an HTTP/1.1 client library.
+
+    This models a client that: 
+        1. Auths via OAuth,
+        2. Dispatches webhooks,
+        3. Polls health endpoints, 
+        4. Routes requests across CDN regions, and 
+        5. Records an audit trail.
+
+    Target Checkers:
+        HTTPStringChecker (Prefix analysis)
+            - fires when a call argument has a known prefix starting with "http://" or "https://".
+        DotComStringChecker (Suffix analysis)
+            - fires when a call argument has a known suffix ending with ".com".
+
+    Author: Gianmaria Pizzo 872966
  */
 class WebApiClient {
 
@@ -35,9 +32,9 @@ class WebApiClient {
     // 1. Prefix analysis with cases for HTTPStringChecker
 
     /*
-     * Metrics dashboard 
-     *
-     * Prefix = "http://dashboard.cluster.internal/v2/metrics" -> WARNING: URL starts with "http://"
+        Metrics dashboard 
+        
+        Prefix = "http://dashboard.cluster.internal/v2/metrics" -> WARNING: URL starts with "http://"
      */
     fetchMetricsDashboard() {
         def url = "http://dashboard.cluster.internal/v2/metrics";
@@ -45,9 +42,9 @@ class WebApiClient {
     }
 
     /*
-     * Refreshes of Auth Token
-     *
-     * Prefix = "https://auth.company.io/oauth2/token" -> WARNING: URL sent to fetchResource starts with "https://"
+        Refreshes of Auth Token
+        
+        Prefix = "https://auth.company.io/oauth2/token" -> WARNING: URL sent to fetchResource starts with "https://"
      */
     refreshOAuthToken() {
         def tokenEndpoint = "https://auth.company.io/oauth/token";
@@ -55,11 +52,11 @@ class WebApiClient {
     }
 
     /*
-     * Builds Artifcat Download
-     *
-     * Here not HTTP is involved
-     *
-     * Prefix = "ftp://artifacts.build.internal/releases/app-2.1.jar" -> NO WARNING (trivially)
+        Builds Artifcat Download
+        
+        Here not HTTP is involved
+        
+        Prefix = "ftp://artifacts.build.internal/releases/app-2.1.jar" -> NO WARNING (trivially)
      */
     downloadBuildArtifact() {
         def artifactUrl = "ftp://artifacts.build.internal/releases/app-2.1.jar";
@@ -67,11 +64,11 @@ class WebApiClient {
     }
 
     /*
-     * Dials the Service Mesh
-     *
-     * This is a raw IP address, so no protocol prefix
-     *
-     * host = "10.0.4.22" -> NO WARNING
+        Dials the Service Mesh
+        
+        This is a raw IP address, so no protocol prefix
+        
+        host = "10.0.4.22" -> NO WARNING
      */
     dialServiceMesh() {
         def host = "10.0.4.22";
@@ -80,10 +77,11 @@ class WebApiClient {
     }
 
     /*
-     * Resolves a Failover with either Active of Passive approach
-     * It changes the endpoint based on the region
-     * 
-     * Prefix (after lub) = "http://" -> WARNING: both have "http://" 
+        Resolves a Failover with either Active of Passive approach
+    
+        It changes the endpoint based on the region
+        
+        Prefix (after lub) = "http://" -> WARNING: both have "http://" 
      */
     resolveWithFailover(usePrimary) {
         def endpoint = "http://api.us-east.company.io";
@@ -95,10 +93,11 @@ class WebApiClient {
     }
 
     /*
-     * Switches protocol
-     * It changes the endpoint from http to ftp if useHttp is true 
-     *
-     * No Warning if it enters the branhc
+        Switches protocol
+        
+        It changes the endpoint from http to ftp if useHttp is true 
+        
+        No Warning if it enters the branhc
      */
     resolveWithProtocolSwitch(useHttp) {
         def endpoint = "http://cdn.company.io/assets";
@@ -108,8 +107,9 @@ class WebApiClient {
     }
 
     /*
-     * Notifies to Deploy the Pipeline on Dispatch
-     * This generates a warning when dispatched
+        Notifies to Deploy the Pipeline on Dispatch
+    
+        This generates a warning when dispatched
      */
     notifyDeployPipeline(buildId) {
         def webhook = "https://hooks.ci.company.io/deploy/trigger";
@@ -117,10 +117,11 @@ class WebApiClient {
     }
 
     /*
-     * Polls Health endpoints
-     * This probes the same endpoint repeatedly
-     * 
-     * It generates multiple warnings
+        Polls Health endpoints
+    
+        This probes the same endpoint repeatedly
+        
+        It generates multiple warnings
      */
     pollHealthEndpoints() {
         def base = "http://healthcheck.cluster.internal/status";
@@ -135,10 +136,9 @@ class WebApiClient {
     // 2. Suffix analysis with cases for DotComStringChecker
 
     /*
-     * Connnects to Payment Gateway 
-     * 
-     * This ends up in a warning for Dotcom presence
-     * 
+        Connnects to Payment Gateway 
+        
+        This ends up in a warning for Dotcom presence
      */
     connectPaymentGateway() {
         def host = "api.stripe.com";
@@ -146,9 +146,9 @@ class WebApiClient {
     }
 
     /*
-     * Connects to internal secrete manager
-     *
-     * It triggers no warning
+        Connects to internal secrete manager
+        
+        It triggers no warning
      */
     connectSecretManager() {
         def host = "vault.secrets.internal";
@@ -156,9 +156,9 @@ class WebApiClient {
     }
 
     /*
-     * Connects to Package Registry 
-     * 
-     * No warning is expected
+        Connects to Package Registry 
+        
+        No warning is expected
      */
     connectPackageRegistry() {
         def host = "registry.npmjs.org";
@@ -166,9 +166,9 @@ class WebApiClient {
     }
 
     /*
-     * Switches between Active or Passive Region Routes
-     * 
-     * It expects to trigger a warning for the dotcom presence
+        Switches between Active or Passive Region Routes
+        
+        It expects to trigger a warning for the dotcom presence
      */
     routeToActiveRegion(isPrimary) {
         def target = "eu-west.api.company.com";
@@ -180,9 +180,9 @@ class WebApiClient {
     }
 
     /*
-     * Routs based on the Environment  
-     * 
-     * It triggers a dotcom warning if it does not enter in branch
+        Routes based on the Environment  
+        
+        It triggers a dotcom warning if it does not enter in branch
      */
     routeByEnvironment(isProduction) {
         def target = "api.company.com";
@@ -196,8 +196,9 @@ class WebApiClient {
     // 3. Combined test cases
 
     /*
-     * Send Transaction Email
-     * Send a transaction email that should trigger both checkers
+        Send Transaction Email
+        
+        Send a transaction email that should trigger both checkers
      */
     sendTransactionalEmail() {
         def url = "https://api.sendgrid.com";
@@ -205,9 +206,9 @@ class WebApiClient {
     }
 
     /*
-     * Downloads Presigned Asset
-     * 
-     * This fetches a resource that should trigger the https presence but not the dot com
+        Downloads Presigned Asset
+        
+        This fetches a resource that should trigger the https presence but not the dot com
      */
     downloadPresignedAsset() {
         def url = "https://mybucket.s3.amazonaws.com/reports/2026/export.csv";

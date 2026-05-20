@@ -7,6 +7,7 @@ import it.unive.lisa.analysis.string.Prefix;
 import it.unive.lisa.analysis.string.Suffix;
 import it.unive.scsr.checkers.DotComStringChecker;
 import it.unive.scsr.checkers.HTTPStringChecker;
+import it.unive.scsr.checkers.InternalHostChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -53,6 +54,29 @@ public class StringAnalysesTest {
     }
 
     @Test
+    public void testInternalHostAnalysis() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/872966_Strings.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        conf.workdir = "outputs/strings/internal";
+
+        conf.outputs.add(new HtmlResults<>(true));
+
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Suffix(), defaultTypeDomain());
+
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+
+        conf.semanticChecks.add(new InternalHostChecker<>());
+
+        conf.outputs.add(new JSONReportDumper());
+
+        LiSA lisa = new LiSA(conf);
+
+        lisa.run(program);
+    }
+
+    @Test
     public void testStringSuffixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile("inputs/872966_Strings.imp");
@@ -76,7 +100,7 @@ public class StringAnalysesTest {
         
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
- 
+
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }

@@ -5,6 +5,10 @@ import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
+import it.unive.scsr.analysis.sign.SignExtendedXTaint;
+import it.unive.scsr.analysis.sign.SignExtendedXTaintChecker;
+import it.unive.scsr.analysis.sign.SignXTaint;
+import it.unive.scsr.analysis.sign.SignXTaintChecker;
 import it.unive.scsr.analysis.taint.Taint;
 import it.unive.scsr.analysis.taint.TaintChecker;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
@@ -93,13 +97,13 @@ public class TaintAnalysisTest {
 	@Test
 	public void testThreeTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/taint.imp");
+		Program program = IMPFrontend.processFile("inputs/taint/894579_896954_taintthreelevel_1-2.imp");
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();
 
 		// we specify where we want files to be generated
-		conf.workdir = "outputs/taint";
+		conf.workdir = "outputs/taint-threelevels";
 
 		// we specify the visual format of the analysis results
 		//conf.outputs.add(new HtmlInputs(true));
@@ -128,4 +132,56 @@ public class TaintAnalysisTest {
 		// finally, we tell LiSA to analyze the program
 		lisa.run(program);
 	}
+
+
+
+	@Test
+	public void testSignXTaintThreeLevelsAnalysis() throws ParsingException, AnalysisException {
+		Program program = IMPFrontend.processFile("inputs/signsxtaint.imp");
+
+		LiSAConfiguration conf = new DefaultConfiguration();
+		conf.workdir = "outputs/sign-x-taint";
+		conf.outputs.add(new HtmlResults<>(true));
+		conf.analysis = simpleDomain(new PointBasedHeap(), new SignXTaint(), defaultTypeDomain());
+		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+		for (CFG cfg : program.getAllCFGs()) {
+			String name = cfg.getDescriptor().getName();
+			if (isSource(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+			else if (isSanitizer(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+			else if (isSink(name))
+				cfg.getDescriptor().addAnnotation(SignXTaint.SINK_ANNOTATION);
+		}
+		conf.semanticChecks.add(new SignXTaintChecker<>());
+		conf.outputs.add(new JSONReportDumper());
+
+		LiSA lisa = new LiSA(conf);
+		lisa.run(program);
+	}
+	@Test
+	public void testSignExtendedXTaintThreeLevelsAnalysis() throws ParsingException, AnalysisException {
+		Program program = IMPFrontend.processFile("inputs/taint/903942_extendedsign_taint.imp");
+
+		LiSAConfiguration conf = new DefaultConfiguration();
+		conf.workdir = "outputs/sign-extended-x-taint";
+		conf.outputs.add(new HtmlResults<>(true));
+		conf.analysis = simpleDomain(new PointBasedHeap(), new SignExtendedXTaint(), defaultTypeDomain());
+		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+		for (CFG cfg : program.getAllCFGs()) {
+			String name = cfg.getDescriptor().getName();
+			if (isSource(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+			else if (isSanitizer(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+			else if (isSink(name))
+				cfg.getDescriptor().addAnnotation(SignExtendedXTaint.SINK_ANNOTATION);
+		}
+		conf.semanticChecks.add(new SignExtendedXTaintChecker<>());
+		conf.outputs.add(new JSONReportDumper());
+
+		LiSA lisa = new LiSA(conf);
+		lisa.run(program);
+	}
+
 }

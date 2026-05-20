@@ -10,19 +10,21 @@ import it.unive.lisa.util.numeric.MathNumber;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
+import static it.unive.lisa.util.numeric.MathNumber.NaN;
+
 public class IntervalLattice 
 		implements BaseLattice<IntervalLattice>, Comparable<IntervalLattice> {
 	
 	IntInterval i;
 	
 	public static IntervalLattice TOP = new IntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
-	public static IntervalLattice BOTTOM = new IntervalLattice(null);
+	public static IntervalLattice BOTTOM = new IntervalLattice(IntInterval.BOTTOM);
 	public static IntervalLattice ZERO = new IntervalLattice(0,0);
-	
+
 	public IntervalLattice(IntInterval i) {
 		this.i = i;
 	}
-	
+
 	public IntervalLattice(MathNumber l, MathNumber u) {
 		this.i = new IntInterval(l, u);
 	}
@@ -31,10 +33,7 @@ public class IntervalLattice
 		this.i = new IntInterval(l, u);
 	}
 	
-	public IntervalLattice() {
-		this(IntInterval.INFINITY);
-	}
-	
+
 
 	@Override
 	    public IntervalLattice top() {

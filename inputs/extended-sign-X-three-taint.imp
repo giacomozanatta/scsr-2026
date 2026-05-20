@@ -1,0 +1,106 @@
+/**
+ * Test file for ExtendedSign x ThreeTaint Cartesian product.
+ *
+ * Sources:    GetRequest  -> Return literals are forced to (TOP, Tainted) by custom analysis context
+ * Sanitizers: sanitizer1  -> Return expressions are stripped of taint to (sign_of_arg, Clean)
+ * Sinks:      runQueryDB, setSpeed -> Tainted or Top argument triggers a checker warning
+ *
+ * Pair notation: (sign, taint) where taint in { Clean, Tainted, Top (possibly tainted) }
+ * Standard integer literals outside sources evaluate to (concrete_sign, Clean).
+ */
+class sign_x_taint {
+
+    // SOURCE - intercepted by custom evalContext rules.
+    // Return value is forced to (TOP, Tainted) during domain constant/unary processing.
+    GetRequest() {
+        def result = 0;
+        return result;
+    }
+
+    // SANITIZER - intercepted by custom evalContext rules.
+    // Strips taint from the processed return value: (sign_of_x, Clean).
+    sanitizer1(x) {
+        def out = x;
+        return out;
+    }
+
+    // SINK - annotated SINK_ANNOTATION.
+    // Any Tainted or Top argument here represents an analytical dataflow warning.
+    runQueryDB(query) {
+        def exec = query;
+    }
+
+    // SINK - a tainted or negative speed value is considered a threat path.
+    // Simple body: 0 + n = n in sign analysis (EQ0 is the additive identity).
+    setSpeed(n) {
+        def currentSpeed = 0;            // (EQ0, Clean)
+        currentSpeed = currentSpeed + n; // EQ0 ADD sign(n) = sign(n) -> (sign(n), taint(n))
+    }
+
+    // -------------------------------------------------------------------------
+    // 1. Fully clean path - no taint ever introduced, both sinks are safe.
+    // -------------------------------------------------------------------------
+    cleanPath() {
+        def a = 5;         // (GT0, Clean)
+        def b = -2;        // (LT0, Clean)
+        def c = a * b;     // sign: GT0 MUL LT0 = LT0 | taint: Clean op Clean = Clean -> (LT0, Clean)
+        this.runQueryDB(c);   // safe: taint is Clean
+        this.setSpeed(a);     // safe: (GT0, Clean) -> positive and clean
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Unsafe path - tainted user input flows directly into a sink.
+    // -------------------------------------------------------------------------
+    unsafePath() {
+        def userInput = this.GetRequest(); // (TOP, Tainted)
+        this.runQueryDB(userInput);        // WARNING: Tainted reaches sink (direct taint flow)
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. Sanitized path - taint removed before the sink, no warning expected.
+    //    Sign stays TOP: the sanitizer cleans taint but does not constrain values.
+    // -------------------------------------------------------------------------
+    sanitizedPath() {
+        def userInput  = this.GetRequest();           // (TOP, Tainted)
+        def cleanInput = this.sanitizer1(userInput);  // (TOP, Clean) -> taint stripped
+        this.runQueryDB(cleanInput);                  // safe: taint is Clean
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. Tainted speed - sign unknown AND tainted: both dimensions flag the call.
+    // -------------------------------------------------------------------------
+    unsafeSpeed() {
+        def speed = this.GetRequest(); // (TOP, Tainted)
+        this.setSpeed(speed);          // WARNING: sign=TOP (may be negative) AND taint=Tainted
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Conditional taint join - one branch introduces taint.
+    //    Clean ⊔ Tainted = Top (possibly tainted): the join loses taint certainty.
+    // -------------------------------------------------------------------------
+    conditionalTaint(flag) {
+        def x = -1;                     // (LT0, Clean)
+        if (flag)
+            x = this.GetRequest();      // true  branch: (TOP, Tainted)
+        // false branch: x stays        // false branch: (LT0, Clean)
+        // join sign:  TOP ⊔ LT0 = TOP
+        // join taint: Tainted ⊔ Clean = Top (possibly tainted)
+        // x = (TOP, Top)
+        this.runQueryDB(x);             // WARNING: taint is Top
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Partial sanitization - only one branch sanitizes; join is still Top.
+    //    Demonstrates that ALL paths to a sink must sanitize.
+    // -------------------------------------------------------------------------
+    partialSanitize(flag) {
+        def raw = this.GetRequest();             // (TOP, Tainted)
+        def x   = raw;                           // (TOP, Tainted)
+        if (flag)
+            x = this.sanitizer1(raw);           // true  branch: (TOP, Clean) -> sanitized
+        // false branch: x stays (TOP, Tainted)  not sanitized
+        // join sign:  TOP ⊔ TOP = TOP
+        // join taint: Clean ⊔ Tainted = Top     still possibly tainted!
+        this.runQueryDB(x);                      // WARNING: partial sanitization is insufficient
+    }
+}

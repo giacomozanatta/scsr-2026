@@ -30,7 +30,7 @@ public class IntervalFloatLattice
     private static final double[] THRESHOLDS = {
             Double.NEGATIVE_INFINITY,
             -1e15, -1e10, -1e6, -1e3, -1e2, -1e1, -1.0, -0.5, 0.0,
-            0.5,   1.0,   1e1,  1e2,  1e3,  1e6,  1e10, 1e15,
+            0.5, 1.0, 2.2, 4.0, 8.0, 10.0, 50.0, 1e2, 1e3, 1e6, 1e10, 1e15,
             Double.POSITIVE_INFINITY
     };
 
@@ -121,6 +121,7 @@ public class IntervalFloatLattice
 
     @Override
     public IntervalFloatLattice wideningAux(IntervalFloatLattice other) throws SemanticException {
+        /*
         double lResult = this.low;
         double uResult = this.high;
 
@@ -133,12 +134,38 @@ public class IntervalFloatLattice
             uResult = upperThreshold(other.high);
 
         return new IntervalFloatLattice(lResult, uResult);
+
+         */
+            if (this.isBottom()) return other;
+            if (other.isBottom()) return this;
+            if (this.isTop() || other.isTop()) return TOP;
+
+            double lResult = this.low;
+            double uResult = this.high;
+
+            // Only widen if there is a real, structural growth
+            if (other.low < this.low) {
+                lResult = lowerThreshold(other.low);
+            }
+
+            if (other.high > this.high) {
+                uResult = upperThreshold(other.high);
+            }
+
+            // Explicit protection: If the widening overshot to an invalid bound,
+            // catch it before returning a broken lattice element
+            if (lResult > uResult) {
+                return TOP;
+            }
+
+            return new IntervalFloatLattice(lResult, uResult);
+
     }
 
     /** Largest threshold t such that t ≤ v  (returns -∞ if none). */
     private static double lowerThreshold(double v) {
-        for (int i = THRESHOLDS.length - 1; i >= 0; i--)
-            if (THRESHOLDS[i] <= v)
+        for (int i = THRESHOLDS.length - 2; i >= 0; i--)
+            if (THRESHOLDS[i] < v)
                 return THRESHOLDS[i];
         return Double.NEGATIVE_INFINITY;
     }
@@ -146,7 +173,7 @@ public class IntervalFloatLattice
     /** Smallest threshold t such that t ≥ v  (returns +∞ if none). */
     private static double upperThreshold(double v) {
         for (double t : THRESHOLDS)
-            if (t >= v)
+            if (t > v)
                 return t;
         return Double.POSITIVE_INFINITY;
     }
@@ -177,4 +204,6 @@ public class IntervalFloatLattice
         int cmpL = Double.compare(this.low,  o.low);
         return cmpL != 0 ? cmpL : Double.compare(this.high, o.high);
     }
+
+
 }

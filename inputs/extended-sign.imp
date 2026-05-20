@@ -1,0 +1,54 @@
+class extended_signs {
+	loop() {
+		def c = 1;   // c = GT0
+		def b = 0;   // b = EQ0
+		             // loop head join: EQ0 ⊔ GT0 = GEQ0  (loop invariant)
+		while (b < 10)
+			b = b + c; // GEQ0 ADD GT0:
+			           //   EQ0 + GT0 = GT0
+			           //   GT0 + GT0 = GT0
+			           //   => GT0  ⊆ GEQ0, fixpoint reached
+		// at loop exit (b >= 10, b was GEQ0): b = GT0
+		return b;    // GT0
+	}
+
+	basic() {
+		def i = 2;      // i = GT0
+		def j = -10;    // j = LT0
+		def a = i + j;  // a = GT0 ADD LT0 = TOP   (sign unknown: could be <0, =0, or >0)
+		def s = i - j;  // s = GT0 SUB LT0 = GT0   (positive minus negative is always positive)
+		def m = i * j;  // m = GT0 MUL LT0 = LT0   (positive times negative is always negative)
+		def d = i / j;  // d = GT0 DIV LT0 = LT0   (positive divided by negative is always negative, never zero)
+	}
+
+	branches() {
+		def a = 3;  // a = GT0
+		def b = 5;  // b = GT0
+		def x = 0;  // x = EQ0
+		if (a > b)
+			x = x * 7;  // true branch:  EQ0 MUL GT0 = EQ0
+		else
+			x = -7;     // false branch: LT0
+		// join: EQ0 ⊔ LT0 = LEQ0  (from lubAux: a=1(LT0), b=2(EQ0) -> LEQ0)
+		def y = x / x;  // LEQ0 DIV LEQ0 = TOP
+		                // div(): r = LEQ0, which is NOT in {GT0, LT0, NEQ0},
+		                // so divisor may be zero → falls through to return TOP
+		                // (safe over-approximation; div-by-zero possible when x = EQ0)
+	}
+
+	setSpeed(n){
+		def z = 1;
+	}
+
+
+	moveForward3(b) {
+		def n = -1;   // n = LT0
+		if (b)
+			n = 1;    // true branch:  n = GT0
+		              // false branch: n = LT0
+		// join: LT0 ⊔ GT0 = NEQ0  (from lubAux: a=1(LT0), b=3(GT0) -> NEQ0)
+		// KEY INSIGHT: extended sign gives NEQ0 instead of basic sign's TOP —
+		// we can still prove n != 0, even though its sign depends on b
+		this.setSpeed(n); // warning: n is NEQ0 — may be negative depending on b
+	}
+}

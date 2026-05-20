@@ -3,14 +3,14 @@ package it.unive.scsr.analysis.floatInterval;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
+import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.program.cfg.ProgramPoint;
-import it.unive.lisa.symbolic.value.BinaryExpression;
-import it.unive.lisa.symbolic.value.Constant;
-import it.unive.lisa.symbolic.value.UnaryExpression;
+import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.symbolic.value.operator.AdditionOperator;
 import it.unive.lisa.symbolic.value.operator.DivisionOperator;
 import it.unive.lisa.symbolic.value.operator.MultiplicationOperator;
 import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
+import it.unive.lisa.symbolic.value.operator.binary.*;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class IntervalFloat implements BaseNonRelationalValueDomain<IntervalFloatLattice> {
@@ -158,5 +158,48 @@ public class IntervalFloat implements BaseNonRelationalValueDomain<IntervalFloat
     public boolean includes(IntervalFloatLattice a, IntervalFloatLattice b) {
         if (a.isBottom() || b.isBottom()) return false;
         return a.low <= b.low && b.high <= a.high;
+    }
+
+    @Override
+    public ValueEnvironment<IntervalFloatLattice> assumeBinaryExpression(
+            ValueEnvironment<IntervalFloatLattice> environment,
+            BinaryExpression expression,
+            ProgramPoint src, ProgramPoint dest,
+            SemanticOracle oracle) throws SemanticException {
+
+        BinaryOperator op = expression.getOperator();
+        ValueExpression lhs = (ValueExpression) expression.getLeft();
+        ValueExpression rhs = (ValueExpression) expression.getRight();
+
+        if (!(lhs instanceof Identifier)) return environment;
+
+        Identifier id = (Identifier) lhs;
+        IntervalFloatLattice current = environment.getState(id);
+        IntervalFloatLattice rhsVal = eval(environment, rhs, src, oracle);
+
+        if (current.isBottom() || rhsVal.isBottom()) return environment;
+
+        double lo    = current.low;
+        double hi    = current.high;
+        double rhsLo = rhsVal.low;
+        double rhsHi = rhsVal.high;
+
+        IntervalFloatLattice refined;
+
+        if (op == ComparisonLt.INSTANCE)
+            refined = new IntervalFloatLattice(lo, Math.min(hi, rhsHi));
+        else if (op == ComparisonLe.INSTANCE)
+            refined = new IntervalFloatLattice(lo, Math.min(hi, rhsHi));
+        else if (op == ComparisonGt.INSTANCE)
+            refined = new IntervalFloatLattice(Math.max(lo, rhsLo), hi);
+        else if (op == ComparisonGe.INSTANCE)
+            refined = new IntervalFloatLattice(Math.max(lo, rhsLo), hi);
+        else if (op == ComparisonEq.INSTANCE)
+            refined = new IntervalFloatLattice(Math.max(lo, rhsLo), Math.min(hi, rhsHi));
+        else
+            return environment;
+
+        if (refined.low > refined.high) return environment.bottom();
+        return environment.putState(id, refined);
     }
 }

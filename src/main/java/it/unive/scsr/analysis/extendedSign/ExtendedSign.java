@@ -39,11 +39,13 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
         Object v = constant.getValue();
         if (v instanceof Integer) {
             int n = (Integer) v;
-            return n > 0 ? ExtendedSignLattice.GT0 : (n == 0 ? ExtendedSignLattice.EQ0 : ExtendedSignLattice.LT0);
-        }
-        if (v instanceof Long) {
-            long n = (Long) v;
-            return n > 0 ? ExtendedSignLattice.GT0 : (n == 0 ? ExtendedSignLattice.EQ0 : ExtendedSignLattice.LT0);
+            if(n >= 0){
+                if (n == 0) return ExtendedSignLattice.GEQ0;
+                return ExtendedSignLattice.GT0;
+            }
+            return ExtendedSignLattice.LT0;
+
+            //return n > 0 ? ExtendedSignLattice.GT0 : (n == 0 ? ExtendedSignLattice.EQ0 : ExtendedSignLattice.LT0);
         }
         return ExtendedSignLattice.TOP;
     }

@@ -1,0 +1,73 @@
+class floatIntervals {
+
+    // 1. Verifies evalConstant, evalUnaryExpression, and basic binary operations
+    // Expected checks: preservation of decimals (2.5, -10.25) and precise multiplication/subtraction bounds.
+    basicArithmetic() {
+        def i = 2.5;
+        def j = -10.25;
+
+        def a = i + j;   // Addition: [2.5, 2.5] + [-10.25, -10.25]
+        def s = i - j;   // Subtraction: [a, b] - [c, d] = [a-d, b-c]
+        def m = i * j;   // Multiplication: validates your min/max logic
+        def l = -i;      // Unary negation: [-2.5, -2.5]
+    }
+
+    // 2. Verifies the complex division cases implemented in your div() method
+    divisionCases() {
+        def pos = 5.0;
+        def neg = -5.0;
+        def zero = 0.0;
+
+        // Case A: Strict division by zero -> Should yield TOP
+        def divByZero = pos / zero;
+
+        // Case B: Simple division (0 not in divisor)
+        def basicDiv = pos / 2.0;
+    }
+
+    // 3. Verifies Least Upper Bound (LUB) join logic through branching
+    branches(b) {
+        def x = 0.0;
+        if (b) {
+            x = 1.5;
+        } else {
+            x = 10.5;
+        }
+        // At this point, x should cleanly be [1.5, 10.5]
+        return x;
+    }
+
+    // 4. CRITICAL: Verifies your custom threshold-based wideningAux logic
+    // Instead of jumping straight to +infinity, the upper bound should step
+    // through your THRESHOLDS array: 0.0 -> 0.5 -> 1.0 -> 1e1 (10.0) -> 1e2 (100.0)
+    wideningLoop() {
+       def b = 0.0;
+       while (b <= 60.0) {  // 8.0 is safely under your 10.0 (1e1) threshold
+           b = b + 1.78;
+       }
+       return b;
+        // At the loop head, widening will trigger.
+        // If it works correctly, the upper bound will snap to 1e2 (100.0) instead of +infinity.
+    }
+
+    // 5. Verifies the division sub-cases where 0 is a bound or strictly inside an interval
+    zeroIntervalDivision(b) {
+        def dividend = 10.0;
+        def divisor = 0.0;
+
+        // Construct an interval where 0 is the lower bound: [0.0, 2.0]
+        if (b) {
+            divisor = 2.0;
+        }
+        def divZeroLower = dividend / divisor; // Triggers: l2 == 0.0 -> upper bound becomes +INF
+
+        // Construct an interval where 0 is strictly inside: [-2.0, 2.0]
+        def splitDivisor = 0.0;
+        if (b) {
+            splitDivisor = -2.0;
+        } else {
+            splitDivisor = 2.0;
+        }
+        def divZeroInside = dividend / splitDivisor; // Triggers: Hull of lower & higher cases
+    }
+}

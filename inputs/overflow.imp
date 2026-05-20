@@ -26,12 +26,7 @@ class overflow {
         return x;
     }
 
-    // Definite division by zero: denominator is exactly [0,0]
-       //testDefiniteDivZero() {
-       //    def x = 10;
-       //    def y = 0;
-       //    return x / y;     // WARN: "This is definitely a division by zero"
-       //}
+
 
     // Possible division by zero: loop counter starts at 0,
     // so after widening i is in [0,+inf) which includes 0

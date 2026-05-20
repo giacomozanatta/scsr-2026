@@ -14,7 +14,6 @@ import it.unive.lisa.symbolic.value.operator.SubtractionOperator;
 import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.MathNumber;
-import it.unive.lisa.util.representation.StructuredRepresentation;
 
 
 /**
@@ -30,5 +29,221 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
  */
 public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLattice> {
 
+    /**
+     * Returns the top element of the lattice, representing the interval (-∞, +∞).
+     * 
+     * @return the top element of the lattice
+     */
+    @Override
+    public IntervalRealLattice top() {
+        return IntervalRealLattice.TOP;
+    }
+
+    /**
+     * Returns the bottom element of the lattice, representing an empty interval.
+     * 
+     * @return the bottom element of the lattice
+     */
+    @Override
+    public IntervalRealLattice bottom() {
+        return IntervalRealLattice.BOTTOM;
+    }
+
+    /**
+     * Helper method to compute the minimum of multiple MathNumber instances.
+     * 
+     * @param nums the MathNumber instances to compare
+     * 
+     * @return the minimum value among the provided instances
+     */
+    private static MathNumber min(MathNumber... nums) {
+        if (nums.length == 0){
+			throw new IllegalArgumentException("No numbers provided");
+        }
+
+        MathNumber min = nums[0];
+
+        for (int i = 1; i < nums.length; i++){
+            min = min.min(nums[i]);
+        }
+
+        return min;
+    }
+
+    /**
+     * Helper method to compute the maximum of multiple MathNumber instances.
+     * 
+     * @param nums the MathNumber instances to compare
+     * 
+     * @return the maximum value among the provided instances
+     */
+    private static MathNumber max(MathNumber... nums) {
+        if (nums.length == 0){
+            throw new IllegalArgumentException("No numbers provided");
+        }
+
+        MathNumber max = nums[0];
+
+        for (int i = 1; i < nums.length; i++) {
+            max = max.max(nums[i]);
+        }
+
+        return max;
+    }
+
+    /**
+     * Evaluates a constant expression and returns the corresponding interval.
+     * 
+     * @note We automatically promote all numeric constants to double precision to maintain a uniform representation of intervals,
+     * 
+     * @param constant the constant expression to evaluate
+     * @param pp the program point where the expression is evaluated
+     * @param oracle the semantic oracle for handling semantic queries
+     * 
+     * @return the interval representing the constant value
+     * 
+     * @throws SemanticException if an error occurs during semantic evaluation
+     */
+    @Override
+    public IntervalRealLattice evalConstant(
+        Constant constant, ProgramPoint pp, SemanticOracle oracle
+    ) throws SemanticException {
+        Object value = constant.getValue();
+
+        // TODO: Check whether to use MathNumber instead
+        // If the constant is a number
+        if (value instanceof Number) {
+            // Promote to double for uniformity in interval representation
+            Double n = ((Number) value).doubleValue();
+
+            return new IntervalRealLattice(n, n);
+        }
+
+        return top();
+    }
+
+    // TODO: If using something like IntInterval update the code
+
+    /**
+     * Evaluates a unary expression and returns the corresponding interval.
+     * 
+     * @param expression the unary expression to evaluate
+     * @param arg the interval representing the argument
+     * @param pp the program point where the expression is evaluated
+     * @param oracle the semantic oracle for handling semantic queries
+     * 
+     * @return the interval representing the result of the unary expression
+     * 
+     * @throws SemanticException if an error occurs during semantic evaluation
+     */
+    @Override
+    public IntervalRealLattice evalUnaryExpression(
+        UnaryExpression expression, IntervalRealLattice arg, ProgramPoint pp, SemanticOracle oracle
+    ) throws SemanticException {
+        // If the argument is bottom, the result is also bottom
+        // This equals checking for null intervals
+        if (arg.isBottom()) {
+            return bottom();
+        }
+
+        if (expression.getOperator() == NumericNegation.INSTANCE) {
+            MathNumber u = arg.getHigh();
+			MathNumber l = arg.getLow();
+
+            // -[l, u] => [-u, -l]
+            return new IntervalRealLattice(
+                u.multiply(MathNumber.MINUS_ONE), 
+                l.multiply(MathNumber.MINUS_ONE)
+            );
+        }
+
+        return top();
+    }
+
+    /**
+     * Evaluates a binary expression and returns the corresponding interval.
+     * 
+     * @param expression the binary expression to evaluate
+     * @param left the interval representing the left argument
+     * @param right the interval representing the right argument
+     * @param pp the program point where the expression is evaluated
+     * @param oracle the semantic oracle for handling semantic queries
+     * 
+     * @return the interval representing the result of the binary expression
+     * 
+     * @throws SemanticException if an error occurs during semantic evaluation
+     */
+    @Override
+    public IntervalRealLattice evalBinaryExpression(
+        BinaryExpression expression, IntervalRealLattice left, IntervalRealLattice right, ProgramPoint pp, SemanticOracle oracle
+    ) throws SemanticException {
+        if (left.isBottom() || right.isBottom()){
+            return bottom();
+        }
+
+        BinaryOperator operator = expression.getOperator();
+        MathNumber l1 = left.getLow();
+        MathNumber u1 = left.getHigh();
+        MathNumber l2 = right.getLow();
+        MathNumber u2 = right.getHigh();
+
+        if (operator instanceof AdditionOperator) {
+            // Handle possible Nans
+            MathNumber lAdd = l1.add(l2);
+            MathNumber uAdd = u1.add(u2);
+
+            if (lAdd.isNaN() || uAdd.isNaN()) {
+                return top();
+            }
+
+            // [l1, u1] + [l2, u2] becomes [l1 + l2, u1 + u2]
+            return new IntervalRealLattice(lAdd, uAdd);
+        } 
+
+        if (operator instanceof SubtractionOperator) {
+            MathNumber lSub = l1.subtract(u2);
+            MathNumber uSub = u1.subtract(l2);
+
+            if (lSub.isNaN() || uSub.isNaN()) {
+                return top();
+            }
+
+            // [l1, u1] - [l2, u2] becomes [l1 - u2, u1 - l2] 
+            return new IntervalRealLattice(lSub, uSub);
+        } 
+
+        if (operator instanceof MultiplicationOperator) {
+            // Compute all cross products
+            MathNumber p1 = l1.multiply(l2);
+            MathNumber p2 = l1.multiply(u2);
+            MathNumber p3 = u1.multiply(l2);
+            MathNumber p4 = u1.multiply(u2);
+
+            // [l1, u1] * [l2, u2] becomes [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
+            return new IntervalRealLattice(
+                min(p1, p2, p3, p4), max(p1, p2, p3, p4)
+            );
+        } 
+
+        if (operator instanceof DivisionOperator) {
+            // If divisor contains zero, return TOP to stay sound (division by zero is undefined/infinity)
+            if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+                return top();
+            }
+
+            // Compute all cross divisions
+            MathNumber d1 = l1.divide(l2);
+            MathNumber d2 = l1.divide(u2);
+            MathNumber d3 = u1.divide(l2);
+            MathNumber d4 = u1.divide(u2);
+
+            // [l1, u1] / [l2, u2] becomes [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
+            return new IntervalRealLattice(
+                min(d1, d2, d3, d4), max(d1, d2, d3, d4)
+            );
+        }
+
+        return top();
+    }
 
 }

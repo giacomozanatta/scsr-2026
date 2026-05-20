@@ -1,0 +1,113 @@
+class float_intervals {
+
+    f1() {
+        def i = 2.5;
+        def j = -10.25;
+
+        def a = i + j;
+        def s = i - j;
+        def m = i * j;
+
+        def d1 = i / j;
+        def d2 = j / i;
+
+        def l1 = -i;
+        def l2 = -j;
+
+        def z = 0.0;
+        def eps = 0.0000001;
+
+        def small1 = i / eps;
+        def small2 = eps / i;
+
+        def dz1 = i / z;
+        def dz2 = z / i;
+        def dz3 = z / z;
+
+        def f1 = 1.0;
+        def f2 = 0.1;
+        def f3 = 0.01;
+        def f4 = 0.001;
+
+        def chain = f1 * f2 * f3 * f4;
+
+        return chain;
+    }
+
+    f2(b) {
+        def x = 0.0;
+        def y = -5.5;
+        def z = 5.5;
+
+        if (b) {
+            x = x + y;
+        } else {
+            x = x + z;
+        }
+
+        def a = x + 1.1;
+        def b1 = x - 2.2;
+        def c = x * 1.5;
+
+        return c;
+    }
+
+    f3(b) {
+        def c = 1.0;
+        def step = 0.5;
+
+        while (b < 3.0) {
+            c = c + step;
+            b = b + 0.1;
+        }
+
+        return c;
+    }
+
+    f4(b) {
+        def x = 1.0;
+
+        while (b < 100.0) {
+            x = x * 1.5;
+            b = b + 1.0;
+        }
+
+        return x;
+    }
+
+    f5(b) {
+        def x = 1.0;
+
+        while (b < 10.0) {
+            x = x * 0.5;
+            b = b + 0.1;
+        }
+
+        return x;
+    }
+
+    f6(b) {
+        def x = 0.0;
+
+        while (b < 5.0) {
+            if (b) {
+                x = x + 1.0;
+            } else {
+                x = x - 1.0;
+            }
+            b = b + 0.5;
+        }
+
+        return x;
+    }
+
+    f7() {
+        def a = -1.0;
+        def b = 1.0;
+
+        def x = 10.0 / a;
+        def y = 10.0 / b;
+
+        return x + y;
+    }
+}

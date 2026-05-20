@@ -13,6 +13,9 @@
             - fires when a call argument has a known prefix starting with "http://" or "https://".
         DotComStringChecker (Suffix analysis)
             - fires when a call argument has a known suffix ending with ".com".
+        InternalHostChecker (Suffix analysis)
+            - fires when a call argument has a known suffix ending with ".internal".
+            - NOTE: only bare hostnames (no path) are detected; path components overwrite the suffix.
 
     Author: Gianmaria Pizzo 872966
  */

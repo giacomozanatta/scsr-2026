@@ -85,13 +85,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/checkers/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/checkers/overflow8.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/checkers/overflow";
+        conf.workdir = "outputs/checkers/overflow8";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -115,13 +115,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/checkers/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/checkers/overflow16.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/checkers/overflow";
+        conf.workdir = "outputs/checkers/overflow16";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -145,13 +145,13 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/checkers/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/checkers/overflow32.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/checkers/overflow";
+        conf.workdir = "outputs/checkers/overflow32";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

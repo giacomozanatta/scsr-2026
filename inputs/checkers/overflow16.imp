@@ -1,0 +1,61 @@
+class overflow{
+    // SHORT
+    //*******************************************
+    short_1(){
+        def short = 0;
+        short = short + 32768;
+        short = 0;
+        short = short - 32769;
+        return short;
+    }
+
+    short_loop_branching_overflow(){
+        def max = 10;
+        def short = 32765;
+        def flag = 1;
+        for(def i = 0; i < max; i = i+1){
+            if(flag == 1){
+                short = short + 1;
+            }
+            else{
+                short = short + 0;
+            }
+        }
+    }
+
+    short_loop_branching_no_overflow(){
+        def max = 10;
+        def short = 32765;
+        def flag = 0;
+        for(def i = 0; i < max; i = i+1){
+            if(flag == 1){
+                short = short + 1;
+            }
+            else{
+                short = short + 0;
+            }
+        }
+    }
+
+    short_array_access(){
+        def short = 32767;
+        def arr = new int[1];
+        arr[0] = 1;
+        short = short + arr[0]*2;
+    }
+
+    get_one(){
+        return 1;
+    }
+    get_zero(){
+        return 0;
+    }
+    short_function_call(){
+        def short = 32767;
+        short = short + this.get_one();
+        short = 0;
+        short = short + this.get_zero();
+    }
+
+
+}

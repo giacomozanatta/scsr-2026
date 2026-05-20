@@ -1,0 +1,23 @@
+class http{
+    string_1(){
+        def obvious = "http://www.dfos.com";
+    }
+
+    string_array_concat(){
+        def base = "://www.dfos.com";
+        def arr = new string[4];
+        arr[0] = "h";
+        arr[1] = "t";
+        arr[2] = "t";
+        arr[3] = "p";
+        def res = "";
+        res = arr[0];
+        res = res + arr[1];
+        res = res + arr[2];
+        res = res + arr[3];
+        res = res + base;
+
+        return res;
+    }
+
+}

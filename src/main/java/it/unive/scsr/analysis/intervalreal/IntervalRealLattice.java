@@ -34,8 +34,14 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
      * @param high the upper bound of the interval
      */
     public IntervalRealLattice(MathNumber low, MathNumber high) {
-        this.low = low;
-        this.high = high;
+        if (low != null && high != null && low.compareTo(high) > 0) {
+            // Automatically swap inverted bounds safely
+            this.low = high;
+            this.high = low;
+        } else {
+            this.low = low;
+            this.high = high;
+        }
     }
 
     /**
@@ -100,7 +106,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
      */
     @Override
     public boolean isBottom() {
-        return this.low == null && this.high == null;
+        return this.getLow() == null && this.getHigh() == null;
     }
 
     /**
@@ -110,7 +116,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
      */
     @Override
     public boolean isTop() {
-        return this.low != null && this.low.isMinusInfinity() && this.high != null && this.high.isPlusInfinity();
+        return this.getLow() != null && this.getLow().isMinusInfinity() && this.getHigh() != null && this.getHigh().isPlusInfinity();
     }
 
     @Override
@@ -130,21 +136,13 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         IntervalRealLattice that = (IntervalRealLattice) obj;
 
+        // TODO: Should check with certain tolerance (if equal to the 4th decimal used in widening)
+        // so we can ignore any digit decimal that is not relevant for the analysis 
+        // (e.g., 1.0000001 and 1.0000002 should be considered equal if the tolerance is 1e-4)
         return (
             Objects.equals(getLow(), that.getLow()) && 
             Objects.equals(getHigh(), that.getHigh())
         );
-    }
-
-    @Override
-    public int compareTo(IntervalRealLattice obj) {
-        if (this.equals(obj)) return 0;
-        if (this.isBottom()) return -1;
-        if (obj.isBottom()) return 1;
-        if (this.isTop()) return obj.isTop() ? 0 : 1;
-        if (obj.isTop()) return -1;
-        int cmp = this.getLow().compareTo(obj.getLow());
-        return cmp != 0 ? cmp : this.getHigh().compareTo(obj.getHigh());
     }
 
     @Override
@@ -159,46 +157,120 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         String lo = getLow().isMinusInfinity() ? "-∞" : getLow().toString();
         String hi = getHigh().isPlusInfinity() ? "+∞" : getHigh().toString();
+
         return new StringRepresentation("[" + lo + ", " + hi + "]");
     }
 
     @Override
+    public int compareTo(IntervalRealLattice obj) {
+        if(isBottom()){
+            return obj.isBottom() ? 0 : -1; 
+        }
+
+        if(isTop()){
+            return obj.isTop() ? 0 : 1;
+        }
+
+        if(obj.isBottom()){
+            return 1;
+        }
+
+        if(obj.isTop()){
+            return -1;
+        }
+
+        int cmp = this.getLow().compareTo(obj.getLow());
+        return cmp != 0 ? cmp : this.getHigh().compareTo(obj.getHigh());
+    }
+
+    @Override
     public IntervalRealLattice lubAux(IntervalRealLattice other) throws SemanticException {
-        return new IntervalRealLattice(getLow().min(other.getLow()), getHigh().max(other.getHigh()));
+        if (this.isBottom() || other.isBottom()) {
+            return bottom();
+        }
+
+        // Get the minimum of the lower bounds
+        MathNumber newLow = getLow().min(other.getLow());
+        // Get the maximum of the upper bounds
+        MathNumber newHigh = getHigh().max(other.getHigh());
+
+        return new IntervalRealLattice(newLow, newHigh);
     }
 
     @Override
     public IntervalRealLattice glbAux(IntervalRealLattice other) throws SemanticException {
+        if (this.isBottom() || other.isBottom()) {
+            return bottom();
+        }
+
+        // Get the maximum of the lower bounds
         MathNumber maxLow = getLow().max(other.getLow());
+
+        // Get the minimum of the upper bounds
         MathNumber minHigh = getHigh().min(other.getHigh());
-        if (maxLow.gt(minHigh)) return BOTTOM;
+
+        // Check if the resulting interval is valid (maxLow ≤ minHigh)
+        if (maxLow.gt(minHigh)) {
+            return BOTTOM;
+        }
+
         return new IntervalRealLattice(maxLow, minHigh);
     }
 
     @Override
     public boolean lessOrEqualAux(IntervalRealLattice other) throws SemanticException {
+        if (this.isBottom() || other.isBottom()) {
+            return false;
+        }
+
+        // Checks if 'this' is subset of 'other' (this ⊑ other)
         // [l1,u1] ⊑ [l2,u2]  iff  l2 ≤ l1  ∧  u1 ≤ u2
+        // It is equivalent to check "other includes this"
         return getLow().geq(other.getLow()) && getHigh().leq(other.getHigh());
     }
 
-    /**
-     * Widening for real-valued intervals.
-     *
-     * Real intervals need widening for the same reason integers do: ascending
-     * chains like [0,0] ⊑ [0,0.1] ⊑ [0,0.2] ⊑ … are infinite.  Unlike
-     * integers we cannot bound the number of distinct values inside [a,b]
-     * (there are uncountably many), so we must force diverging bounds to ±∞
-     * immediately rather than relying on any finite-chain argument.
-     *
-     * Rule:  (this) ∇ (other)
-     *   lower = other.low  < this.low  ? -∞ : this.low
-     *   upper = other.high > this.high ? +∞ : this.high
-     */
     @Override
     public IntervalRealLattice wideningAux(IntervalRealLattice other) throws SemanticException {
-        MathNumber newLow  = other.getLow().lt(getLow())   ? MathNumber.MINUS_INFINITY : getLow();
-        MathNumber newHigh = other.getHigh().gt(getHigh()) ? MathNumber.PLUS_INFINITY  : getHigh();
-        return new IntervalRealLattice(newLow, newHigh);
+        if (this.isBottom() || other.isBottom()) {
+            return bottom();
+        }
+
+        // Small threshold margin
+        MathNumber tolerance = new MathNumber(1e-4);
+
+        // Get bounds of both intervals
+        MathNumber l1 = this.getLow();
+        MathNumber u1 = this.getHigh();
+        MathNumber l2 = other.getLow();
+        MathNumber u2 = other.getHigh();
+
+        // Default to current upper bound
+        MathNumber newUpper = u1;
+
+        if (u2.subtract(u1).gt(tolerance)) {
+            // If the new upper bound is significantly larger than 
+            // the current one, we widen to +INF
+            newUpper = MathNumber.PLUS_INFINITY;
+        } else if (u2.gt(u1)) {
+            // If the new upper bound is larger but within the tolerance    
+            // we can accept it without widening
+            newUpper = u2;
+        }
+
+        // Default to current lower bound
+        MathNumber newLower = l1;
+
+        if (l1.subtract(l2).gt(tolerance)) {
+            // If the new lower bound is significantly smaller than 
+            // the current one, we widen to -INF
+            newLower = MathNumber.MINUS_INFINITY;
+        } else if (l2.lt(l1)) {
+            // If the new lower bound is smaller but within the tolerance
+            // we can accept it without widening
+            newLower = l2;
+        }
+
+        return new IntervalRealLattice(newLower, newUpper);
     }
 
 }

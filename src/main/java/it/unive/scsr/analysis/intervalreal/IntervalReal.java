@@ -110,8 +110,6 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
     ) throws SemanticException {
         Object value = constant.getValue();
 
-        // TODO: Check whether to use MathNumber instead
-        // If the constant is a number
         if (value instanceof Number) {
             // Promote to double for uniformity in interval representation
             Double n = ((Number) value).doubleValue();
@@ -121,8 +119,6 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
 
         return top();
     }
-
-    // TODO: If using something like IntInterval update the code
 
     /**
      * Evaluates a unary expression and returns the corresponding interval.
@@ -187,60 +183,105 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
         MathNumber l2 = right.getLow();
         MathNumber u2 = right.getHigh();
 
+        if (l1.isNaN() || u1.isNaN() || l2.isNaN() || u2.isNaN()) {
+            return top();
+        }
+
         if (operator instanceof AdditionOperator) {
-            // Handle possible Nans
+            // Catch: (+∞) + (-∞) or (-∞) + (+∞)
+            if (
+                (l1.isPlusInfinity() && l2.isMinusInfinity()) || 
+                (l1.isMinusInfinity() && l2.isPlusInfinity()) ||
+                (u1.isPlusInfinity() && u2.isMinusInfinity()) || 
+                (u1.isMinusInfinity() && u2.isPlusInfinity())
+            ) {
+                return top();
+            }
+
             MathNumber lAdd = l1.add(l2);
             MathNumber uAdd = u1.add(u2);
 
-            if (lAdd.isNaN() || uAdd.isNaN()) {
+            return new IntervalRealLattice(lAdd, uAdd);
+        }
+
+        if (operator instanceof SubtractionOperator) {
+            // Catch: (+∞) - (+∞) or (-∞) - (-∞)
+            if (
+                (l1.isPlusInfinity() && u2.isPlusInfinity()) || 
+                (l1.isMinusInfinity() && u2.isMinusInfinity()) ||
+                (u1.isPlusInfinity() && l2.isPlusInfinity()) || 
+                (u1.isMinusInfinity() && l2.isMinusInfinity())
+            ) {
                 return top();
             }
 
-            // [l1, u1] + [l2, u2] becomes [l1 + l2, u1 + u2]
-            return new IntervalRealLattice(lAdd, uAdd);
-        } 
-
-        if (operator instanceof SubtractionOperator) {
             MathNumber lSub = l1.subtract(u2);
             MathNumber uSub = u1.subtract(l2);
 
-            if (lSub.isNaN() || uSub.isNaN()) {
-                return top();
-            }
-
-            // [l1, u1] - [l2, u2] becomes [l1 - u2, u1 - l2] 
             return new IntervalRealLattice(lSub, uSub);
-        } 
+        }
 
         if (operator instanceof MultiplicationOperator) {
-            // Compute all cross products
-            MathNumber p1 = l1.multiply(l2);
-            MathNumber p2 = l1.multiply(u2);
-            MathNumber p3 = u1.multiply(l2);
-            MathNumber p4 = u1.multiply(u2);
+            // Pre-calculate boundaries while masking out 0 * infinity anomalies
+            MathNumber p1 = (l1.isInfinite() && l2.isZero()) || (l1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : l1.multiply(l2);
+            MathNumber p2 = (l1.isInfinite() && u2.isZero()) || (l1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : l1.multiply(u2);
+            MathNumber p3 = (u1.isInfinite() && l2.isZero()) || (u1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : u1.multiply(l2);
+            MathNumber p4 = (u1.isInfinite() && u2.isZero()) || (u1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : u1.multiply(u2);
 
-            // [l1, u1] * [l2, u2] becomes [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
             return new IntervalRealLattice(
                 min(p1, p2, p3, p4), max(p1, p2, p3, p4)
             );
-        } 
+        }
 
         if (operator instanceof DivisionOperator) {
-            // If divisor contains zero, return TOP to stay sound (division by zero is undefined/infinity)
-            if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+            // 1. Absolute Division by Zero -> Completely invalid state
+            if (l2.isZero() && u2.isZero()) {
+                return bottom();
+            }
+
+            // 2. Indeterminate Infinite Division (inf / inf) -> Drops to TOP
+            if ((l1.isInfinite() || u1.isInfinite()) && (l2.isInfinite() || u2.isInfinite())) {
                 return top();
             }
 
-            // Compute all cross divisions
+            // 3. Left-Open Zero Division [0, +u2]
+            if (l2.isZero()) {
+                if (u2.isInfinite()) return top();
+                if (l1.geq(MathNumber.ZERO)) {
+                    return new IntervalRealLattice(u1.divide(u2), MathNumber.PLUS_INFINITY);
+                } else if (u1.isNegative()) {
+                    return new IntervalRealLattice(MathNumber.MINUS_INFINITY, l1.divide(u2));
+                }
+                return top();
+            }
+
+            // 4. Right-Open Zero Division [-l2, 0]
+            if (u2.isZero()) {
+                if (l2.isInfinite()) {
+                    return top();
+                }
+
+                if (l1.geq(MathNumber.ZERO)) {
+                    return new IntervalRealLattice(MathNumber.MINUS_INFINITY, u1.divide(l2));
+                } else if (u1.isNegative()) {
+                    return new IntervalRealLattice(l1.divide(l2), MathNumber.PLUS_INFINITY);
+                }
+
+                return top();
+            }
+
+            // 5. Divisor straddles across zero completely (examp;e: [-1.5, +2.0])
+            if (l2.isNegative() && u2.isPositive()) {
+                return top();
+            }
+
+            // Fallback: Standard division loop for clean numbers
             MathNumber d1 = l1.divide(l2);
             MathNumber d2 = l1.divide(u2);
             MathNumber d3 = u1.divide(l2);
             MathNumber d4 = u1.divide(u2);
 
-            // [l1, u1] / [l2, u2] becomes [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
-            return new IntervalRealLattice(
-                min(d1, d2, d3, d4), max(d1, d2, d3, d4)
-            );
+            return new IntervalRealLattice(min(d1, d2, d3, d4), max(d1, d2, d3, d4));
         }
 
         return top();

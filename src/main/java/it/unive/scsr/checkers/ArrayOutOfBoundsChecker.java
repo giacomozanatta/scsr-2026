@@ -23,6 +23,7 @@ import it.unive.lisa.program.cfg.statement.Expression;
 import it.unive.lisa.program.cfg.statement.Statement;
 import it.unive.lisa.program.cfg.statement.VariableRef;
 import it.unive.lisa.symbolic.SymbolicExpression;
+import it.unive.lisa.symbolic.value.Identifier;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
@@ -73,16 +74,26 @@ public class ArrayOutOfBoundsChecker<H extends HeapValue<H>, T extends TypeValue
 		if (newArray == null) return;
 
 		// getSubExpressions()[0] is the size expression, e.g. the "10" in new int[10]
+		// We need this to compare the upper-bound of the interval against the size of the array to detect OOB
 		Expression sizeExpr = newArray.getSubExpressions()[0];
 
 		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
 
+			// Extract the abstract intervals for the index and for the array size to compare them
 			IntInterval idxInterval  = extractInterval(tool, res, access, access.getRight());
 			IntInterval sizeInterval = extractInterval(tool, res, access, sizeExpr);
 
 			if (idxInterval == null || sizeInterval == null) continue;
 
-			// Lower-bound check: index must be >= 0
+			// Resolve symbolic identifiers for the index and size variables so we
+			// can consult the upper-bounds set component (pentagon.second) below
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>>
+					idxPostState = res.getAnalysisStateAfter(access.getRight());
+			Identifier idxId  = extractIdentifier(tool, idxPostState, access);
+			Identifier sizeId = extractIdentifier(tool,
+					res.getAnalysisStateAfter(sizeExpr), access);
+
+			// Lower bound check : index must be >= 0
 			if (idxInterval.getLow().lt(MathNumber.ZERO)) {
 				if (idxInterval.getHigh().lt(MathNumber.ZERO))
 					tool.warnOn(access, "Array index is definitely negative (out of bounds)");
@@ -90,16 +101,63 @@ public class ArrayOutOfBoundsChecker<H extends HeapValue<H>, T extends TypeValue
 					tool.warnOn(access, "Array index may be negative (out of bounds)");
 			}
 
-			// Upper-bound check: index must be < size
-			// Possibly OOB when the max index can reach the minimum possible size
-			if (idxInterval.getHigh().geq(sizeInterval.getLow())) {
-				// Definitely OOB when even the min index is >= the max possible size
+			// Upper bound check : index must be < size
+			// Before warning, use the idx's upper-bounds set (taking advantage of Pentagon Domain over Interval Domain)
+			// to figure out if it proves idx < size relationally (example : from a loop condition i < n)
+			if (idxInterval.getHigh().geq(sizeInterval.getLow()) && !provedSafeByUpperBounds(idxPostState, idxId, sizeId)) {
 				if (idxInterval.getLow().geq(sizeInterval.getHigh()))
-					tool.warnOn(access, "Array index is definitely out of bounds (>= array size)");
+					tool.warnOn(access, "Array index is definitely >= array size (out of bounds)");
 				else
-					tool.warnOn(access, "Array index may be out of bounds (>= array size)");
+					tool.warnOn(access, "Array index may be out of bounds >= array size (out of bounds)");
 			}
 		}
+	}
+
+	// Returns the first numeric Identifier found in the reachable set of target's post-state
+	// Returns null if the expression has no direct identifier (compound expression or a literal constant)
+	private Identifier extractIdentifier(
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> postState,
+			Statement node) {
+
+		Iterator<SymbolicExpression> it = postState.getExecutionExpressions().iterator();
+		if (!it.hasNext()) return null;
+		SymbolicExpression expr = it.next();
+		try {
+			Set<SymbolicExpression> reachable = new HashSet<>(
+					tool.getAnalysis().reachableFrom(postState, expr, node).elements);
+			for (SymbolicExpression s : reachable) {
+				if (!(s instanceof Identifier)) continue;
+				Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, node);
+				if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType() || !t.isNumericType()))
+					continue;
+				return (Identifier) s;
+			}
+		} catch (SemanticException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// Returns true if the upper bounds set (pentagon.second) of any
+	// abstract value in postState definitively proves idxId < sizeId
+	// in which case no upper-bound OOB warning should be emitted
+	private boolean provedSafeByUpperBounds(
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> postState,
+			Identifier idxId,
+			Identifier sizeId) {
+
+		if (idxId == null || sizeId == null)
+			return false;
+
+		Collection<PentagonLattice> pentagons =
+				postState.getExecutionState().getAllLatticeInstances(PentagonLattice.class);
+
+		for (PentagonLattice pentagon : pentagons)
+			if (!pentagon.isBottom() && pentagon.second.getState(idxId).contains(sizeId))
+				return true;
+
+		return false;
 	}
 
 	private IntInterval extractInterval(
@@ -129,7 +187,7 @@ public class ArrayOutOfBoundsChecker<H extends HeapValue<H>, T extends TypeValue
 						postState.getExecutionState().getAllLatticeInstances(PentagonLattice.class);
 				for (PentagonLattice pentagon : abstractValues) {
 					IntInterval interval = intervalDomain.eval(pentagon.first, (ValueExpression) s, node, oracle);
-					if (interval != null && !interval.isTop())
+					if (interval != null && !interval.isBottom())
 						return interval;
 				}
 			}

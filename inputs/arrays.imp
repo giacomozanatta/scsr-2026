@@ -1,17 +1,43 @@
 class Arrays {
 
-	inBounds() {
+    // We consider the analysis is performed with a field-sensitive point based heap,
+    // so the heap tracks abstract identifiers for each concrete variable,
+    // including concrete indices for an array in the program.
+    // Example, for an array of size 3, x = arr[0] would have its abstract interval be [arr[0] value, arr[0] value].
+
+    // Alternative option would be field-sensitive point based heap (less precise) :
+    // Instead of generalizing all indices under one abstract identifier for the whole array,
+    // it generalizes x to be in [min(size of the array, min element in the array), max(array size, max element in the array)]
+
+
+    // -------- Test 1 : Literal access to in bounds indexes --------
+    // Array size = 5 -> Valid indexes = {0,1,2,3,4}
+    // No warning should be raised
+	literalInBounds() {
 		def arr = new int[5];
 		arr[0] = 10;
 		arr[1] = 11;
 		arr[2] = 12;
 		arr[3] = 13;
 		arr[4] = 14;
-		def x = arr[2]; // in bounds
-		return x;
+
+		// in bounds
+		def a = arr[0];
+		def b = arr[1];
+		def c = arr[2];
+		def d = arr[3];
+		def f = arr[4];
     }
 
-	outOfBounds() {
+    // -------- Test 2 : Literal access to out of bounds indexes --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // a2_length = 2 -> Valid indexes = {0,1}
+    //
+    // EXPECT:
+    // - On x : DEFINITE WARNING array index negative (OOB)
+    // - On y : DEFINITE WARNING array index >= array size (OOB)
+    // - On z : DEFINITE WARNING array index >= array size (OOB)
+	literalOutOfBounds() {
 		def a1 = new int[3];
 		a1[0] = 10;
 		a1[1] = 11;
@@ -23,10 +49,413 @@ class Arrays {
 
 		def ne = -1;
 
-		def x = a1[ne];
-		def y = a2[2];
-		def z = a2[3];
+		def x = a1[ne]; // out of bounds on the lower end (-1 < 0)
+		def y = a2[2]; // 2 = a2_length but indexing starts at 0 -> out of bounds
+		def z = a2[3]; // 3 > a2_length -> out of bounds
+    }
 
-		return z;
+    // ============================ TESTS 3 : BRANCHES ======================================
+
+    // -------- Test 3.1: Literal access to out of bounds index in branch --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // x will take the value of two different items in the array depending on an unknown b parameter (TOP)
+    // One will trigger an invalid access.
+    // Warning is raised on x = a[...] statements, so even if the OOB happens in one branch only, the warning is definite
+    // regardless of x's value at merge.
+    //
+    // EXPECT: DEFINITE WARNING array index >= array size (OOB)
+    branchesLiteralOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def x = a1[0];
+
+        if(b > 0){
+            x = a1[10]; // x abstract state : TOP (access to memory that could be holding anything)
+        }
+        else{
+            x = a1[0]; // x abstract state : [10,10]
+        }
+
+        // at join : x is TOP
+
+        return x;
+    }
+
+    // -------- Test 3.2: Branches with possible OOB (>= array size) index --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // Index can take a value >= array size in one branch, in bounds value in another branch.
+    // At merge, the index's abstract interval has a lower bound in bounds of the array, but an upper bound OOB of the array.
+    //
+    // EXPECT: POSSIBLE WARNING array index >= array size (OOB)
+    branchesPossibleIndexOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def i = 0;
+
+        if(b > 0){
+            i = 10;
+        }
+        else{
+            i = 0;
+        }
+
+        // at join : i in [0,10]
+        def x = a1[i]; // should trigger possible OOB
+
+        return x;
+    }
+
+    // -------- Test 3.3: Branches with possible OOB (negative) index --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // Index can take a value < 0 in one branch, in bounds value in another branch.
+    // At merge, the index's abstract interval has a lower bound OOB of the array, but an upper bound in bounds of the array.
+    //
+    // EXPECT: POSSIBLE WARNING negative array index (OOB)
+    branchesPossibleNegativeIndexOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def i = 0;
+
+        if(b > 0){
+            i = -1;
+        }
+        else{
+            i = 0;
+        }
+
+        // at join : i in [-1,0]
+        def x = a1[i]; // should trigger possible negative index OOB
+        return x;
+    }
+
+    // -------- Test 3.4: Branches with 2 possible OOB (negative and >= array size) index --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // Index can take a value < 0 in one branch, value >= array size in another branch.
+    // At merge, the index's abstract interval has a lower bound OOB of the array (negative),
+    // and an upper bound OOB of the array (>= array size)
+    //
+    // EXPECT: 2 POSSIBLE WARNING OOB index : index may be negative, and index may be >= array size
+    branchesTwoPossibleIndexOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def i = 0;
+
+        if(b > 0){
+            i = -2;
+        }
+        else{
+            i = 10;
+        }
+
+        // at join : i in [-2,10]
+        def x = a1[i]; // should trigger 2 possible OOB (possibly negative index, and possibly >= a1_length index)
+
+        return x;
+    }
+
+    // -------- Test 3.5: Branches with definite negative OOB index --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // Index will take a value < 0 in either branch
+    // At merge, the index's abstract interval has both its lower bound and upper bound be OOB of the array (negative)
+    //
+    // EXPECT: DEFINITE WARNING negative array index (OOB)
+    branchesDefiniteNegativeIndexOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def i = 0;
+
+        if(b > 0){
+            i = -2;
+        }
+        else{
+            i = -1;
+        }
+
+        // at join : i in [-2,-1]
+        def x = a1[i]; // should trigger definite negative index OOB
+
+        return x;
+    }
+
+    // -------- Test 3.6: Branches with definite >= array size OOB index --------
+    // a1_length = 3 -> Valid indexes = {0,1,2}
+    // Index will take a value >= array size in either branch
+    // At merge, the index's abstract interval has both its lower bound and upper bound be OOB of the array (>= array size)
+    //
+    // EXPECT: DEFINITE WARNING array index >= array size (OOB)
+    branchesDefiniteIndexOOB(b){
+        def a1 = new int[3];
+        a1[0] = 10;
+        a1[1] = 11;
+        a1[2] = 12;
+
+        def i = 0;
+
+        if(b > 0){
+            i = 3;
+        }
+        else{
+            i = 5;
+        }
+
+        // at join : i in [3,5]
+        def x = a1[i]; // should trigger definite index >= a1_length OOB
+
+        return x;
+    }
+
+    // ============================ TESTS 4 : LOOPS ======================================
+
+    // -------- Test 4.1: Loop without bound refinement -> widening to OOB --------
+    // a_length = 5 -> Valid indexes = {0,1,2,3,4}
+    // The loop has no condition relating i to the array length; i grows
+    // unboundedly.
+    //
+    // Logically, i's interval should be [0, +INF] but LiSA evaluates i to TOP directly
+    // lower bound 0 -> in bounds but since i evaluated to TOP -> this will fire a possible OOB index < 0 too
+    // upper bound +INF >= 5 -> OOB
+    //
+    // EXPECT: POSSIBLE WARNING array index >= array size (OOB) + POSSIBLE negative index OOB too (even if it's just noise)
+    loopUnboundedIndex(n) {
+        def a = new int[5];
+        a[0] = 0;
+
+        def i = 0;
+        while (i < n) {
+            def x = a[i]; // LiSA evaluates i to TOP
+            i = i + 1;
+        }
+
+        return i;
+    }
+
+    // -------- Test 4.2: Loop guarded by the literal array length --------
+    // a_length = 5 -> Valid indexes = {0,1,2,3,4}
+    // The loop condition i < 5 lets the analysis refine i inside the body.
+    //
+    // EXPECT: NO WARNING
+    loopBoundedByLiteral() {
+        def a = new int[5];
+        def i = 0;
+        def s = 0;
+        while (i < 5) {
+            def x = a[i]; // i refined to [0,4] inside the body -> in bounds
+            s = s + x;
+            i = i + 1;
+        }
+        return s;
+    }
+
+    // -------- Test 4.3: Loop guarded by a symbolic length (Pentagon-specific) --------
+    // a_length = len (parameter). Valid indexes = {0, ..., len-1}.
+    // The loop condition is i < len.
+    // Pentagon records the strict relation i < len and,
+    // since the array was allocated with that same len, proves i is a valid index.
+    //
+    // EXPECT (Pentagon): NO WARNING
+    loopBoundedBySymbolicLength(len) {
+        def a = new int[len];
+        def i = 0;
+        def s = 0;
+        while (i < len) {
+            def x = a[i]; // Pentagon: i < len -> in bounds; Interval: possible OOB
+            s = s + x;
+            i = i + 1;
+        }
+        return s;
+    }
+
+    // -------- Test 4.4: Loop from condition that allows i == size (off-by-one) --------
+    // a_length = 5 -> Valid indexes = {0,1,2,3,4}
+    // Condition i <= 5 lets i reach 5 on the last iteration.
+    // Inside the body i is in [0,5]; upper bound 5 >= size.
+    //
+    // EXPECT: POSSIBLE WARNING array index >= array size (OOB)
+    loopOffByOne() {
+        def a = new int[5];
+        def i = 0;
+        def s = 0;
+        while (i <= 5) {
+            def x = a[i]; // i in [0,5] -> upper bound 5 == size -> possible OOB
+            s = s + x;
+            i = i + 1;
+        }
+        return s;
+    }
+
+    // ============================ TESTS 5 : INDEX FROM ARITHMETIC ======================================
+
+    // -------- Test 5.1: Index from arithmetic, stays in bounds --------
+    // a_length = 10 -> Valid indexes = {0..9}
+    // base in [0,0], i = base + 3 -> [3,3]; in bounds.
+    //
+    // EXPECT: NO WARNING
+    arithmeticIndexSafe() {
+        def a = new int[10];
+        def base = 0;
+        def i = base + 3;
+        def x = a[i]; // i = [3,3] -> in bounds
+        return x;
+    }
+
+    // -------- Test 5.2: Index from arithmetic, definite OOB high --------
+    // a_length = 4 -> Valid indexes = {0,1,2,3}
+    // i = 2 * 3 = 6 -> [6,6]; both bounds >= size.
+    //
+    // EXPECT: DEFINITE WARNING array index >= array size (OOB)
+    arithmeticIndexDefiniteOOB() {
+        def a = new int[4];
+        def i = 2 * 3;
+        def x = a[i]; // i = [6,6] -> definite >= size
+        return x;
+    }
+
+    // -------- Test 5.3: Index from subtraction, definite negative --------
+    // a_length = 4 -> Valid indexes = {0,1,2,3}
+    // i = 1 - 3 = -2 -> [-2,-2]; both bounds negative.
+    //
+    // EXPECT: DEFINITE WARNING negative array index (OOB)
+    arithmeticIndexNegative() {
+        def a = new int[4];
+        def i = 1 - 3;
+        def x = a[i]; // i = [-2,-2] -> definite negative
+        return x;
+    }
+
+    // -------- Test 5.4: Index from arithmetic over a joined interval --------
+    // a_length = 6 -> Valid indexes = {0..5}
+    // After the branch, base in [0,4]. i = base + 2 -> [2,6].
+    // lower bound = 2 -> in bounds.
+    // upper bound = 6 >= size -> OOB.
+    //
+    // EXPECT: POSSIBLE WARNING array index >= array size (OOB)
+    arithmeticIndexJoinedOOB(b) {
+        def a = new int[6];
+        def base = 0;
+        if (b > 0) {
+            base = 4;
+        }
+        else {
+            base = 0;
+        }
+        // base in [0,4]
+        def i = base + 2; // i in [2,6]
+        def x = a[i]; // possible >= size
+        return x;
+    }
+
+    // ============================ TESTS 6 : INDEX FROM ANOTHER ARRAY ELEMENT ======================================
+
+    // -------- Test 6.1: Index read from another array element (heap value) --------
+    // idxArr holds an index; it is read and used to index dataArr.
+    // With a field-sensitive heap, idxArr[0] = 7 gives the index interval
+    // [7,7]; dataArr_length = 5 -> 7 >= size on both bounds.
+    //
+    // EXPECT: DEFINITE WARNING array index >= array size (OOB)
+    indexFromHeapValueOOB() {
+        def idxArr = new int[1];
+        idxArr[0] = 7;
+
+        def dataArr = new int[5];
+        dataArr[0] = 100;
+
+        def i = idxArr[0]; // i = [7,7]
+        def x = dataArr[i]; // i >= size
+        return x;
+    }
+
+    // -------- Test 6.2: Index read from another array element, in bounds --------
+    // idxArr[0] = 2 -> i = [2,2]; dataArr_length = 5 -> in bounds.
+    //
+    // EXPECT: NO WARNING
+    indexFromHeapValueSafe() {
+        def idxArr = new int[1];
+        idxArr[0] = 2;
+
+        def dataArr = new int[5];
+        dataArr[0] = 100;
+
+        def i = idxArr[0]; // i = [2,2]
+        def x = dataArr[i]; // in bounds
+        return x;
+    }
+
+    // ============================ TESTS 7 : IF GUARDS ======================================
+
+    // -------- Test 7.1: Guard refines index relationally (Pentagon win) --------
+    // a_length = 8 -> Valid indexes = {0..7}
+    // i is an unknown parameter (TOP -> [-INF,+INF]).
+    // The if guard should refine i to [0,7] inside the branch.
+    // A plain interval domain handles literal bounds, so this is in bounds
+    // for both; included to confirm the guard is honoured on the access.
+    //
+    // EXPECT: NO WARNING (inside the guarded branch)
+    guardedIndexSafe(i) {
+        def a = new int[8];
+        def x = 0;
+        if (i >= 0) {
+            if (i < 8) {
+                x = a[i]; // i refined to [0,7] -> in bounds
+            }
+        }
+        return x;
+    }
+
+    // -------- Test 7.2: Partial guard leaves upper bound open --------
+    // a_length = 8 -> Valid indexes = {0..7}
+    // Only the lower bound is guarded.
+    // The upper bound is still +INF, so the access may be >= size.
+    //
+    // EXPECT: POSSIBLE WARNING array index >= array size (OOB)
+    guardedIndexLowerOnly(i) {
+        def a = new int[8];
+        def x = 0;
+        if (i >= 0) {
+            x = a[i]; // i in [0, +INF] -> possible >= size
+        }
+        return x;
+    }
+
+    // -------- Test 7.3: Partial guard leaves lower bound open --------
+    // a_length = 8 -> Valid indexes = {0..7}
+    // Only the upper bound is guarded: `if (i < 8)`. The lower bound is
+    // still -INF, so the access may be negative.
+    //
+    // EXPECT: POSSIBLE WARNING negative array index (OOB)
+    guardedIndexUpperOnly(i) {
+        def a = new int[8];
+        def x = 0;
+        if (i < 8) {
+            x = a[i]; // i in [-INF, 7] -> possible negative
+        }
+        return x;
+    }
+
+    // ============================ TESTS 8 : EMPTY ARRAY ======================================
+
+    // -------- Test 8 : Empty array, any literal access is OOB --------
+    // a_length = 0 -> Valid indexes = {} (none).
+    // Access a[0]: index 0 >= size 0 on both bounds.
+    //
+    // EXPECT: DEFINITE WARNING array index >= array size (OOB)
+    emptyArrayAccess() {
+        def a = new int[0];
+        def x = a[0]; // 0 >= size 0 -> definite OOB
+        return x;
     }
 }

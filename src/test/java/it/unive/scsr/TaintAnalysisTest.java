@@ -11,8 +11,8 @@ import it.unive.scsr.analysis.sign.SignXTaint;
 import it.unive.scsr.analysis.sign.SignXTaintChecker;
 import it.unive.scsr.analysis.taint.Taint;
 import it.unive.scsr.analysis.taint.TaintChecker;
-import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -42,7 +42,7 @@ public class TaintAnalysisTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/taint";
+        conf.workdir = "outputs/taint-project";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

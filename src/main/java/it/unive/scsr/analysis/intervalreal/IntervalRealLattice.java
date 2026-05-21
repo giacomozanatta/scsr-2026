@@ -136,9 +136,6 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         IntervalRealLattice that = (IntervalRealLattice) obj;
 
-        // TODO: Should check with certain tolerance (if equal to the 4th decimal used in widening)
-        // so we can ignore any digit decimal that is not relevant for the analysis 
-        // (e.g., 1.0000001 and 1.0000002 should be considered equal if the tolerance is 1e-4)
         return (
             Objects.equals(getLow(), that.getLow()) && 
             Objects.equals(getHigh(), that.getHigh())

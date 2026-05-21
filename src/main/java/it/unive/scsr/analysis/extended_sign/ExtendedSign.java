@@ -199,8 +199,6 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 		return Satisfiability.UNKNOWN;
 	}
 
-	// TODO: Down here
-
 	/**
 	 * Refines a variable's abstract state by assuming a comparison holds on a branch.
 	 *
@@ -254,10 +252,10 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 	 * the sense of the comparison is flipped accordingly.
 	 *
 	 * @param environment the pre-condition abstract environment
-	 * @param expression  the branch condition
-	 * @param src         source program point of the edge
-	 * @param dest        destination program point of the edge
-	 * @param oracle      semantic oracle
+	 * @param expression the branch condition
+	 * @param src source program point of the edge
+	 * @param dest destination program point of the edge
+	 * @param oracle semantic oracle
 	 * @return refined environment valid on the branch where the condition holds
 	 */
 	@Override

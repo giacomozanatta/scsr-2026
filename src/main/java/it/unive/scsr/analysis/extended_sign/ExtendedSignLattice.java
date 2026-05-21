@@ -619,7 +619,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
 		}
 
 		// 0 mod x is always 0
-    	if (getElement() == 2) {
+		if (getElement() == 2) {
 			return ZERO;
 		}
 

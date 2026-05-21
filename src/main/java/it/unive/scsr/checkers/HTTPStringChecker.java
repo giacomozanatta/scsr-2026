@@ -35,10 +35,11 @@ import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 
 /**
- * It checks if there are calls where their parameters contain string values with the prefix "http://" or "https://"
+ * It checks if there are calls where their parameters contain string values
+ * with the prefix "http://" or "https://"
  */
-public class HTTPStringChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
-SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> {
+public class HTTPStringChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> {
 
 	@Override
 	public boolean visit(
@@ -71,62 +72,62 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> tool,
 			UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
 			AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> res) {
-		
-			boolean[] paramsToWarn = new boolean[uc.getParameters().length];
-			for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
-				Expression par = uc.getParameters()[i];
-				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> postState = res
-						.getAnalysisStateAfter(par); // compute the post state related to each parameter
-				Set<SymbolicExpression> reachableIds = new HashSet<>();
-				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
-				if (comExprIterator.hasNext()) {
 
-					SymbolicExpression boolExpr = comExprIterator.next();
-					try {
-						reachableIds
-								.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements);
+		boolean[] paramsToWarn = new boolean[uc.getParameters().length];
+		for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
+			Expression par = uc.getParameters()[i];
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> postState = res
+					.getAnalysisStateAfter(par); // compute the post state related to each parameter
+			Set<SymbolicExpression> reachableIds = new HashSet<>();
+			Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+			if (comExprIterator.hasNext()) {
 
-						for (SymbolicExpression s : reachableIds) {
-							Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, (Statement) uc);
+				SymbolicExpression boolExpr = comExprIterator.next();
+				try {
+					reachableIds.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements);
 
-							if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
-								continue;
-							//extraction of the abstract value
-							ValueEnvironment<StrPrefix> valueState = postState.getExecutionState().valueState;
-							Prefix analysisValueDomain = (Prefix) tool.getAnalysis().domain.valueDomain;
-							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-							StrPrefix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
-									(ProgramPoint) uc, oracle);
+					for (SymbolicExpression s : reachableIds) {
+						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, (Statement) uc);
 
-							System.out.println(abstractValue.prefix + "###---------------------------------");
-							//check the abstractValue of the parameter
-							if (abstractValue.prefix.startsWith("http://") || abstractValue.prefix.startsWith("https://"))
-								paramsToWarn[i] = true;
-						}
-					} catch (SemanticException e) {
-						e.printStackTrace();
+						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
+							continue;
+						// extraction of the abstract value
+						ValueEnvironment<StrPrefix> valueState = postState.getExecutionState().valueState;
+						Prefix analysisValueDomain = (Prefix) tool.getAnalysis().domain.valueDomain;
+						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+						StrPrefix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
+								(ProgramPoint) uc, oracle);
+
+						System.out.println(abstractValue.prefix + " #-----------------------------");
+						// check the abstractValue of the parameter
+						if (abstractValue.prefix.startsWith("http://") || abstractValue.prefix.startsWith("https://"))
+							paramsToWarn[i] = true;
 					}
-					
+				} catch (SemanticException e) {
+					e.printStackTrace();
 				}
 
 			}
-			if(requireWarning(paramsToWarn))
-				tool.warnOn(uc, "The function uses an http/https url in the following parameters: " + prettyPrintParamsToWarn(paramsToWarn));
+
+		}
+		if (requireWarning(paramsToWarn))
+			tool.warnOn(uc, "The function uses an http/https url in the following parameters: "
+					+ prettyPrintParamsToWarn(paramsToWarn));
 	}
 
 	private boolean requireWarning(boolean[] paramsToWarn) {
-		for(boolean p :paramsToWarn)
-			if(p)
+		for (boolean p : paramsToWarn)
+			if (p)
 				return true;
 		return false;
 	}
 
 	private String prettyPrintParamsToWarn(boolean[] paramsToWarn) {
 		String res = "";
-		for(int i= 0; i< paramsToWarn.length; i++) {
-			if(paramsToWarn[i]) {
+		for (int i = 0; i < paramsToWarn.length; i++) {
+			if (paramsToWarn[i]) {
 				res += (res.isEmpty() ? "" : ", ") + i;
-				switch(i) {
+				switch (i) {
 				case 1:
 					res += "st";
 					break;
@@ -143,6 +144,5 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix
 		}
 		return res;
 	}
-	
 
 }

@@ -98,7 +98,7 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-    
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>(); // functions calling other functions
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
         

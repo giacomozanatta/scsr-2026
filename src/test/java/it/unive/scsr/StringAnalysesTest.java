@@ -3,6 +3,7 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
+import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.string.Prefix;
 import it.unive.lisa.analysis.string.Suffix;
 import it.unive.scsr.checkers.DotComStringChecker;
@@ -37,7 +38,7 @@ public class StringAnalysesTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Prefix(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new Prefix(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new HTTPStringChecker<>());

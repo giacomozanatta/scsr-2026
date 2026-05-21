@@ -1,0 +1,35 @@
+class assignmentNotUsed {
+	used_simple() {
+		def x = 5;
+		def y = x;
+	}
+
+	unused_simple() {
+		def x = 5;
+		x = 10;
+		def y = x;
+	}
+
+	unused_both_branches() {
+		def a = 0;
+		def x = 5;
+		if (a > 0)
+			x = 10;
+		else
+			x = 20;
+		def y = x;
+	}
+
+	used_single_branch() {
+		def a = 0;
+		def x = 5;
+		if (a > 0)
+			x = 10;
+		def y = x;
+	}
+
+	used_complex() {
+		def x = 0;
+		def y = x + 1;
+	}
+}

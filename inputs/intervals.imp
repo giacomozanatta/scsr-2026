@@ -11,6 +11,13 @@ class intervals {
         def l = -i;
 	}
 
+	int_and_float(){
+	    def i = 2;
+	    def f = 3.0;
+
+	    def sum = i + f;
+	}
+
 	branches(b) {
 		def x = 0;
 		if (b)

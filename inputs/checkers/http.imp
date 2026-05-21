@@ -11,7 +11,7 @@ class http{
     string_concat(){
         def base = "www.hi.com";
         def protocol = "https://";
-        def res = strcat(base, protocol); // Only returns the first argument for some reason
+        def res = strcat(protocol, base); // Only returns the first argument for some reason
         this.func(res);
     }
 
@@ -19,7 +19,9 @@ class http{
         def arr = new string[2];
         arr[0] = "h";
         arr[1] = "t";
+        //def a = "ciao";
         this.func(arr[0]);
+        //this.func(a);
     }
 
 }

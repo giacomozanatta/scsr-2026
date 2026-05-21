@@ -52,6 +52,22 @@ class divbyzero{
             err = 1/(i - i);
         }
     }
+    looping_indefinite(p){
+        def err = 0;
+        for(def i = 0; i < p; i = i+ 1){
+            if(i == p-1){
+                err = 1/(i - (p-1));
+            }
+        }
+    }
+    looping_indefinite_def_not_divbyzero(p){
+            def err = 0;
+            for(def i = 0; i < p; i = i+ 1){
+                if(i == p-1){
+                    err = 1/(i - (p-1));
+                }
+            }
+        }
 
     looping_array_def_not_zero(){
         def err = 0;

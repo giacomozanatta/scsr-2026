@@ -32,9 +32,9 @@ import java.nio.file.Paths;
 public class IntervalAnalysisTest {
 
     @Test
-    public void testIntegerIntervalAnalysis() throws ParsingException, AnalysisException {
+    public void testIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/intervals/intervals.imp");
+        Program program = IMPFrontend.processFile("inputs/intervals.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -52,13 +52,13 @@ public class IntervalAnalysisTest {
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
-
+        
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
-
+        
         Path expectedPath = Paths.get("expected", "intervals-eval");
         Path actualPath = Paths.get("outputs", "intervals");
 

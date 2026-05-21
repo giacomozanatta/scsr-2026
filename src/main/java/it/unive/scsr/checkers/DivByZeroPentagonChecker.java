@@ -25,7 +25,7 @@ import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
 
-public class DivByZeroPentagonChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
+public class DivByZeroPentagonChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
 		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> {
 
 	@Override
@@ -33,51 +33,56 @@ public class DivByZeroPentagonChecker <H extends HeapValue<H>, T extends TypeVal
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
-		if(node instanceof Division) {
+		if (node instanceof Division) {
 			checkDivision(tool, graph, (Division) node);
 		}
 		return true;
 	}
 
-	private void checkDivision(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
-								CFG graph, Division div) {
+	private void checkDivision(
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
+			CFG graph, Division div) {
 
-		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
-				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
+		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> res : tool
+				.getResultOf(graph)) {
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> postState = res
+					.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
 
-				Set<SymbolicExpression> reachableIds = new HashSet<>();
-				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
-				if (comExprIterator.hasNext()) {
+			Set<SymbolicExpression> reachableIds = new HashSet<>();
+			Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+			if (comExprIterator.hasNext()) {
 
-					SymbolicExpression expr = comExprIterator.next();
-					try {
-						reachableIds
-								.addAll(tool.getAnalysis().reachableFrom(postState, expr, div).elements);
+				SymbolicExpression expr = comExprIterator.next();
+				try {
+					reachableIds.addAll(tool.getAnalysis().reachableFrom(postState, expr, div).elements);
 
-						for (SymbolicExpression s : reachableIds) {
-							Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, div);
+					for (SymbolicExpression s : reachableIds) {
+						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, div);
 
-							if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
-								continue;
+						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
+							continue;
 
-							//extraction of the abstract value
-							Collection<PentagonLattice> abstractValues = postState.getExecutionState().getAllLatticeInstances(PentagonLattice.class);
-							for(PentagonLattice a : abstractValues) {
+						// extraction of the abstract value
+						Collection<PentagonLattice> abstractValues = postState.getExecutionState()
+								.getAllLatticeInstances(PentagonLattice.class);
+						for (PentagonLattice a : abstractValues) {
+							if (!a.isBottom()) {
 								ValueEnvironment<IntInterval> interval = a.first;
 								IntInterval i = interval.function.get(s);
-								if(i != null) {
-									if(i.equals(new IntInterval(0, 0)))
-										tool.warnOn(div, "This is definitely a division by zero");
-									else if(i.includes(new IntInterval(0, 0)))
+								if (i != null && !i.isBottom()) {
+									if (i.equals(new IntInterval(0, 0)))
+										tool.warnOn(div, "This is definitly a division by zero");
+									else if (i.includes(new IntInterval(0, 0)))
 										tool.warnOn(div, "This may be possible division by zero");
 								}
 							}
-
 						}
-					} catch (SemanticException e) {
-						e.printStackTrace();
+
 					}
+				} catch (SemanticException e) {
+					e.printStackTrace();
 				}
+			}
 
 		}
 

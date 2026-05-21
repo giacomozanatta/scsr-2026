@@ -16,7 +16,6 @@ import it.unive.lisa.util.numeric.MathNumber;
 
 public class IntervalSolution implements BaseNonRelationalValueDomain<IntervalLattice> {
 
-
 	@Override
 	public IntervalLattice top() {
 		return IntervalLattice.TOP;

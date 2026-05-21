@@ -41,6 +41,6 @@
     "syntacticChecks" : "",
     "useWideningPoints" : "true",
     "wideningThreshold" : "5",
-    "workdir" : "outputs/taint"
+    "workdir" : "outputs/threetaint-eval"
   }
 }

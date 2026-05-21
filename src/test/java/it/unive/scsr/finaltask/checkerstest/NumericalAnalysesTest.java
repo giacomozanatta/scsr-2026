@@ -1,4 +1,4 @@
-package it.unive.scsr;
+package it.unive.scsr.finaltask.checkerstest;
 
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
@@ -16,38 +16,38 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 
+import it.unive.scsr.checkers.OverflowPentagonChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
 public class NumericalAnalysesTest {
-	
-	
+
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/div-by-zero/div-by-zero.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/div-by-zero-intervals";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-    
+
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
-        
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
-        
+
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
@@ -55,73 +55,73 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/div-by-zero/div-by-zero-pentagon.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/div-by-zero-pentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-    
+
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
-        
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
-        
+
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
-    
+
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-underflow-interval-8bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-    
+
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
-        
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
-        
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
-    
+
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-underflow-interval-16bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -131,27 +131,27 @@ public class NumericalAnalysesTest {
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Short.MIN_VALUE, Short.MAX_VALUE)); // checks overflow for integer 16 bits
-        
-        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
-        
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
-    
+
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-underflow-interval-32bits";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -161,10 +161,100 @@ public class NumericalAnalysesTest {
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Integer.MIN_VALUE, Integer.MAX_VALUE)); // checks overflow for integer 32bits
-        
+
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
-        
+
+        // we instantiate LiSA with our configuration
+        LiSA lisa = new LiSA(conf);
+
+        // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
+
+    @Test
+    public void testOverflowPentagon8bitsAnalysis() throws ParsingException, AnalysisException {
+        // we parse the program to get the CFG representation of the code in it
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
+
+        // we build a new configuration for the analysis
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/overflow-underflow-pentagon-8bits";
+
+        // we specify the visual format of the analysis results
+        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlResults<>(true));
+        // we specify the analysis that we want to execute
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
+
+        // added checker to the analysis
+        conf.semanticChecks.add(new OverflowPentagonChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        conf.outputs.add(new JSONReportDumper());
+
+        // we instantiate LiSA with our configuration
+        LiSA lisa = new LiSA(conf);
+
+        // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
+
+    @Test
+    public void testOverflowPentagon16bitsAnalysis() throws ParsingException, AnalysisException {
+        // we parse the program to get the CFG representation of the code in it
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
+
+        // we build a new configuration for the analysis
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/overflow-underflow-pentagon-16bits";
+
+        // we specify the visual format of the analysis results
+        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlResults<>(true));
+        // we specify the analysis that we want to execute
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        // added checker to the analysis
+        conf.semanticChecks.add(new OverflowPentagonChecker<>(Short.MIN_VALUE, Short.MAX_VALUE)); // checks overflow for integer 16 bits
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        conf.outputs.add(new JSONReportDumper());
+
+        // we instantiate LiSA with our configuration
+        LiSA lisa = new LiSA(conf);
+
+        // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
+
+    @Test
+    public void testOverflowPentagon32bitsAnalysis() throws ParsingException, AnalysisException {
+        // we parse the program to get the CFG representation of the code in it
+        Program program = IMPFrontend.processFile("inputs/OverflowTests.imp");
+
+        // we build a new configuration for the analysis
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/overflow-underflow-pentagon-32bits";
+
+        // we specify the visual format of the analysis results
+        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlResults<>(true));
+        // we specify the analysis that we want to execute
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        // added checker to the analysis
+        conf.semanticChecks.add(new OverflowPentagonChecker<>(Integer.MIN_VALUE, Integer.MAX_VALUE)); // checks overflow for integer 32bits
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        conf.outputs.add(new JSONReportDumper());
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 

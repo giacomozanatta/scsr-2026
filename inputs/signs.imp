@@ -45,7 +45,7 @@ class signs {
 		def n = -1;
 		if (b)
            	n = 1;
-		
+		def y = n;
 		this.setSpeed(n); // we may have a problem here! n may be negative depending on b that is statically unknow
     }
 }

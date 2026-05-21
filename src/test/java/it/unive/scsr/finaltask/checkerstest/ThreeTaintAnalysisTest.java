@@ -1,12 +1,10 @@
-package it.unive.scsr;
+package it.unive.scsr.finaltask.checkerstest;
 
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
-import it.unive.scsr.analysis.taint.Taint;
-import it.unive.scsr.analysis.taint.TaintChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -15,34 +13,35 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
-
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import org.junit.Test;
 
-import static it.unive.lisa.DefaultConfiguration.*;
+import static it.unive.lisa.DefaultConfiguration.defaultTypeDomain;
+import static it.unive.lisa.DefaultConfiguration.simpleDomain;
 
-public class TaintAnalysisTest {
+public class ThreeTaintAnalysisTest {
 
-	String[] nameSource = {"source1", "GetRequest"};
-	String[] nameSanitizers = {"sanitizer1"};
-	String[] nameSinks = {"sink1", "runQueryDB"};
-
+	String[] nameSources    = { "GetRequest", "readUserInput", "readCookie", "getCardNumber", "getCVV", "getBillingAddress" };
+	String[] nameSinks      = { "runQueryDB", "storeSession", "logAudit", "executeQuery", "executeUpdate", "chargeCard", "sendToGateway", "persistTransaction" };
+	String[] nameSanitizers = { "hashPassword", "validateUsername", "escapeSQL", "parameterize", "tokenizeCard", "normalizeAddress" };
 
 	@Test
-	public void testTaintAnalysis() throws ParsingException, AnalysisException {
+	public void testThreeLevelsTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/taint/taint.imp");
+		Program program = IMPFrontend.processFile("inputs/taint/three-taint.imp");
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();
 
 		// we specify where we want files to be generated
-		conf.workdir = "outputs/taint/taint-two-levels";
+		conf.workdir = "outputs/taint/taint-three-levels";
 
 		// we specify the visual format of the analysis results
 		//conf.outputs.add(new HtmlInputs(true));
 		conf.outputs.add(new HtmlResults<>(true));
 		// we specify the analysis that we want to execute
-		conf.analysis = simpleDomain(new PointBasedHeap(), new Taint(), defaultTypeDomain());
+		conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
 		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 		for(CFG cfg : program.getAllCFGs()) {
 			String name = cfg.getDescriptor().getName();
@@ -51,11 +50,11 @@ public class TaintAnalysisTest {
 			else if(isSanitizer(name))
 				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
 			else if(isSink(name))
-				cfg.getDescriptor().addAnnotation(Taint.SINK_ANNOTATION);
+				cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
 		}
 
 		// added checker to the analysis
-		conf.semanticChecks.add(new TaintChecker<>());
+		conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
 		// A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
 		conf.outputs.add(new JSONReportDumper());
 
@@ -68,19 +67,19 @@ public class TaintAnalysisTest {
 	}
 
 	private boolean isSource(String name) {
-		for(String src : nameSource)
+		for(String src : nameSources)
 			if(src.equals(name))
 				return true;
 		return false;
 	}
-
+	
 	private boolean isSanitizer(String name) {
 		for(String sanit : nameSanitizers)
 			if(sanit.equals(name))
 				return true;
 		return false;
 	}
-
+	
 	private boolean isSink(String name) {
 		for(String sink : nameSinks)
 			if(sink.equals(name))

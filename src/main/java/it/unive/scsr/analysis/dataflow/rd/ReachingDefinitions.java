@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis;
+package it.unive.scsr.analysis.dataflow.rd;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.dataflow.DataflowDomain;

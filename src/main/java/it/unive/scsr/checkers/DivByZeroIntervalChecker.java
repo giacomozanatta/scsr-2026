@@ -28,62 +28,62 @@ import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
 
 public class DivByZeroIntervalChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
-SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
 
 	@Override
 	public boolean visit(
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
-		
+
 		if(node instanceof Division) {
 			checkDivision(tool, graph, (Division) node);
 		}
 		return true;
 	}
-	
+
 	private void checkDivision(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
-			CFG graph, Division div) {
+							   CFG graph, Division div) {
 
 		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
-				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
-			
-				Set<SymbolicExpression> reachableIds = new HashSet<>();
-				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
-				if (comExprIterator.hasNext()) {
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
 
-					SymbolicExpression boolExpr = comExprIterator.next();
-					try {
-						reachableIds
-								.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, div).elements);
+			Set<SymbolicExpression> reachableIds = new HashSet<>();
+			Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+			if (comExprIterator.hasNext()) {
 
-						for (SymbolicExpression s : reachableIds) {
-							Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, div);
+				SymbolicExpression boolExpr = comExprIterator.next();
+				try {
+					reachableIds
+							.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, div).elements);
 
-							if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
-								continue;
-							//extraction of the abstract value
-							var valueState = postState.getExecutionState().valueState;
-	
-							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-							
-							Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
-							
-							IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
-									(ProgramPoint) div, oracle);
-						
-							if(abstractValue.equals(new IntInterval(0, 0)))
-								tool.warnOn(div, "This is definitly a division by zero");
-							else if(abstractValue.includes(new IntInterval(0, 0)))
-								tool.warnOn(div, "This may be possible division by zero");
-		
-						}
-					} catch (SemanticException e) {
-						e.printStackTrace();
+					for (SymbolicExpression s : reachableIds) {
+						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, div);
+
+						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
+							continue;
+						//extraction of the abstract value
+						var valueState = postState.getExecutionState().valueState;
+
+						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+
+						Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
+
+						IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
+								(ProgramPoint) div, oracle);
+
+						if(abstractValue.equals(new IntInterval(0, 0)))
+							tool.warnOn(div, "This is definitely a division by zero");
+						else if(abstractValue.includes(new IntInterval(0, 0)))
+							tool.warnOn(div, "This may be possible division by zero");
+
 					}
+				} catch (SemanticException e) {
+					e.printStackTrace();
 				}
+			}
 
 		}
-		
+
 	}
 
 }

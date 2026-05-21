@@ -1,4 +1,4 @@
-package it.unive.scsr;
+package it.unive.scsr.dataflow;
 
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
@@ -12,8 +12,7 @@ import it.unive.lisa.outputs.JSONResults;
 import it.unive.lisa.outputs.compare.ResultComparer;
 import it.unive.lisa.outputs.json.JsonReport;
 import it.unive.lisa.program.Program;
-import it.unive.scsr.analysis.CProp;
-import it.unive.scsr.analysis.CPropSolution;
+import it.unive.scsr.analysis.dataflow.cprop.CPropSolution;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,7 +29,7 @@ import static org.junit.Assert.fail;
 public class CPropTaskEvaluation {
     @Test
     public void testCP() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/cp-eval.imp");
+        Program program = IMPFrontend.processFile("inputs/dataflow/cp-eval.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
 

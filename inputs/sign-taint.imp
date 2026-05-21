@@ -1,0 +1,128 @@
+class SignTaint {
+
+    // helper functions
+
+    setSpeed(n){
+        // do something about speed
+    }
+
+	source1(){
+		return -99;
+	}
+
+    source2(){
+        return 1;
+    }
+
+	sanitizer1(v){
+		return 0;
+	}
+
+	sink1(v){
+	}
+
+    // standalone taint analysis tests
+
+	clean() {
+		def c = 0;
+		this.sink1(c);  // the value is clean
+	}
+
+	tainted() {
+		def t = this.source1();
+		this.sink1(t); // a tainted value flows in a sink!
+	}
+
+	sanitized() {
+		def t = this.source1();
+
+		def s = this.sanitizer1(t);
+
+		this.sink1(s);  // the value is clean due to sanitization
+	}
+
+	branchTaint(b) {
+		def m = 0;
+
+		if(b) {
+			m = this.source1();
+		} else {
+		  m = 5;
+		}
+
+		this.sink1(m); // the value may be tainted
+	}
+
+	// standalone sign analysis tests
+
+    loopSign() {
+        def c = 1;
+        def b = 0;
+        while (b < 10)
+            b = b + c;
+        return b;
+    }
+
+    basicSign() {
+            def i = 2; // i = +
+            def j = -10; // j = -
+            def a = i + j; // a = + ADD - = TOP
+            def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before
+            def m = i * j;
+            def d = i / j;
+        }
+
+    branchesSign() {
+        def a = 3;
+        def b = 5;
+        def x = 0;
+        if (a > b)
+            x = x * 7;
+        else
+            x = -7;
+        def y = x / x;
+    }
+
+    moveForward1() {
+        def n = 10;
+        this.setSpeed(n); // pos, clean -> ok
+    }
+
+    moveForward2() {
+        def n = -10;
+        this.setSpeed(n); // negative, clean -> problem
+    }
+
+    moveForward3(b) {
+        def n = -1;
+        if (b)
+            n = 1;
+        def y = n;
+        this.setSpeed(n); // possible problem : n may be negative depending on b
+    }
+
+    // combined taint + sign analysis
+
+	moveForward4(){
+        def m = 0; // clean, zero
+        m = this.source1(); // tainted, neg
+        this.setSpeed(m); // warning ! value is tainted AND negative and reaches speed !
+	}
+
+    moveForward5(){
+        def m = 0; // clean, zero
+        m = this.source1(); // tainted, neg
+        def s = this.sanitizer1(m); // clean, zero
+        this.setSpeed(s); // no warning
+    }
+
+    moveForward6(b) {
+        def n = -1; // negative but clean
+        if (b) {
+            n = this.source2(); // tainted but positive
+        }
+        def y = n; // may be tainted, not zero
+        this.setSpeed(n); // possible problem : n may be negative depending on b, and may be tainted as well
+    }
+
+}

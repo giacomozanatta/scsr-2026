@@ -1,0 +1,409 @@
+// ================================================================
+//  DIV BY ZERO TEST SUITE
+//  Target checkers:
+//    - DivByZeroIntervalChecker  (uses IntInterval / Interval domain)
+//    - DivByZeroPentagonChecker  (uses PentagonLattice domain)
+//
+//  Warning levels:
+//    DEFINITE  -> denominator abstract value == [0,0]
+//    POSSIBLE  -> denominator abstract value includes 0
+//    NONE      -> denominator abstract value excludes 0
+//
+//  Scope of each class:
+//    FinancialRiskAnalyzer -> guards, joined branches, expression collapse
+//    SignalProcessor       -> loops, widening, loop-counter decrement,
+//                             nested divisions
+//    InventoryAllocator    -> interprocedural calls, literal vs parameter
+//                             abstraction, derived-divisor relational case
+// ================================================================
+
+
+// ----------------------------------------------------------------
+//  CLASS 1 - FinancialRiskAnalyzer
+//
+//  Scope: tests focused on control-flow refinement of the divisor.
+//          - explicit guards before division
+//          - joined branches where one path may set divisor to 0
+//          - divisor computed as an arithmetic expression that may
+//            collapse to 0
+//
+//  Real-world inspiration: bank credit-risk engine computing ratios
+//  (debt-to-equity, coverage ratio, leverage). These ratios are a
+//  classic source of division-by-zero crashes when an account has
+//  no equity or no revenue.
+// ----------------------------------------------------------------
+class FinancialRiskAnalyzer {
+
+    // -------- Test 1.1 : guard on the divisor itself --------
+    // The divisor `equity` is guarded by an explicit `> 0` check.
+    // Inside the true branch, both domains can refine the divisor.
+    //
+    // [INTERVAL]  NO warning  (assume refines equity to [1, +INF])
+    // [PENTAGON]  NO warning  (Pentagon also tracks equity > 0)
+    debtToEquity(debt, equity) {
+        def ratio = 0;
+        if (equity > 0) {
+            ratio = debt / equity;
+        }
+        return ratio;
+    }
+
+    // -------- Test 1.2 : guard insufficient (>= 0 keeps 0 in) --------
+    // The developer wrote `>= 0` instead of `> 0`. The refined
+    // interval inside the branch still includes 0.
+    //
+    // [INTERVAL]  POSSIBLE warning on  coverage = income / expenses
+    // [PENTAGON]  POSSIBLE warning on  coverage = income / expenses
+    coverageRatio(income, expenses) {
+        def coverage = 0;
+        if (expenses >= 0) {
+            coverage = income / expenses;
+        }
+        return coverage;
+    }
+
+    // -------- Test 1.3 : joined branches, one sets divisor to 0 --------
+    // After the if/else, `denom` is 0 on one branch and capital on
+    // the other; the join yields an interval that contains 0.
+    //
+    // [INTERVAL]  POSSIBLE warning on  leverage = assets / denom
+    // [PENTAGON]  POSSIBLE warning on  leverage = assets / denom
+    leverageWithFallback(assets, capital, useCapital) {
+        def denom = 0;
+        if (useCapital) {
+            denom = capital;
+        }
+        else {
+            denom = 0;
+        }
+        def leverage = assets / denom;
+        return leverage;
+    }
+
+    // -------- Test 1.4 : joined branches, BOTH paths set divisor > 0 --------
+    // Both branches assign a strictly positive constant. The join
+    // produces an interval that excludes 0.
+    //
+    // [INTERVAL]  NO warning   (denom in [1,2])
+    // [PENTAGON]  NO warning
+    riskBucket(amount, tier) {
+        def denom = 1;
+        if (tier > 5) {
+            denom = 2;
+        }
+        else {
+            denom = 1;
+        }
+        def bucket = amount / denom;
+        return bucket;
+    }
+
+    // -------- Test 1.5 : divisor expression collapses to 0 --------
+    // `spread = high - low` where high and low are both set to 100.
+    // Concrete value is 0; abstract intervals also evaluate to [0,0]
+    // when constants propagate through the arithmetic.
+    //
+    // [INTERVAL]  DEFINITE warning on  yield = principal / spread
+    // [PENTAGON]  DEFINITE warning on  yield = principal / spread
+    bondYieldCollapse(principal) {
+        def high = 100;
+        def low  = 100;
+        def spread = high - low;
+        def bond_yield = principal / spread;
+        return bond_yield;
+    }
+
+    // -------- Test 1.6 : divisor expression possibly 0 --------
+    // `net = revenue - cost` where revenue and cost are both
+    // unknown parameters. Interval of net is [-INF, +INF] -> includes 0.
+    // Pentagon cannot prove revenue > cost without a relational hint.
+    //
+    // [INTERVAL]  POSSIBLE warning on  margin_ratio = profit / net
+    // [PENTAGON]  POSSIBLE warning on  margin_ratio = profit / net
+    marginExpression(revenue, cost, profit) {
+        def net = revenue - cost;
+        def margin_ratio = profit / net;
+        return margin_ratio;
+    }
+
+    // -------- Test 1.7 : Pentagon-specific relational case --------
+    // The guard is on a DERIVED variable: `spread = high - low`
+    // and we check `if (high > low)`. Both domains learn high > low,
+    // but only Pentagon can transfer that relation onto `spread`
+    // to conclude spread > 0. Interval loses the link between
+    // `spread` and the guarded variables.
+    //
+    // [INTERVAL]  POSSIBLE warning on  yield = coupon / spread
+    //             (spread interval not refined by guard on high,low)
+    // [PENTAGON]  NO warning
+    //             (Pentagon derives spread > 0 from high > low
+    //              and spread = high - low)
+    yieldFromSpread(high, low, coupon) {
+        def spread = high - low;
+        def bond_yield = 0;
+        if (high > low) {
+            bond_yield = coupon / spread;
+        }
+        return bond_yield;
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  CLASS 2 - SignalProcessor
+//
+//  Scope: tests focused on loops and nested arithmetic.
+//          - loop where widening loses lower bound
+//          - loop counter that decrements down to 0 used as divisor
+//          - division inside a loop body, divisor refined by loop
+//            condition
+//          - nested divisions (a / (b / c))
+//
+//  Real-world inspiration: DSP / audio framework computing moving
+//  averages, normalisation factors, and FFT bin weights. Loops
+//  iterate over samples and frequently use the iteration index as
+//  a normalisation divisor.
+// ----------------------------------------------------------------
+class SignalProcessor {
+
+    // -------- Test 2.1 : loop counter reaches 0, then divides --------
+    // Classic widening trap: after the loop, `samples` is concretely 0
+    // but the abstract interval widened to [-inf, 0]. Division outside
+    // the loop hits a divisor that includes 0.
+    //
+    // [INTERVAL]  POSSIBLE warning on  average = sum / samples
+    // [PENTAGON]  POSSIBLE warning on  average = sum / samples
+    movingAverage(n_samples, total) {
+        def samples = n_samples;
+        def sum = total;
+
+        while (samples > 0) {
+            sum = sum + 1;
+            samples = samples - 1;
+        }
+        // samples incorrectly reused but it doesn't contain the number of samples anymore
+        // after being used as a counter for the loop
+        def average = sum / samples;
+        return average;
+    }
+
+    // -------- Test 2.2 : division INSIDE the loop, refined by guard --------
+    // Inside `while (i > 0)` the variable `i` is strictly positive.
+    // Both domains use the loop condition as an assume, refining
+    // the interval of `i` to [1, +INF] in the body.
+    //
+    // [INTERVAL]  NO warning on  weight = energy / i
+    // [PENTAGON]  NO warning
+    normalize(energy, count) {
+        def i = count;
+        def acc = 0;
+        while (i > 0) {
+            def weight = energy / i;
+            acc = acc + weight;
+            i = i - 1;
+        }
+        return acc;
+    }
+
+    // -------- Test 2.3 : division inside loop, divisor independent --------
+    // The divisor `step` is set once before the loop to a value
+    // that may be 0 (parameter, abstracted to TOP). Inside the loop
+    // the loop condition refines `i`, not `step`.
+    //
+    // [INTERVAL]  POSSIBLE warning on  bin = sample / step
+    // [PENTAGON]  POSSIBLE warning on  bin = sample / step
+    binSamples(sample, step, length) {
+        def i = 0;
+        def total = 0;
+        while (i < length) {
+            def bin = sample / step;
+            total = total + bin;
+            i = i + 1;
+        }
+        return total;
+    }
+
+    // -------- Test 2.4 : loop body assigns 0 to divisor on some path --------
+    // Inside the loop, an if/else may set `gain` to 0. After the
+    // join (still inside the loop), gain's interval includes 0.
+    // The division uses that joined value.
+    //
+    // [INTERVAL]  POSSIBLE warning on  normalized = sample / gain
+    // [PENTAGON]  POSSIBLE warning on  normalized = sample / gain
+    adaptiveGain(sample, length) {
+        def i = 0;
+        def acc = 0;
+        def gain = 1;
+        while (i < length) {
+            if (i > 10) {
+                gain = 0;
+            }
+            else {
+                gain = 2;
+            }
+            def normalized = sample / gain;
+            acc = acc + normalized;
+            i = i + 1;
+        }
+        return acc;
+    }
+
+    // -------- Test 2.5 : nested division a / (b / c) --------
+    // Outer divisor = `(level / depth)`. The inner division uses
+    // `depth` (parameter, TOP, includes 0) -> POSSIBLE on the inner.
+    // The result `inner` then has interval [-INF, +INF] including 0,
+    // so the outer division also triggers POSSIBLE.
+    //
+    // [INTERVAL]  POSSIBLE warning on  inner = level / depth      (inner div)
+    //             POSSIBLE warning on  ratio = magnitude / inner  (outer div)
+    // [PENTAGON]  same as interval
+    nestedRatio(magnitude, level, depth) {
+        def inner = level / depth;
+        def ratio = magnitude / inner;
+        return ratio;
+    }
+
+    // -------- Test 2.6 : nested division with non zero first divisor --------
+    // Inner divisor is the literal 2, but still results to TOP because of level.
+    //
+    // [INTERVAL]  POSSIBLE warning on  inner = level / 2 because level
+    //             is TOP so it could be a 1 (rounding the result to 0) or 0
+    //             POSSIBLE warning on  ratio = magnitude / inner
+    //             (level is TOP -> inner includes 0)
+    // [PENTAGON]  same as interval
+    halfThenDivide(magnitude, level) {
+        def inner = level / 2;
+        def ratio = magnitude / inner;
+        return ratio;
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  CLASS 3 - InventoryAllocator
+//
+//  Scope: tests focused on interprocedural propagation.
+//          - parameter passed unknown to callee
+//          - literal 0 passed but abstracted to TOP at callee entry
+//          - chained calls where divisor flows through wrappers
+//          - method called from two sites, one safe, one unsafe
+//
+//  Real-world inspiration: warehouse allocation system distributing
+//  stock across stores. Helper methods compute units-per-store,
+//  cost-per-unit, restock cadence. Bugs occur when an empty store
+//  list or a zero-capacity warehouse propagates into a helper.
+// ----------------------------------------------------------------
+class InventoryAllocator {
+
+    // -------- Helper called from multiple sites --------
+    // Without context-sensitivity, the parameter `stores` is TOP
+    // at method entry regardless of the caller. The division is
+    // therefore POSSIBLE when analyzed standalone.
+    //
+    // [INTERVAL]  POSSIBLE warning on  per_store = units / stores
+    // [PENTAGON]  POSSIBLE warning on  per_store = units / stores
+    unitsPerStore(units, stores) {
+        def per_store = units / stores;
+        return per_store;
+    }
+
+    // -------- Test 3.1 : caller passes literal 0 --------
+    // Caller forgets to handle "no stores" and passes 0.
+    // Without ContextBasedAnalysis the warning at the callee is
+    // POSSIBLE (parameters are TOP at entry).
+    //
+    // [INTERVAL]  POSSIBLE warning (inherited from unitsPerStore)
+    // [PENTAGON]  POSSIBLE warning
+    allocateEmptyChain(total_units) {
+        def stores = 0;
+        def per = this.unitsPerStore(total_units, stores);
+        return per;
+    }
+
+    // -------- Test 3.2 : caller passes guarded-positive value --------
+    // Caller establishes `n > 0` before calling, but that fact does
+    // not flow into the callee under non-context-based analysis.
+    // The warning at the callee remains POSSIBLE.
+    //
+    // [INTERVAL]  POSSIBLE warning (callee still sees TOP)
+    // [PENTAGON]  POSSIBLE warning
+    allocateGuarded(total_units, n) {
+        def per = 0;
+        if (n > 0) {
+            per = this.unitsPerStore(total_units, n);
+        }
+        return per;
+    }
+
+    // -------- Test 3.3 : two-hop interprocedural propagation --------
+    // outer -> middle -> inner, with the divisor threaded through
+    // both wrappers. Each callee sees its divisor parameter as TOP.
+    //
+    // [INTERVAL]  POSSIBLE warning on  result = units / cap   (innermost)
+    // [PENTAGON]  POSSIBLE warning
+    finalizeAllocation(units, cap) {
+        def result = units / cap;
+        return result;
+    }
+
+    middleAllocation(units, cap) {
+        def r = this.finalizeAllocation(units, cap);
+        return r;
+    }
+
+    outerAllocation(warehouse_capacity) {
+        def total = 10000;
+        def r = this.middleAllocation(total, warehouse_capacity);
+        return r;
+    }
+
+    // -------- Test 3.4 : local division by a literal 0 inside helper --------
+    // No interprocedural flow: the division is purely intraprocedural
+    // and the divisor is the literal 0. Both domains conclude [0,0].
+    //
+    // [INTERVAL]  DEFINITE warning on  rate = cost / zero
+    // [PENTAGON]  DEFINITE warning on  rate = cost / zero
+    restockRate(cost) {
+        def zero = 0;
+        def rate = cost / zero;
+        return rate;
+    }
+
+    // -------- Test 3.5 : derived divisor with relational guard --------
+    // Pentagon-distinguishing case in an interprocedural shape:
+    // a helper receives `remaining = capacity - used`, and the
+    // caller guarantees capacity > used via an if-guard. The
+    // intraprocedural call site can prove safety with Pentagon
+    // but not with Interval.
+    //
+    // (Note: when analyzing computeUnitCost in isolation, both
+    //  domains see `remaining` as TOP -> POSSIBLE warning. The
+    //  difference shows up at the GUARDED call site below.)
+    //
+    // computeUnitCost (analyzed alone):
+    //   [INTERVAL]  POSSIBLE warning on  unit = cost / remaining
+    //   [PENTAGON]  POSSIBLE warning on  unit = cost / remaining
+    computeUnitCost(cost, remaining) {
+        def unit = cost / remaining;
+        return unit;
+    }
+
+    // The guarded site itself contains no division, but it is the
+    // place where Pentagon (with relational tracking through the
+    // local variable `remaining`) would refine and avoid a warning,
+    // while Interval would not. Under purely intraprocedural call-
+    // site analysis, both still warn inside computeUnitCost.
+    //
+    // [INTERVAL]  POSSIBLE warning (propagated from computeUnitCost)
+    // [PENTAGON]  NO warning IF the analyzer pushes the relational
+    //             fact `capacity > used  =>  remaining > 0` into
+    //             the callee; otherwise POSSIBLE.
+    safeRestock(cost, capacity, used) {
+        def result = 0;
+        if (capacity > used) {
+            def remaining = capacity - used;
+            result = this.computeUnitCost(cost, remaining);
+        }
+        return result;
+    }
+}

@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis;
+package it.unive.scsr.analysis.dataflow.cprop;
 
 import it.unive.lisa.analysis.ScopeToken;
 import it.unive.lisa.analysis.SemanticException;

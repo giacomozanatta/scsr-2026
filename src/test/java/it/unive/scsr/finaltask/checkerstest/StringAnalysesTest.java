@@ -1,4 +1,4 @@
-package it.unive.scsr;
+package it.unive.scsr.finaltask.checkerstest;
 
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;

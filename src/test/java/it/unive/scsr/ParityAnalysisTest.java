@@ -34,7 +34,7 @@ public class ParityAnalysisTest {
     @Test
     public void testParityAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/parity-eval.imp");
+        Program program = IMPFrontend.processFile("inputs/parity/parity-eval.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

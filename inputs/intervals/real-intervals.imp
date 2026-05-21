@@ -1,0 +1,45 @@
+class realintervals {
+
+	basic() {
+		def i = 2.3;
+		def j = -10.7;
+		def a = i + j;
+		def s = i - j;
+		def m = i * j;
+		def d = i / j;
+		def l = -i;
+		
+		def z = 0;
+		def dz = i /0;
+	}
+
+	branches(b) {
+		def x = 0;
+		if (b)
+           	x = x + 1.01;
+       	else
+           	x = -0.5;
+		return x;
+  }
+
+	loop(b) {
+			def c = 1;
+			
+			while (b < 3) {
+				c = c + 1;
+				b = b + 1;
+			}
+			return c; 
+	}
+
+	loopReal(b) {
+    			def c = 0;
+                def t = 1;
+
+    			while (t < 100) {
+    				c = c + 0.01;
+    				t = t + 1;
+    			}
+    			return c;
+    	}
+}

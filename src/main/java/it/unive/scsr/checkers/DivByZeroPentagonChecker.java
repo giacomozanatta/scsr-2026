@@ -26,25 +26,25 @@ import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
 
 public class DivByZeroPentagonChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
-SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> {
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> {
 
 	@Override
 	public boolean visit(
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
-		
+
 		if(node instanceof Division) {
 			checkDivision(tool, graph, (Division) node);
 		}
 		return true;
 	}
-	
+
 	private void checkDivision(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
-			CFG graph, Division div) {
+								CFG graph, Division div) {
 
 		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
 				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(div.getRight()); // get post abstract state of denominator
-			
+
 				Set<SymbolicExpression> reachableIds = new HashSet<>();
 				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
 				if (comExprIterator.hasNext()) {
@@ -67,7 +67,7 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonL
 								IntInterval i = interval.function.get(s);
 								if(i != null) {
 									if(i.equals(new IntInterval(0, 0)))
-										tool.warnOn(div, "This is definitly a division by zero");
+										tool.warnOn(div, "This is definitely a division by zero");
 									else if(i.includes(new IntInterval(0, 0)))
 										tool.warnOn(div, "This may be possible division by zero");
 								}
@@ -80,7 +80,7 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonL
 				}
 
 		}
-		
+
 	}
 
 }

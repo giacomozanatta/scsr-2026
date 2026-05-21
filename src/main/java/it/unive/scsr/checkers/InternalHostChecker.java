@@ -35,24 +35,47 @@ import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 
 /**
- * Fires when a call argument has a known suffix ending with ".internal".
+ * InternalHostChecker
  *
- * Detects hardcoded private hostnames leaking internal topology into sinks
- * (audit logs, routing tables, external dispatchers).
+ * @brief A semantic checker over the {@link Suffix} abstract domain that detects hardcoded
+ * {@code .internal} hostnames being passed as arguments to any call site.
  *
- * Limitation: suffix analysis tracks the longest known suffix of the full
- * string value. For a URL with a path (e.g. "http://svc.internal/status"),
- * the suffix is "/status" — the ".internal" part is invisible to this domain.
- * Only bare hostnames (no path component) are reliably detected.
+ * @note Internal hostnames (e.g., {@code vault.secrets.internal}, {@code prometheus.monitoring.internal})
+ * 	are private infrastructure addresses that should never appear in externally observable
+ * 	positions such as audit logs, routing tables, or external API dispatchers. Passing them
+ * 	exposes internal network topology to potential attackers.
+ *
+ * @implNote the suffix domain tracks the longest known suffix of the full
+ * 	string value. For a URL with a path component. For instance, in 
+ * 	{@code "http://svc.internal/status"}, the {@code ".internal"} part is not visible to this domain.
+ *
+ * @param <H> heap abstract value type
+ * @param <T> type abstract value type
+ *
+ * @author Gianmaria Pizzo 872966
  */
 public class InternalHostChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
-		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> {
+	SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>,
+	TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> {
 
+	/**
+	 * Visits each statement in the CFG. 
+	 * 
+	 * @note Filters to {@link UnresolvedCall} nodes only, then resolves 
+	 * 	each to its concrete target(s) (with either {@link NativeCall} or
+	 * {@link CFGCall}) and delegates argument inspection to {@link #process}.
+	 *
+	 * @param tool the semantic analysis tool providing results and warning facilities
+	 * @param graph the CFG being visited
+	 * @param node the current statement
+	 * @return {@code true} to continue visiting
+	 */
 	@Override
 	public boolean visit(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> tool,
-			CFG graph, Statement node) {
-
+		SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>,
+		TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>,
+		TypeEnvironment<T>>> tool, CFG graph, Statement node
+	) {
 		if (node instanceof UnresolvedCall) {
 			UnresolvedCall uc = (UnresolvedCall) node;
 			for (var res : tool.getResultOf(graph)) {
@@ -75,49 +98,82 @@ public class InternalHostChecker<H extends HeapValue<H>, T extends TypeValue<T>>
 		return true;
 	}
 
+	/**
+	 * Inspects each non-receiver argument of a resolved call for a {@code .internal}
+	 * suffix. 
+	 * 
+	 * @note It accumulates flagged parameter indices, then emits a single warning
+	 * 	listing all offending positions.
+	 *
+	 * @param tool the semantic analysis tool
+	 * @param uc the original unresolved call (carries argument expressions)
+	 * @param resolved the resolved call (used to determine call type)
+	 * @param descriptor the descriptor of the targeted CFG or native construct
+	 * @param res the analysis result for the current context
+	 */
 	private void process(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> tool,
-			UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
-			AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> res) {
-
+		SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>,
+		SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> tool,
+		UnresolvedCall uc, Call resolved, CodeMemberDescriptor descriptor,
+		AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> res
+	) {
 		boolean[] paramsToWarn = new boolean[uc.getParameters().length];
+
+		// For instance calls, parameter[0] is the receiver (`this`) — skip it
 		for (int i = resolved.getCallType() == CallType.INSTANCE ? 1 : 0; i < uc.getParameters().length; i++) {
 			Expression par = uc.getParameters()[i];
-			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> postState = res
-					.getAnalysisStateAfter(par);
+
+			// Post-state after evaluating this argument expression, not the call itself
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrSuffix>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(par);
 			Set<SymbolicExpression> reachableIds = new HashSet<>();
 			Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
-			if (comExprIterator.hasNext()) {
 
+			if (comExprIterator.hasNext()) {
 				SymbolicExpression boolExpr = comExprIterator.next();
+
 				try {
-					reachableIds
-							.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements);
+					// Resolve all symbolic expressions reachable from this argument
+					reachableIds.addAll(
+						tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements
+					);
 
 					for (SymbolicExpression s : reachableIds) {
 						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, (Statement) uc);
 
-						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
+						// Skip heap locations and pointer types — only inspect string values
+						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType())){
 							continue;
+						}
 
+						// Extract the StrSuffix abstract value for this argument
 						ValueEnvironment<StrSuffix> valueState = postState.getExecutionState().valueState;
 						Suffix analysisValueDomain = (Suffix) tool.getAnalysis().domain.valueDomain;
 						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-						StrSuffix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
-								(ProgramPoint) uc, oracle);
+						StrSuffix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s, (ProgramPoint) uc, oracle);
 
-						if (abstractValue.suffix.endsWith(".internal"))
+						// StrSuffix.suffix is the known suffix string
+						// TOP has suffix ""
+						if (abstractValue.suffix.endsWith(".internal")){
 							paramsToWarn[i] = true;
+						}
 					}
 				} catch (SemanticException e) {
 					e.printStackTrace();
 				}
 			}
 		}
+
+		// Emit one warning per call listing all offending parameter indices
 		if (requireWarning(paramsToWarn))
 			tool.warnOn(uc, "The function uses a .internal host in the following parameters: " + prettyPrintParamsToWarn(paramsToWarn));
 	}
 
+	/**
+	 * Returns {@code true} if at least one parameter was flagged.
+	 *
+	 * @param paramsToWarn per-parameter flag array
+	 * @return {@code true} if any entry is {@code true}
+	 */
 	private boolean requireWarning(boolean[] paramsToWarn) {
 		for (boolean p : paramsToWarn)
 			if (p)
@@ -125,6 +181,13 @@ public class InternalHostChecker<H extends HeapValue<H>, T extends TypeValue<T>>
 		return false;
 	}
 
+	/**
+	 * Formats the indices of flagged parameters as a human-readable ordinal list
+	 * (e.g., {@code "1st, 3rd"}).
+	 *
+	 * @param paramsToWarn per-parameter flag array
+	 * @return comma-separated ordinal string of flagged indices
+	 */
 	private String prettyPrintParamsToWarn(boolean[] paramsToWarn) {
 		String res = "";
 		for (int i = 0; i < paramsToWarn.length; i++) {

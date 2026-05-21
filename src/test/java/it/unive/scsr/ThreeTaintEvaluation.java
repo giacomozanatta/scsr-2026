@@ -48,7 +48,7 @@ public class ThreeTaintEvaluation {
 		LiSAConfiguration conf = new DefaultConfiguration();
 
 		// we specify where we want files to be generated
-		conf.workdir = "outputs/taint";
+		conf.workdir = "outputs/threetaint-eval";
 
 		// we specify the visual format of the analysis results
 		//conf.outputs.add(new HtmlInputs(true));

@@ -15,7 +15,31 @@ public class FloatIntervalLattice
 
     final IntInterval i;
 
-    private static final MathNumber K = new MathNumber(100);
+    // Thresholds for widening
+    private static final MathNumber[] POS_THRESHOLDS = {
+            new MathNumber(1),
+            new MathNumber(10),
+            new MathNumber(100),
+            new MathNumber(1000)
+    };
+    private static final MathNumber[] NEG_THRESHOLDS = {
+            new MathNumber(-1000),
+            new MathNumber(-100),
+            new MathNumber(-10),
+            new MathNumber(-1)
+    };
+
+    private static MathNumber nextUpperThreshold(MathNumber value) {
+        for (MathNumber t : POS_THRESHOLDS)
+            if (t.geq(value)) return t;
+        return MathNumber.PLUS_INFINITY;
+    }
+
+    private static MathNumber nextLowerThreshold(MathNumber value) {
+        for (int i = NEG_THRESHOLDS.length - 1; i >= 0; i--)
+            if (NEG_THRESHOLDS[i].leq(value)) return NEG_THRESHOLDS[i];
+        return MathNumber.MINUS_INFINITY;
+    }
 
     public static FloatIntervalLattice TOP = new FloatIntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
     public static FloatIntervalLattice BOTTOM = new FloatIntervalLattice(null);
@@ -130,23 +154,15 @@ public class FloatIntervalLattice
         MathNumber upperNew = other.i.getHigh();
 
         MathNumber upperResult = upperOld;
-        if (upperNew.gt(upperOld)) {
-            if (upperNew.gt(K))
-                upperResult = MathNumber.PLUS_INFINITY;
-            else
-                upperResult = upperNew;
-        }
+        if (upperNew.gt(upperOld))
+            upperResult = nextUpperThreshold(upperNew);
 
         MathNumber lowerOld = this.i.getLow();
         MathNumber lowerNew = other.i.getLow();
 
         MathNumber lowerResult = lowerOld;
-        if (lowerNew.lt(lowerOld)) {
-            if (lowerNew.lt(K.multiply(MathNumber.MINUS_ONE)))
-                lowerResult = MathNumber.MINUS_INFINITY;
-            else
-                lowerResult = lowerNew;
-        }
+        if (lowerNew.lt(lowerOld))
+            lowerResult = nextLowerThreshold(lowerNew);
 
         return new FloatIntervalLattice(lowerResult, upperResult);
     }

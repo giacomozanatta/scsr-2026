@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
-public class IntervalFloatAnalysisTest {
+public class FloatIntervalAnalysisTest {
 
     @Test
     public void testFloatIntervalAnalysis() throws ParsingException, AnalysisException {

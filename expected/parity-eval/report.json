@@ -37,6 +37,6 @@
     "syntacticChecks" : "",
     "useWideningPoints" : "true",
     "wideningThreshold" : "5",
-    "workdir" : "outputs/parity"
+    "workdir" : "outputs/parity-eval"
   }
 }

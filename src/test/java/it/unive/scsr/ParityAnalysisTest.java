@@ -40,7 +40,7 @@ public class ParityAnalysisTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/parity";
+        conf.workdir = "outputs/parity-eval";
 
         conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new JSONResults<>());
@@ -58,7 +58,7 @@ public class ParityAnalysisTest {
         lisa.run(program);
         
         Path expectedPath = Paths.get("expected", "parity-eval");
-        Path actualPath = Paths.get("outputs", "parity");
+        Path actualPath = Paths.get("outputs", "parity-eval");
 
         File expFile = Paths.get(expectedPath.toString(), "report.json").toFile();
         File actFile = Paths.get(actualPath.toString(), "report.json").toFile();

@@ -125,10 +125,10 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
             return Lattice.bottomRepresentation();
 		} 
 		else if (this == EVEN){
-            return new StringRepresentation("EVEN");
+            return new StringRepresentation("Even");
         } 
 
-        return new StringRepresentation("ODD");
+        return new StringRepresentation("Odd");
     }
 
 	/**

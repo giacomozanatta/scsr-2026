@@ -42,13 +42,13 @@ public class ThreeTaintEvaluation {
 	@Test
 	public void testThreeTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/taint.imp");
+		Program program = IMPFrontend.processFile("inputs/taint/taint.imp");
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();
 
 		// we specify where we want files to be generated
-		conf.workdir = "outputs/taint";
+		conf.workdir = "outputs/taint/threetaint-eval";
 
 		// we specify the visual format of the analysis results
 		//conf.outputs.add(new HtmlInputs(true));
@@ -79,7 +79,7 @@ public class ThreeTaintEvaluation {
 		
 
         Path expectedPath = Paths.get("expected", "threetaint-eval");
-        Path actualPath = Paths.get("outputs", "threetaint-eval");
+        Path actualPath = Paths.get("outputs", "taint/threetaint-eval");
 
         File expFile = Paths.get(expectedPath.toString(), "report.json").toFile();
         File actFile = Paths.get(actualPath.toString(), "report.json").toFile();

@@ -75,7 +75,7 @@ public class DivByZeroPentagonChecker<H extends HeapValue<H>, T extends TypeValu
 								IntInterval i = intervalDomain.eval(intervalEnv, (ValueExpression) expr, (ProgramPoint) div, oracle);
 								if (i != null && !i.isBottom()) {
 									if (i.equals(new IntInterval(0, 0)))
-										tool.warnOn(div, "This is definitly a division by zero");
+										tool.warnOn(div, "This is definitely a division by zero");
 									else if (i.includes(new IntInterval(0, 0)))
 										tool.warnOn(div, "This may be possible division by zero");
 								}

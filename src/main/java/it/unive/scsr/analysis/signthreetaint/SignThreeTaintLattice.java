@@ -5,8 +5,6 @@ import java.util.Objects;
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.combination.LatticeProduct;
-import it.unive.lisa.analysis.combination.CartesianCombination;
-import it.unive.lisa.analysis.combination.AbstractLatticeProduct;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
@@ -21,7 +19,6 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
  * All lattice operations (lub, glb, widening) are computed component-wise.
  */
 public class SignThreeTaintLattice implements BaseLattice<SignThreeTaintLattice> {
-
     private final SignLattice sign;
     private final TaintThreeLevelsLattice taint;
 
@@ -29,7 +26,7 @@ public class SignThreeTaintLattice implements BaseLattice<SignThreeTaintLattice>
     public static final SignThreeTaintLattice BOTTOM = new SignThreeTaintLattice(SignLattice.BOTTOM, TaintThreeLevelsLattice.BOTTOM);
 
     public SignThreeTaintLattice(SignLattice sign, TaintThreeLevelsLattice taint) {
-        this.sign  = sign;
+        this.sign = sign;
         this.taint = taint;
     }
 

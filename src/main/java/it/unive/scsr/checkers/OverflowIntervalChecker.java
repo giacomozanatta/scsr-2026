@@ -72,30 +72,25 @@ public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue
 					for (SymbolicExpression s : reachableIds) {
 						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, node);
 
-						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType() || !t.isNumericType())) // check
-																															// only
-																															// if
-																															// the
-																															// type
-																															// is
-																															// numerical
-							continue;
-						// extraction of the abstract value
-						var valueState = postState.getExecutionState().valueState;
+							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+							
+							Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
+							
+							IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
+									(ProgramPoint) node, oracle);
 
-						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+							if (abstractValue.isBottom()) {
+								tool.warnOn(node, "Found bottom, skipping (" + ")");
+								// throw new SemanticException();
+								continue;
+							}
 
-						Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
-
-						IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
-								(ProgramPoint) node, oracle);
-
-						if (!abstractValue.isBottom() && !representableIntegers.includes(abstractValue)) {
-							boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
-							boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
-							String sep = overflow && underflow ? "/" : "";
-							tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep
-									+ (underflow ? "under" : "") + "flow");
+							if(!representableIntegers.includes(abstractValue)) {
+								boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
+								boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
+								String sep = overflow && underflow ? "/" : "";
+								tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep + (underflow ? "under" : "") + "flow");
+							}
 						}
 					}
 				} catch (SemanticException e) {

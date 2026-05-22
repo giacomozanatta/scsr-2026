@@ -1,0 +1,119 @@
+class signthreetaint {
+
+    // source: returns a tainted value
+    source1() {
+        return -99;
+    }
+
+    // sanitizer: strips taint
+    sanitizer1(v) {
+        return 0;
+    }
+
+    // sink: where we check for tainted flow
+    sink1(v) {
+    }
+
+    // (CLEAN, +): constant, no taint
+    basicClean() {
+        // (+, CLEAN)
+        def x = 5;
+        // (-, CLEAN)
+        def y = -3;
+        // (TOP, CLEAN) sign: + ADD - = TOP
+        def z = x + y;
+        this.sink1(z); // safe: clean value reaches sink
+    }
+
+    // (TAINT, -): tainted source, sign info preserved
+    basicTaint() {
+        // (-, TAINT) source returns -99
+        def t = this.source1();
+        this.sink1(t); // warning: tainted value reaches sink
+    }
+
+    // taint propagates through arithmetic
+    propagation() {
+        // (-, TAINT)
+        def t = this.source1();
+        // (+, CLEAN)
+        def c = 2;
+        // (TOP, TAINT) taint spreads: t is tainted
+        def r = t + c;
+        // (TOP, TAINT) still tainted
+        def q = r * c;
+        this.sink1(q); // warning: tainted value reaches sink
+    }
+
+    // sanitization removes taint, sign is reset by sanitizer
+    sanitized() {
+        // (-, TAINT)
+        def t = this.source1();
+        // (0, CLEAN) sanitizer returns 0
+        def s = this.sanitizer1(t);
+        this.sink1(s); // safe: clean value reaches sink
+    }
+
+    // branch: taint depends on control flow
+    branch(b) {
+        // (+, CLEAN)
+        def m = 1;
+        if (b) {
+            // (-, TAINT)
+            m = this.source1();
+        } else {
+            // (+, CLEAN)
+            m = 7;
+        }
+        this.sink1(m); // warning: m may be tainted (branch merges TAINT and CLEAN -> TOP)
+    }
+
+    // sign analysis: loop increments a positive counter
+    loop() {
+        // (+, CLEAN)
+        def c = 1;
+        // (0, CLEAN)
+        def b = 0;
+        while (b < 10)
+            // (+, CLEAN) stays positive
+            b = b + c;
+        return b;
+    }
+
+    // tainted value used in arithmetic then conditionally reaches sink
+    conditional(b) {
+        // (-, TAINT)
+        def t = this.source1();
+        // (0, CLEAN)
+        def x = 0;
+        if (b) {
+            // (+, TAINT) - * - = +, still tainted
+            x = t * t;
+        }
+        this.sink1(x); // warning if b: tainted value may reach sink
+    }
+
+    // taint + sign: negation flips sign but preserves taint
+    negation() {
+        // (-, TAINT)
+        def t = this.source1();
+        // (+, TAINT) negation flips sign, taint unchanged
+        def n = -t;
+        this.sink1(n); // warning: still tainted
+    }
+
+    // clean path: sanitize before sink
+    cleanPath() {
+        // (-, TAINT)
+        def t  = this.source1();
+
+        // (0, CLEAN)
+        def s  = this.sanitizer1(t);
+
+        // (+, CLEAN)
+        def r  = s + 3;
+
+        this.sink1(r); // safe
+    }
+
+}

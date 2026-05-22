@@ -14,25 +14,23 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
-import it.unive.scsr.analysis.signthreetaint.SignThreeTaint;
-import it.unive.scsr.analysis.signthreetaint.SignThreeTaintChecker;
+import it.unive.scsr.analysis.sign_three_taint.SignThreeTaint;
+import it.unive.scsr.analysis.sign_three_taint.SignThreeTaintChecker;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 
 import org.junit.Test;
 
 public class SignThreeTaintTest {
-
-    // CFG names from inputs/signthreetaint.imp
-    private static final String[] SOURCES    = { "source1" };
-    private static final String[] SANITIZERS = { "sanitizer1" };
-    private static final String[] SINKS      = { "sink1" };
+    private static final String[] SOURCES = {"source1"};
+    private static final String[] SANITIZERS = {"sanitizer1"};
+    private static final String[] SINKS = {"sink1"};
 
     @Test
     public void testSignThreeTaintAnalysis() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/signthreetaint.imp");
+        Program program = IMPFrontend.processFile("inputs/sign_three_taint/sign_three_taint.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/signthreetaint";
+        conf.workdir = "outputs/sign_three_taint";
         conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new JSONReportDumper());
 

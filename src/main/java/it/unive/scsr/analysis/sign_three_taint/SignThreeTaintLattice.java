@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.signthreetaint;
+package it.unive.scsr.analysis.sign_three_taint;
 
 import java.util.Objects;
 

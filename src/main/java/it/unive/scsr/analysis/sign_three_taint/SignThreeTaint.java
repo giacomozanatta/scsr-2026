@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.signthreetaint;
+package it.unive.scsr.analysis.sign_three_taint;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;

@@ -112,11 +112,65 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				// this handles also the case ZERO mul TOP and TOP mul ZERO
 				return SignLattice.ZERO;
 			else if(left == SignLattice.TOP || right == SignLattice.TOP)
-				return SignLattice.TOP;		
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+			UnaryExpression neg =
+					new UnaryExpression(
+							expression.getStaticType(),
+							expression.getRight(),
+							NumericNegation.INSTANCE,
+							expression.getCodeLocation());
+
+			right = evalUnaryExpression(neg, right, pp, oracle);
+
+			if(left == SignLattice.POS && right == SignLattice.NEG
+					|| left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.TOP;
+			if(left == SignLattice.POS && (right == SignLattice.POS || right == SignLattice.ZERO)
+					|| (left == SignLattice.POS || left == SignLattice.ZERO) && right == SignLattice.POS)
+				return SignLattice.POS;
+			if(left == SignLattice.NEG && (right == SignLattice.NEG || right == SignLattice.ZERO)
+					|| (left == SignLattice.NEG || left == SignLattice.ZERO) && right == SignLattice.NEG)
+				return SignLattice.NEG;
+			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
+				return SignLattice.ZERO;
+			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+			if(left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+			// x / 0 => non definito
+			if (right == SignLattice.ZERO)
+				return SignLattice.TOP;
+
+			// 0 / x => 0 (anche se x è TOP, basta che non sia ZERO certo)
+			if (left == SignLattice.ZERO)
+				return SignLattice.ZERO;
+
+			// TOP propagazione
+			if (left == SignLattice.TOP || right == SignLattice.TOP)
+				return SignLattice.TOP;
+
+			// BOTTOM propagazione
+			if (left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
+				return SignLattice.BOTTOM;
+
+			// POS / POS = POS
+			if (left == SignLattice.POS && right == SignLattice.POS)
+				return SignLattice.POS;
+
+			// POS / NEG = NEG
+			if (left == SignLattice.POS && right == SignLattice.NEG)
+				return SignLattice.NEG;
+
+			// NEG / POS = NEG
+			if (left == SignLattice.NEG && right == SignLattice.POS)
+				return SignLattice.NEG;
+
+			// NEG / NEG = POS
+			if (left == SignLattice.NEG && right == SignLattice.NEG)
+				return SignLattice.POS;
+
 		} else if (expression.getOperator() instanceof ModuloOperator)
 			return right;
 		else if (expression.getOperator() instanceof RemainderOperator)

@@ -72,17 +72,30 @@ public class SignLattice
 
 	    @Override
 	    public SignLattice lubAux(SignLattice other) throws SemanticException {
-	    	if(this == SignLattice.POS &&
-	    			other == SignLattice.ZERO)
-	    		return SignLattice.TOP;
-	    	// in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP	
-	    	return SignLattice.TOP;
+	    	if (this.equals(other))
+				return this;
+
+			if (this == BOTTOM)
+				return other;
+
+			if (other == BOTTOM)
+				return this;
+
+			if (this == TOP || other == TOP)
+				return TOP;
+
+			return TOP;
 	    }
 
 	    @Override
 	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
+			if (this.equals(other))
+				return true;
+			if (this == BOTTOM)
+				return true;
+			if (other == TOP)
+				return true;
+			return false;
 	    }
 
 		// For glb in this case we use default LiSA implementation

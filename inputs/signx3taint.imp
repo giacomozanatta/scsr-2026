@@ -1,0 +1,129 @@
+class taint {
+
+    source1() {
+        return -99;
+    }
+
+    source2() {
+        return 42;
+    }
+
+    sanitizer1(v) {
+        return 0;
+    }
+
+    sink1(v) {
+    }
+
+    // -------------------------
+    // BASIC TAINT + SIGN TESTS
+    // -------------------------
+
+    basic1() {
+        def c = 0;
+
+        this.sink1(c);   // ZERO + clean
+    }
+
+    basic2() {
+        def t = this.source1();
+
+        this.sink1(t);   // NEG + tainted
+    }
+
+    basic3() {
+        def t = this.source1();
+
+        def s = this.sanitizer1(t);
+
+        this.sink1(s);   // ZERO + clean
+    }
+
+    // -------------------------
+    // BRANCH TEST (SIGN + TAINT)
+    // -------------------------
+
+    branch(b) {
+        def m = 0;
+
+        if(b) {
+            m = this.source1();  // NEG + tainted
+        } else {
+            m = 5;               // POS + clean
+        }
+
+        this.sink1(m);          // TOP sign + possibly tainted
+    }
+
+    // -------------------------
+    // SIGN PROPAGATION TESTS
+    // -------------------------
+
+    sign1() {
+        def a = this.source2();   // POS
+        def b = this.source1();   // NEG
+
+        def c = a + b;            // TOP (POS + NEG)
+
+        this.sink1(c);
+    }
+
+    sign2() {
+        def a = this.source2();   // POS
+        def b = 10;
+
+        def c = a - b;            // may become NEG or POS depending abstraction
+
+        this.sink1(c);
+    }
+
+    sign3() {
+        def a = -5;
+        def b = 2;
+
+        def c = a * b;            // NEG * POS = NEG
+
+        this.sink1(c);
+    }
+
+    sign4() {
+        def a = this.source2();   // POS
+        def b = this.source2();   // POS
+
+        def c = a * b;            // POS
+
+        this.sink1(c);
+    }
+
+    // -------------------------
+    // MIXED SIGN + TAINT
+    // -------------------------
+
+    mixed1() {
+        def a = this.source1();   // NEG + tainted
+        def b = this.source2();   // POS + clean
+
+        def c = a + b;            // TOP + tainted
+
+        this.sink1(c);
+    }
+
+    mixed2() {
+        def a = this.source1();   // NEG + tainted
+        def b = this.sanitizer1(a); // ZERO + clean
+
+        def c = b + 10;           // POS + clean
+
+        this.sink1(c);
+    }
+
+    mixed3() {
+        def a = this.source1();   // NEG + tainted
+        def b = this.source2();   // POS + clean
+
+        def c = a - b;            // NEG/NEG/?
+
+        this.sink1(c);
+    }
+
+}

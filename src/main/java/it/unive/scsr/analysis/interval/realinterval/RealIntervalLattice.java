@@ -22,13 +22,25 @@ public class RealIntervalLattice
 
 	
 	public RealIntervalLattice(MathNumber low, MathNumber high) {
-		this.low = low;
-		this.high = high;
+		if(low != null && high != null && low.compareTo(high) > 0){ // if bounds are inverted, swap back to preserve correct ordering
+			this.low = high;
+			this.high = low;
+		} else {
+			this.low = low;
+			this.high = high;
+		}
 	}
 	
 	public RealIntervalLattice(double l, double u) {
-		this.low = new MathNumber(l);
-		this.high = new MathNumber(u);
+		MathNumber mnLow = new MathNumber(l);
+		MathNumber mnHigh = new MathNumber(u);
+		if(l > u){ // if bounds are inverted, swap back to preserve correct ordering
+			this.low = mnHigh;
+			this.high = mnLow;
+		} else {
+			this.low = mnLow;
+			this.high = mnHigh;
+		}
 	}
 	
 	public RealIntervalLattice() {
@@ -139,6 +151,25 @@ public class RealIntervalLattice
 	}
 
 	@Override
+	public RealIntervalLattice narrowingAux(RealIntervalLattice other) throws SemanticException {
+		if(this.low == null || this.high == null || other.low == null || other.high == null)
+			return BOTTOM;
+
+		MathNumber u1 = this.high;
+		MathNumber u2 = other.high;
+
+		MathNumber uResult = u1.geq(MathNumber.PLUS_INFINITY) ? u2 : u1;
+
+		MathNumber l1 = this.low;
+		MathNumber l2 = other.low;
+
+		MathNumber lResult = l1.leq(MathNumber.MINUS_INFINITY) ? l2 : l1;
+
+		return new RealIntervalLattice(lResult, uResult);
+
+	}
+
+	@Override
 	public int hashCode() {
 		return Objects.hash(low, high);
 	}
@@ -173,6 +204,16 @@ public class RealIntervalLattice
 			return this.high.compareTo(o.high);
 
 		return isLowSame;
+	}
+
+	@Override
+	public boolean isBottom(){
+		return this.low == null || this.high == null;
+	}
+
+	@Override
+	public boolean isTop(){
+		return this.low != null && this.low.isMinusInfinity() && this.high != null && this.high.isPlusInfinity();
 	}
 
 	private boolean includes(RealIntervalLattice other){

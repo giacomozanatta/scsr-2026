@@ -1,0 +1,20 @@
+class ApiClient {
+
+    fetchUserData(userId) {
+        def protocol = "https://";
+        def domain = "api.mycompany.internal";
+        def path = "/v1/users/";
+
+        
+        def fullEndpoint = protocol + domain + path + userId;
+
+        
+        this.makeRequest(fullEndpoint);
+
+        return 1;
+    }
+
+    makeRequest(target) {
+        return 0;
+    }
+}

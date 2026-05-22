@@ -1,0 +1,22 @@
+class PhysicsEngine {
+
+    computeGravity() {
+        def playerPos = 10;
+        def enemyPos = 0;
+        def force = 0;
+
+        
+        while (enemyPos < 15) {
+
+            
+            def distance = playerPos - enemyPos;
+
+            
+            force = 1000 / distance;
+
+            enemyPos = enemyPos + 1;
+        }
+
+        return force;
+    }
+}

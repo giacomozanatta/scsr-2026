@@ -29,11 +29,12 @@ public class SignTaintTest {
     String[] nameSanitizers = {"sanitizer1"};
     String[] nameSinks = {"sink1", "runQueryDB"};
 
+    private final String INPUT_PATH = "/signs-taint/sign-taint.imp";
 
     @Test
     public void testExtendedSignTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/sign-taint.imp");
+        Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH);
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -41,7 +42,7 @@ public class SignTaintTest {
         // we specify where we want files to be generated
         // You need both an .imp program that has moveForward*/setSpeed calls
         // and source/sink annotations, or you can combine signs.imp logic with taint.imp into a single input file.
-        conf.workdir = "outputs/extended-sign-taint";
+        conf.workdir = "outputs/signs-taint/extended-sign-taint";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -77,7 +78,7 @@ public class SignTaintTest {
     @Test
     public void testSignTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/sign-taint.imp");
+        Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH);
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -85,7 +86,7 @@ public class SignTaintTest {
         // we specify where we want files to be generated
         // You need both an .imp program that has moveForward*/setSpeed calls
         // and source/sink annotations, or you can combine signs.imp logic with taint.imp into a single input file.
-        conf.workdir = "outputs/simple-sign-taint";
+        conf.workdir = "outputs/signs-taint/simple-sign-taint";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

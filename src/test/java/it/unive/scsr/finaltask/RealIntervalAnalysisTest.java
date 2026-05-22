@@ -9,6 +9,8 @@ import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.program.Program;
+import it.unive.lisa.program.cfg.fixpoints.forward.ForwardDescendingNarrowingFixpoint;
+import it.unive.lisa.program.cfg.fixpoints.optforward.OptimizedForwardDescendingNarrowingFixpoint;
 import it.unive.scsr.analysis.interval.realinterval.RealInterval;
 import org.junit.Test;
 
@@ -17,7 +19,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 public class RealIntervalAnalysisTest {
 
     @Test
-    public void testIntegerIntervalAnalysis() throws ParsingException, AnalysisException {
+    public void testRealIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile("inputs/intervals/real-intervals.imp");
 
@@ -25,7 +27,7 @@ public class RealIntervalAnalysisTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/real-intervals";
+        conf.workdir = "outputs/intervals/real-intervals";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

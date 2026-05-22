@@ -26,10 +26,12 @@ public class ThreeTaintAnalysisTest {
 	String[] nameSinks      = { "runQueryDB", "storeSession", "logAudit", "executeQuery", "executeUpdate", "chargeCard", "sendToGateway", "persistTransaction" };
 	String[] nameSanitizers = { "hashPassword", "validateUsername", "escapeSQL", "parameterize", "tokenizeCard", "normalizeAddress" };
 
+	private final String INPUT_PATH = "/taint/three-taint/three-taint.imp";
+
 	@Test
 	public void testThreeLevelsTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/taint/three-taint.imp");
+		Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH);
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();

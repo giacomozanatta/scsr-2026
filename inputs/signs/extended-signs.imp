@@ -1,0 +1,202 @@
+class ExtendedSigns {
+
+    loop() {
+       def c = 1; // POS
+       def b = 0; // ZERO
+       while (b < 10)
+            b = b + c; // POS
+       // b at join : POSZERO
+       return b;
+    }
+
+    basic() {
+       def i = 2; // i = POS
+       def j = -10; // j = NEG
+       def a = i + j; // a = POS + NEG = TOP
+       def s = i - j; // s = POS - NEG = POS
+       def m = i * j; // POS * NEG = NEG
+       def d = i / j; // POS / NEG = NEG
+    }
+
+    branches() {
+       def a = 3; // POS
+       def b = 5; // POS
+       def x = 0; // ZERO
+       if (a > b)
+            x = x * 7; // ZERO
+       else
+            x = -7; // NEG
+       // x at join : NEGZERO
+       def y = x / x; // y is TOP because x could be 0
+    }
+
+    // -------- Sign multiplication test for each strict sign combination --------
+    signMultiplication() {
+       def neg = -3; // NEG
+       def pos = 4; // POS
+       def zero = 0; // ZERO
+       def pp = pos * pos; // POS * POS = POS
+       def nn = neg * neg; // NEG * NEG = POS
+       def pn = pos * neg; // POS * NEG = NEG
+       def np = neg * pos; // NEG * POS = NEG
+       def zp = zero * pos;// ZERO * POS = ZERO
+       def zn = zero * neg;// ZERO * NEG = ZERO
+       return pp;
+    }
+
+    // -------- Sign division rules for each strict sign combination --------
+    // 0 numerator stays 0; division by 0 -> BOTTOM (error state)
+    // WARNING : for division on integers, we considered the fact that
+    // they could be rounded to ZERO (e.g. : 1/2 = 0.5 -> 0 since we manipulate integers),
+    // hence why dividing gives NEGZERO or POSZERO
+    // and not strictly NEG or POS.
+    signDivision() {
+       def neg = -8;        // NEG
+       def pos = 2;         // POS
+       def zero = 0;        // ZERO
+       def qpn = pos / neg; // POS / NEG = NEGZERO
+       def qnn = neg / neg; // NEG / NEG = POSZERO
+       def qzp = zero / pos; // ZERO / POS = ZERO
+       def err = pos / zero; // division by ZERO -> BOTTOM
+       return qpn;
+    }
+
+    // -------- Join producing NEGZERO --------
+    // NEG (-5) joined with ZERO (0) = NEGZERO (<= 0)
+    joinNegZero(b) {
+       def x = 0; // ZERO
+       if (b > 0)
+            x = -5; // NEG
+       // NEGZERO at join
+       return x;
+    }
+
+    // -------- Join producing POSZERO --------
+    // POS (5) joined with ZERO (0) = POSZERO (>= 0)
+    joinPosZero(b) {
+       def x = 0; // ZERO
+       if (b > 0)
+            x = 5; // POS
+       // POSZERO at join
+       return x;
+    }
+
+    // -------- Join producing NOTZERO --------
+    // NEG (-3) joined with POS (3) = NOTZERO (sign unknown, but != 0)
+    joinNotZero(b) {
+       def x = 3; // POS
+       if (b > 0)
+            x = -3; // NEG
+       // NOTZERO at join
+       return x;
+    }
+
+    // -------- Loop where sign stays POS (no degradation) --------
+    // counter starts POS, only ever adds POS -> stays POS across widening.
+    loopStaysPos() {
+       def b = 1; // POS
+       def c = 2; // POS
+       while (b < 100)
+            b = b + c; // POS + POS = POS
+       return b; // POS
+    }
+
+    // -------- Loop degrading to TOP --------
+    // counter starts POS but a NEG step makes the running value's sign to unknown
+    loopToTop(n) {
+       def b = 5; // POS
+       def step = -1; // NEG
+       while (b < n)
+            b = b + step; // POS + NEG = TOP
+       return b; // TOP
+    }
+
+    // -------- CHECKER TESTS --------
+    // The checker will throw warnings if :
+    // - a NEG var reaches setSpeed() (definite negative warning)
+    // - a NEGZERO var reaches setSpeed() (negative or zero warning)
+    // - a TOP or NOTZERO var reaches setSpeed (possible negative warning)
+
+    setSpeed(n){
+       // do something about speed
+    }
+
+    moveForward1() {
+       def n = 10;
+       this.setSpeed(n); // no warning, POS
+    }
+
+    moveForward2() {
+       def n = -10;
+       this.setSpeed(n); // NEG warning
+    }
+
+    moveForward3(b) {
+       def n = -1;
+       if (b)
+            n = 1;
+       def y = n;
+       this.setSpeed(n); // NOT ZERO, possibly negative var warning
+    }
+
+    moveForward4(b) {
+       def n = 0; // ZERO
+       if (b)
+            n = -8; // NEG
+       // NEGZERO at join
+       this.setSpeed(n); // NEGZERO warning
+    }
+
+    moveForward6() {
+       def p = 4; // POS
+       def q = -9; // NEG
+       def n = p + q; // POS + NEG = TOP
+       this.setSpeed(n); // TOP, possibly negative var warning
+    }
+
+    moveForward7() {
+       def n = 0; // ZERO
+       this.setSpeed(n); // no warning
+    }
+
+    moveForward8(b) {
+       def n = 0; // ZERO
+       if (b)
+            n = 12; // POS
+       // POSZERO at join
+       this.setSpeed(n); // no warning
+    }
+
+    moveForward9() {
+       def n = -10; // NEG
+       n = n * -1; // NEG * NEG = POS
+       this.setSpeed(n); // no warning
+    }
+
+
+    moveForward10() {
+       def n = 50; // POS
+       n = -50; // NEG (overwrites)
+       this.setSpeed(n); // NEG warning
+    }
+
+    // interprocedural test
+    getOffset() {
+       def o = -3; // NEG
+       return o;
+    }
+
+    moveForward11() {
+       def n = this.getOffset(); // sees TOP
+       this.setSpeed(n); // TOP, possibly negative var warning
+    }
+
+    moveForward12(b) {
+       def pz = 0; // ZERO
+       if (b)
+            pz = 5; // POS -> pz is POSZERO after join
+       def neg = -4; // NEG
+       def n = neg * pz; // NEG * POSZERO = NEGZERO
+       this.setSpeed(n); // NEGZERO warning
+    }
+}

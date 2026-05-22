@@ -20,13 +20,13 @@ public class SignAnalysisTest {
     @Test
     public void testSignAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/signs.imp");
+        Program program = IMPFrontend.processFile("inputs/signs/signs.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/signs";
+        conf.workdir = "outputs/signs/simple-signs";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

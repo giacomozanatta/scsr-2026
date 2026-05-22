@@ -1,0 +1,21 @@
+class PaginationSystem {
+
+    computeTotalPages() {
+        def totalItems = 250;
+        def itemsPerPage = 20;
+        def userOverride = 0;
+
+        
+        if (userOverride == 0) {
+            itemsPerPage = 0;
+        } else {
+            itemsPerPage = userOverride;
+        }
+
+        
+
+        def totalPages = totalItems / itemsPerPage;
+
+        return totalPages;
+    }
+}

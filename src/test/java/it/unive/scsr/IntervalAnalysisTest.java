@@ -34,13 +34,13 @@ public class IntervalAnalysisTest {
     @Test
     public void testIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/intervals.imp");
+        Program program = IMPFrontend.processFile("inputs/intervals/intervals.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/intervals";
+        conf.workdir = "outputs/intervals/int-intervals";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

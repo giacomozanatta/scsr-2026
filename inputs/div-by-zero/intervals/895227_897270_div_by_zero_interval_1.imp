@@ -1,0 +1,20 @@
+class ECommerce {
+
+    applyDynamicDiscount() {
+        def cartTotal = 1000;
+        def daysToExpiration = 5;
+        def finalPrice = 0;
+
+        
+        while (daysToExpiration > -5) {
+
+            
+            def priceRatio = cartTotal / daysToExpiration;
+
+            finalPrice = finalPrice + priceRatio;
+            daysToExpiration = daysToExpiration - 1;
+        }
+
+        return finalPrice;
+    }
+}

@@ -21,13 +21,13 @@ public class ArrayOutOfBoundsTest {
     @Test
     public void testArrayOutOfBoundsChecker() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/arrays.imp");
+        Program program = IMPFrontend.processFile("inputs/array-out-of-bounds/arrays.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/arrays";
+        conf.workdir = "outputs/array-out-of-bounds";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

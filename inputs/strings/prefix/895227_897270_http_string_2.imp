@@ -1,0 +1,21 @@
+class SecureRouter {
+
+    routeTraffic(useEuServer) {
+        def targetUrl = "";
+
+        if (useEuServer > 0) {
+            targetUrl = "https://eu-west.amazon.com/api";
+        } else {
+            targetUrl = "https://us-east.amazon.com/api";
+        }
+
+        
+        this.dispatch(targetUrl);
+
+        return 1;
+    }
+
+    dispatch(endpoint) {
+        return 0;
+    }
+}

@@ -20,12 +20,13 @@ import org.junit.Test;
 import static it.unive.lisa.DefaultConfiguration.*;
 
 public class StringAnalysesTest {
-	
+
+    private final String INPUT_PATH_STRINGS = "strings/strings.imp";
 	
     @Test
     public void testStringPrefixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/strings.imp");
+        Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH_STRINGS);
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -55,7 +56,7 @@ public class StringAnalysesTest {
     @Test
     public void testStringSuffixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/strings.imp");
+        Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH_STRINGS);
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

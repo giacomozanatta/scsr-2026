@@ -1,45 +1,195 @@
-class realintervals {
+class RealIntervals {
 
-	basic() {
-		def i = 2.3;
-		def j = -10.7;
-		def a = i + j;
-		def s = i - j;
-		def m = i * j;
-		def d = i / j;
-		def l = -i;
-		
-		def z = 0;
-		def dz = i /0;
-	}
+    basic() {
+        def i = 2.3; // [2.3, 2.3]
+        def j = -10.7; // [-10.7, -10.7]
+        def a = i + j; // [-8.4, -8.4]
+        def s = i - j; // [13.0, 13.0]
+        def m = i * j; // [-24.61,-24.61]
+        def d = i / j; // approx -0.214953271
+        def l = -i;
 
-	branches(b) {
-		def x = 0;
-		if (b)
-           	x = x + 1.01;
-       	else
-           	x = -0.5;
-		return x;
-  }
+        def z = 0;
+        def dz = i /0; // TOP = [-inf, +inf]
+    }
 
-	loop(b) {
-			def c = 1;
-			
-			while (b < 3) {
-				c = c + 1;
-				b = b + 1;
-			}
-			return c; 
-	}
+    branches(b) {
+        def x = 0;
+        if (b)
+               x = x + 1.01;
+           else
+               x = -0.5;
+        return x; // [-0.5, 1.01]
+    }
 
-	loopReal(b) {
-    			def c = 0;
-                def t = 1;
+    // ============================================================
+    // ARITHMETIC TRANSFER FUNCTION TESTS (no loops)
 
-    			while (t < 100) {
-    				c = c + 0.01;
-    				t = t + 1;
-    			}
-    			return c;
-    	}
+    // -------- Multiplication of two sign-crossing intervals --------
+    // Tests that the domain does not naively multiply matching bounds.
+    mulSignCrossing(a, b) {
+        def p = -2.0;
+
+        if (a)
+            p = 3.0;
+        // p in [-2.0, 3.0] at join
+        def q = -1.5;
+
+        if (b)
+            q = 4.0;
+        // q in [-1.5, 4.0] at join
+
+        def r = p * q; // expect [-8.0, 12.0]
+        return r;
+    }
+
+    // -------- Division by an interval that spans zero --------
+    // d in [-1.0, 2.0] includes 0, so 10.0 / d is unbounded :
+    // the result should be [-INF, +INF] = TOP
+    divSpanningZero(b) {
+        def d = -1.0;
+        if (b)
+            d = 2.0;
+        // d in [-1.0, 2.0] at join, contains 0
+        def r = 10.0/d; // expect TOP
+        return r;
+    }
+
+    // -------- Division by a strictly-positive real interval --------
+    // safe
+    divStrictlyPositive(b) {
+        def d = 0.5;
+        if (b)
+            d = 2.0;
+        // d in [0.5, 2.0] at join
+        def r = 10.0/d; // expect [5.0, 20.0]
+        return r;
+    }
+
+    // -------- Negation and subtraction symmetry --------
+    negationBounds(b) {
+        def x = -3.5;
+        if (b)
+            x = 1.5;
+        // x in [-3.5, 1.5]
+
+        def n = -x; // expect [-1.5, 3.5]
+        def s = 0 - x; // expect [-1.5, 3.5], same as n
+        return n;
+    }
+
+    // -------- Mixed int/real arithmetic --------
+    // Confirms an integer literal and a real literal combine into a real
+    // interval rather than truncating.
+    mixedNumericTypes() {
+        def a = 5 + 0.5; // expect [5.5, 5.5]
+        def b = 5 / 2; // expect [2.5, 2.5] if reals, NOT 2
+        def c = 0.1 + 0.2; // expect [0.3, 0.3]
+        return c;
+    }
+
+    // ============================================================
+    // WIDENING TESTS with divergent loops (unbounded growth)
+
+    // -------- Infinitesimal positive increment, NO loop bound on c --------
+    widenTinyIncrement() {
+        def c = 0.0;
+        def t = 0;
+        while (t < 1000000) {
+            c = c + 0.001; // expect c -> [0.0, +INF] after widening
+            t = t + 1;
+        }
+        return c;
+    }
+
+    // -------- Unbounded increment with no counter --------
+    widenUnboundedUp(b) {
+        def c = 0.0;
+        while (b) {
+            c = c + 0.5; // expect c -> [0.0, +INF]
+        }
+        return c;
+    }
+
+    // -------- Unbounded decrement (downward divergence) --------
+    widenUnboundedDown(b) {
+        def c = 0.0;
+        while (b) {
+            c = c - 0.25; // expect c -> [-INF, 0.0]
+        }
+        return c;
+    }
+
+    // -------- Oscillating sign step -> widens both directions --------
+    // Alternating-ish behavior via a branch inside the loop: c may go up
+    // by 1.5 or down by 2.5 each iteration.
+    widenBothDirections(b, d) {
+        def c = 0.0;
+        while (b) {
+            if (d)
+                c = c + 1.5;
+            else
+                c = c - 2.5;
+        }
+        return c; // expect c -> [-INF, +INF]
+    }
+
+    // -------- Multiplicative growth (geometric) --------
+    widenGeometric(b) {
+        def c = 1.0;
+        while (b) {
+            c = c * 2.0; // expect c -> [1.0, +INF]
+        }
+        return c;
+    }
+
+    // ============================================================
+    // WIDENING + NARROWING TESTS with convergent / bounded loops
+
+   // -------- Bounded by integer: classic integer interval case --------
+    boundedByInt(b) {
+        def c = 1;
+        while (b < 3) {
+            c = c + 1;
+            b = b + 1;
+        }
+        return c;
+    }
+
+    // -------- Bounded by integer with a real number used as step (0.01) --------
+    boundedByIntRealStep(b) {
+        def c = 0;
+        def t = 1;
+        while (t < 100) {
+            c = c + 0.01;
+            t = t + 1;
+        }
+        return c;
+    }
+
+    // -------- Bounded accumulator: guard limits the value --------
+    boundedByGuard() {
+        def c = 0.0;
+        while (c < 10.0) {
+            c = c + 0.5;
+        }
+        return c; // widened c = [0.0, +INF]
+    }
+
+    infinitesimalBounded() {
+        def c = 0.0;
+        while (c < 1.0) {
+            c = c + 0.0001;
+        }
+        return c;
+    }
+
+    // -------- Decrement toward a lower guard --------
+    boundedDecrement() {
+        def c = 5.0;
+        while (c > 0.0) {
+            c = c - 0.3;
+        }
+        return c;
+    }
 }

@@ -26,7 +26,7 @@ public class StringAnalysesTest {
     @Test
     public void testStringPrefixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Strings.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Strings.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -55,7 +55,7 @@ public class StringAnalysesTest {
 
     @Test
     public void testInternalHostAnalysis() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/872966_Strings.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Strings.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
 
@@ -79,7 +79,7 @@ public class StringAnalysesTest {
     @Test
     public void testStringSuffixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Strings.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Strings.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

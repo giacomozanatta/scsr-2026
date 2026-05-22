@@ -26,7 +26,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -55,7 +55,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -85,7 +85,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -115,7 +115,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -145,7 +145,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/872966_Overflow.imp");
+        Program program = IMPFrontend.processFile("inputs/meaningful_programs/872966_Overflow.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

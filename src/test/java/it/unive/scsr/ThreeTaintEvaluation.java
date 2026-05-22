@@ -5,7 +5,6 @@ import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
-import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
@@ -21,6 +20,7 @@ import it.unive.lisa.program.cfg.CFG;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import it.unive.scsr.checkers.TaintThreeLevelsChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;

@@ -33,6 +33,8 @@ import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 
+// TODO: Combined tainted and positive/negative to have a more meaningful checker.
+
 /**
  * Semantic checker for the Sign x TaintThreeLevels product domain.
  *

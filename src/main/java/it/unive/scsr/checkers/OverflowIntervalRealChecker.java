@@ -29,8 +29,8 @@ import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.MathNumber;
-import it.unive.scsr.analysis.intervalreal.IntervalReal;
-import it.unive.scsr.analysis.intervalreal.IntervalRealLattice;
+import it.unive.scsr.analysis.interval_real.IntervalReal;
+import it.unive.scsr.analysis.interval_real.IntervalRealLattice;
 
 /**
  * OverflowIntervalRealChecker

@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.intervalreal;
+package it.unive.scsr.analysis.interval_real;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;

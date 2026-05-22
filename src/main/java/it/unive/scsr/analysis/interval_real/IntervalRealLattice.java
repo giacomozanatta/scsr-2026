@@ -1,4 +1,4 @@
-package it.unive.scsr.analysis.intervalreal;
+package it.unive.scsr.analysis.interval_real;
 
 import java.util.Objects;
 import it.unive.lisa.analysis.BaseLattice;

@@ -1,0 +1,78 @@
+class RealIntervalTest {
+
+    /* * Tests the Cartesian product of boundaries: {-inf, -a, 0, a, +inf} 
+     * using a = 5.5
+     */
+    testArithmetic(b) {
+        // 1. Defining the values
+        def zero = 0.0;
+        def pos_a = 5.5;
+        def neg_a = -5.5;
+
+        // Generating Infinities via loops to trigger wideningAux
+        def pos_inf = 1.0;
+        while (b) {
+            pos_inf = pos_inf + 10.0; 
+        }
+
+        def neg_inf = -1.0;
+        while (b) {
+            neg_inf = neg_inf - 10.0;
+        }
+
+        // 2. Addition
+        def add_1 = pos_inf + pos_inf; // [+inf, +inf]
+        def add_2 = neg_inf + neg_inf; // [-inf, -inf]
+        def add_3 = pos_inf + neg_inf; // TOP [-inf, +inf]
+        def add_4 = pos_a + neg_a;     // [0, 0]
+        def add_5 = zero + pos_inf;    // [1, +inf] (approx)
+
+        // 3. Subtraction
+        def sub_1 = pos_inf - pos_inf; // TOP
+        def sub_2 = pos_a - neg_a;     // [11.0, 11.0]
+        def sub_3 = zero - pos_inf;    // [-inf, -1]
+        def sub_4 = neg_a - zero;      // [-5.5, -5.5]
+        def sub_5 = neg_inf - pos_a;   // [-inf, -inf]
+
+        // 4. Multiplication
+        def mul_1 = pos_inf * zero;    // NaN/TOP
+        def mul_2 = neg_a * neg_a;     // [30.25, 30.25]
+        def mul_3 = neg_inf * pos_a;   // [-inf, -inf]
+        def mul_4 = neg_inf * neg_inf; // [+inf, +inf]
+        def mul_5 = zero * neg_a;      // [0, 0]
+
+        // 5. Divisio
+        def div_1 = pos_a / zero;      // TOP (Division by zero)
+        def div_2 = zero / pos_a;      // [0, 0]
+        def div_3 = pos_inf / pos_a;   // [+inf, +inf]
+        def div_4 = neg_a / pos_inf;   // [0, 0] (approx)
+        def div_5 = neg_inf / neg_a;   // [+inf, +inf]
+
+        // 6. Unary Negation
+        def neg_1 = -pos_inf;          // [-inf, -inf]
+        def neg_2 = -neg_inf;          // [+inf, +inf]
+        def neg_3 = -zero;             // [0, 0]
+        def neg_4 = -pos_a;            // [-5.5, -5.5]
+    }
+
+    /* * Specifically tests the widening and rounding logic 
+     * "between 0 and 1 there are infinite numbers"
+     */
+    testWideningConvergence() {
+        def x = 0.0;
+        // This loop tests if widening correctly jumps to +inf 
+        // to handle the density of Reals
+        while (x < 100.0) {
+            x = x + 0.1;
+        }
+        return x;
+    }
+
+    /* * Tests precision with small double values 
+     */
+    testPrecision() {
+        def small = 0.0000001;
+        def result = small * small;
+        return result;
+    }
+}

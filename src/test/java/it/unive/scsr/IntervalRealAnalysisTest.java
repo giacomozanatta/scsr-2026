@@ -3,7 +3,6 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.scsr.analysis.intervalreal.IntervalReal;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -15,6 +14,7 @@ import it.unive.lisa.outputs.JSONResults;
 // import it.unive.lisa.outputs.compare.ResultComparer;
 // import it.unive.lisa.outputs.json.JsonReport;
 import it.unive.lisa.program.Program;
+import it.unive.scsr.analysis.interval_real.IntervalReal;
 
 // import static org.junit.Assert.assertTrue;
 // import static org.junit.Assert.fail;
@@ -35,13 +35,13 @@ public class IntervalRealAnalysisTest {
     @Test
     public void testIntervalRealAnalysis() throws ParsingException, AnalysisException {
         // Parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/realintervals.imp");
+        Program program = IMPFrontend.processFile("inputs/interval_real/interval_real.imp");
 
         // Build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // Specify where we want files to be generated
-        conf.workdir = "outputs/realintervals";
+        conf.workdir = "outputs/interval_real/analysis";
 
         // Specify the visual format of the analysis results
         conf.outputs.add(new HtmlInputs(true));

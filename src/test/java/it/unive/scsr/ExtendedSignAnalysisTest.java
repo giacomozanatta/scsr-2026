@@ -22,13 +22,13 @@ public class ExtendedSignAnalysisTest {
     @Test
     public void testExtendedSignAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/extendedsigns.imp");
+        Program program = IMPFrontend.processFile("inputs/extended_sign/extended_sign.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/extendedsigns";
+        conf.workdir = "outputs/extended_sign/";
 
         // we specify the visual format of the analysis results
         conf.outputs.add(new HtmlInputs(true));

@@ -37,6 +37,16 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 	}
 
 	@Override
+	public boolean isTop() {
+		return sign == Top && taint3 == Top;
+	}
+
+	@Override
+	public boolean isBottom() {
+		return sign == Bottom && taint3 == Bottom;
+	}
+
+	@Override
 	public SignX3TaintLattice top() {
 		return new SignX3TaintLattice(Top, Top);
 	}
@@ -49,26 +59,26 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 	@Override
 	public StructuredRepresentation representation() {
 
-		String s = "-";
-		String t = "TOP";
+		StructuredRepresentation s = new StringRepresentation("-");
+		StructuredRepresentation t = Lattice.topRepresentation();
 
 		if(this.sign == Bottom)
-			s = "BOTTOM";
+			s = Lattice.bottomRepresentation();
 		else if(this.sign == Top)
-			s = "TOP";
+			s = Lattice.topRepresentation();
 		else if(this.sign == ZERO)
-			s = "0";
+			s = new StringRepresentation("0");
 		else if(this.sign == POS)
-			s = "+";
+			s = new StringRepresentation("+");
 
 		if(this.taint3 == Bottom)
-			t = "BOTTOM";
+			t = Lattice.bottomRepresentation();
 
 		if(this.taint3  == Clean)
-			t = "C";
+			t = new StringRepresentation("C");
 
 		if(this.taint3  == Taint)
-			t = "T";
+			t = new StringRepresentation("T");
 
 
 		return new StringRepresentation("[" + s + "," + t + "]");

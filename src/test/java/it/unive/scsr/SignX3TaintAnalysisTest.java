@@ -43,7 +43,7 @@ public class SignX3TaintAnalysisTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new SignX3Taint(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new SignX3Taint(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         for(CFG cfg : program.getAllCFGs()) {
         	String name = cfg.getDescriptor().getName();
@@ -56,7 +56,7 @@ public class SignX3TaintAnalysisTest {
         }
     
         // added checker to the analysis
-        //conf.semanticChecks.add(new SignX3TaintChecker<>());
+        conf.semanticChecks.add(new SignX3TaintChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
         

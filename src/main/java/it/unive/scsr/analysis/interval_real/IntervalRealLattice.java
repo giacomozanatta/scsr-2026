@@ -19,23 +19,17 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
  * @author Gianmaria Pizzo 872966
  */
 public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Comparable<IntervalRealLattice> {
-
+    protected final int wideningCounter; 
     protected final MathNumber low;
     protected final MathNumber high;
-    public static final IntervalRealLattice TOP = new IntervalRealLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
-    public static final IntervalRealLattice BOTTOM = new IntervalRealLattice(null, null);
 
-    /**
-     * Constructor for the IntervalRealLattice class.
-     * 
-     * Creates a new interval lattice element with the specified lower and upper bounds.
-     * 
-     * @param low the lower bound of the interval
-     * @param high the upper bound of the interval
-     */
-    public IntervalRealLattice(MathNumber low, MathNumber high) {
+    public static final MathNumber ONE = new MathNumber(1.0f);
+    public static final IntervalRealLattice TOP = new IntervalRealLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY, 0);
+    public static final IntervalRealLattice BOTTOM = new IntervalRealLattice(null, null, 0);
+
+    public IntervalRealLattice(MathNumber low, MathNumber high, int wideningCounter) {
+        this.wideningCounter = wideningCounter;
         if (low != null && high != null && low.compareTo(high) > 0) {
-            // Automatically swap inverted bounds safely
             this.low = high;
             this.high = low;
         } else {
@@ -44,21 +38,16 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         }
     }
 
-    /**
-     * Constructor for the IntervalRealLattice class.
-     * 
-     * Creates a new interval lattice element with the specified lower and upper bounds as doubles.
-     * 
-     * @param low the lower bound of the interval
-     * @param high the upper bound of the interval
-     */
+    public IntervalRealLattice(MathNumber low, MathNumber high) {
+        this(low, high, 0); // Di base parte da 0
+    }
+
     public IntervalRealLattice(double low, double high) {
-        this.low = new MathNumber(low);
-        this.high = new MathNumber(high);
+        this(new MathNumber(low), new MathNumber(high), 0);
     }
 
     public IntervalRealLattice() {
-        this(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
+        this(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY, 0);
     }
 
     /**
@@ -100,6 +89,15 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
     }
 
     /**
+     * Gets the widening counter.
+     *
+     * @return the widening counter
+     */
+    public int getWideningCounter() {
+        return this.wideningCounter;
+    }
+
+    /**
      * Checks if the interval is the bottom element.
      *
      * @return true if the interval is the bottom element, false otherwise
@@ -134,11 +132,11 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
             return false;
         }
 
-        IntervalRealLattice that = (IntervalRealLattice) obj;
+        IntervalRealLattice other = (IntervalRealLattice) obj;
 
         return (
-            Objects.equals(getLow(), that.getLow()) && 
-            Objects.equals(getHigh(), that.getHigh())
+            Objects.equals(getLow(), other.getLow()) && 
+            Objects.equals(getHigh(), other.getHigh())
         );
     }
 
@@ -180,6 +178,8 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         return cmp != 0 ? cmp : this.getHigh().compareTo(obj.getHigh());
     }
 
+    // TODO: How to deal with widening counter and these two methods?
+
     @Override
     public IntervalRealLattice lubAux(IntervalRealLattice other) throws SemanticException {
         if (this.isBottom() || other.isBottom()) {
@@ -206,7 +206,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         // Get the minimum of the upper bounds
         MathNumber minHigh = getHigh().min(other.getHigh());
 
-        // Check if the resulting interval is valid (maxLow ≤ minHigh)
+        // Check if the resulting interval is valid (maxLow <= minHigh)
         if (maxLow.gt(minHigh)) {
             return BOTTOM;
         }
@@ -226,14 +226,22 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         return getLow().geq(other.getLow()) && getHigh().leq(other.getHigh());
     }
 
+    // TODO: Sound but loss of precision, we can try to use small increments...
     @Override
     public IntervalRealLattice wideningAux(IntervalRealLattice other) throws SemanticException {
+        System.out.println(
+            "Widening called with: " + this.representation() + " and " + 
+            other.representation() + " (counter: " + this.getWideningCounter() + ")"
+        );
+
         if (this.isBottom() || other.isBottom()) {
             return bottom();
         }
 
-        // Small threshold margin
-        MathNumber tolerance = new MathNumber(1e-4);
+        // Increment the widening counter
+        int nextCounter = this.getWideningCounter() + 1;
+
+        System.out.println("Widening counter incremented to: " + nextCounter);
 
         // Get bounds of both intervals
         MathNumber l1 = this.getLow();
@@ -243,31 +251,77 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         // Default to current upper bound
         MathNumber newUpper = u1;
-
-        if (u2.subtract(u1).gt(tolerance)) {
-            // If the new upper bound is significantly larger than 
-            // the current one, we widen to +INF
-            newUpper = MathNumber.PLUS_INFINITY;
-        } else if (u2.gt(u1)) {
-            // If the new upper bound is larger but within the tolerance    
-            // we can accept it without widening
-            newUpper = u2;
-        }
-
         // Default to current lower bound
         MathNumber newLower = l1;
 
-        if (l1.subtract(l2).gt(tolerance)) {
-            // If the new lower bound is significantly smaller than 
-            // the current one, we widen to -INF
-            newLower = MathNumber.MINUS_INFINITY;
-        } else if (l2.lt(l1)) {
-            // If the new lower bound is smaller but within the tolerance
-            // we can accept it without widening
-            newLower = l2;
+        // Handle upper bound
+        if (u2.gt(u1)) {
+            System.out.println("Upper bound increased from " + u1 + " to " + u2);
+            // If we have reached 5 calls to widening
+            if (nextCounter >= 5) {
+                System.out.println("Reached 5 iterations, widening upper bound to +∞");
+                // Widen to +INF
+                newUpper = MathNumber.PLUS_INFINITY;
+            } else {
+                System.out.println("Within 5 iterations, checking difference for upper bound");
+
+                // If we are within the first 5 calls
+                // Calculate the difference between the upper bounds
+                MathNumber diffUpper = u2.subtract(u1);
+
+                System.out.println("Difference between upper bounds: " + diffUpper);
+
+                // If the difference is less than 1 unit
+                if (diffUpper.lt(ONE)) {
+                    // We (safely) round up to the next integer
+                    newUpper = u2.roundUp(); 
+                    System.out.println("Difference is less than 1, rounding up to next integer: " + newUpper);
+                } else {
+                    System.out.println("Significant increase detected, widening upper bound to +∞");
+                    // We have a significant increase, so we widen immediately to +INF
+                    newUpper = MathNumber.PLUS_INFINITY;
+                }
+            }
         }
 
-        return new IntervalRealLattice(newLower, newUpper);
+        // Handle lower bound
+        if (l2.lt(l1)) {
+            System.out.println("Lower bound decreased from " + l1 + " to " + l2);
+
+            if (nextCounter >= 5) {
+                System.out.println("Reached 5 iterations, widening lower bound to -∞");
+                // If we have reached 5 iterations, we widen to -INF
+                newLower = MathNumber.MINUS_INFINITY;
+            } else {
+                System.out.println("Within 5 iterations, checking difference for lower bound");
+
+                // If we are within the first 5 calls
+                // Calculate the difference between the lower bounds
+                MathNumber diffLower = l1.subtract(l2);
+
+                System.out.println("Difference between lower bounds: " + diffLower);
+
+                // If the difference is less than 1 unit
+                if (diffLower.lt(ONE)) {
+                    // We (safely) round down to the previous integer
+                    newLower = l2.roundDown();
+                    System.out.println("Difference is less than 1, rounding down to previous integer: " + newLower);
+                } else {
+                    System.out.println("Significant decrease detected, widening lower bound to -∞");
+                    // We have a significant decrease, so we widen immediately to -INF
+                    newLower = MathNumber.MINUS_INFINITY;
+                }
+            }
+        }
+
+        // We reset the counter if we have reached 5 calls
+        if (nextCounter >= 5) {
+            nextCounter = 0;
+            System.out.println("Counter reset to 0 after reaching 5 iterations");
+        }
+
+        // As we keep track of iteration count, we pass it to the constructor
+        return new IntervalRealLattice(newLower, newUpper, nextCounter);
     }
 
 }

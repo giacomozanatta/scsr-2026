@@ -1,0 +1,15 @@
+class CryptoMiner {
+
+    calculateHashRate(inputA, inputB) {
+        
+
+        def nonce1 = 50000;
+        def nonce2 = 100000;
+
+        
+
+        def hashResult = nonce1 * nonce2;
+
+        return hashResult;
+    }
+}

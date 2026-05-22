@@ -62,7 +62,7 @@ class RealIntervalTest {
         def x = 0.0;
         // This loop tests if widening correctly jumps to +inf 
         // to handle the density of Reals
-        while (x < 100.0) {
+        while (x < 0.3) {
             x = x + 0.1;
         }
         return x;

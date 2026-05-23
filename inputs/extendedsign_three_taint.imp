@@ -1,3 +1,9 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp file to test ExtendedSignThreeTaint and TaintedDivisorChecker. One class, but different methods to test different scenarios.
+// it adds the result of lattice operation comments by itself, as happened in extendedsign.imp.
+// Then, to use it as meaningful program, I've asked to "add comments to each methods, to describe a possible real scenario".
+// I've asked to improve description at least one or two times.
 class extendedsign_taint {
 
     // Taint source: simulates attacker-controlled input (e.g. HTTP request parameter)

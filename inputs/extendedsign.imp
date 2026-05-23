@@ -1,3 +1,8 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate a .imp file to test ExtendedSign and DivByZeroExtendedSignChecker. One class, but different methods to test all possible operations and results.";
+// it adds the result of lattice operation comments by itself (probably taking inspiration to floatinterval.imp).
+// I've just added the description to make a comparison with sign.
 class extendedsign {
 
     // -------------------------------------------------------------------------

@@ -22,7 +22,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class ExtendedSignThreeTaintAnalysisTest {
 
-    // Funzioni del programma extendedsign_taint.imp
+    // Funzioni del programma extendedsign_three_taint.imp
     String[] nameSources    = {"source1"};
     String[] nameSanitizers = {"sanitizer1"};
     String[] nameSinks      = {"sink1"};

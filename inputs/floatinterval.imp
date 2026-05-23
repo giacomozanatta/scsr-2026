@@ -1,3 +1,8 @@
+// generated using paid licence of claude code sonnet 4.6
+// prompt: "I had to test FloatInterval domain. Write a .imp file with a single class and many methods. Tests must verify every possible operations and results."
+// then i asked "Write the content of the lattice at each step, so I can verify against the results provided by lisa."
+// In this way, I had the possibility to verify against the report results and check if everything was ok.
+// Part of the comments are written by me and part by claude.
 class floatinterval {
 
     // ====================================================================================

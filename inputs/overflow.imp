@@ -1,3 +1,8 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp files to test Interval and OverflowIntervalChecker. I need to tests against 8, 16 and 32 bits over/under flow.";
+// I've generated this in the same session of div_by_zero.imp, so IA already knew what should be the structure of the tests.
+// I used this to feed NumericalAnalysesTest.
 class overflow {
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,22 @@
+class CloudRouter {
+
+    routeTraffic(load) {
+        def targetServer = "";
+
+        if (load > 80) {
+            targetServer = "https://backup-server.amazon.com";
+        } else {
+            targetServer = "https://main-server.amazon.com";
+        }
+
+        
+
+        this.connectTo(targetServer);
+
+        return 1;
+    }
+
+    connectTo(endpoint) {
+        return 0;
+    }
+}

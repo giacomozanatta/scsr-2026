@@ -1,0 +1,18 @@
+class SubmarineNavigation {
+
+    calculateDepth() {
+        def currentAltitude = 0; 
+        def diveRate = 15;
+        def sensorActive = 1;
+
+        
+        while (sensorActive == 1) {
+
+            
+            currentAltitude = currentAltitude - diveRate;
+
+        }
+
+        return currentAltitude;
+    }
+}

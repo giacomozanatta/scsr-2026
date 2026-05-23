@@ -1,0 +1,22 @@
+class EmailSystem {
+
+    sendNewsletter() {
+        def username = "mario.rossi";
+        def at = "@";
+        def companyDomain = "enterprise.com";
+
+        
+        def fullAddress = username + at + companyDomain;
+
+        def subject = "Benvenuto";
+
+        
+        this.dispatchEmail(subject, fullAddress);
+
+        return 1;
+    }
+
+    dispatchEmail(title, recipient) {
+        return 0;
+    }
+}

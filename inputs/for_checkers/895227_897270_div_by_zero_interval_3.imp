@@ -1,0 +1,27 @@
+class ThermalSensor {
+
+    processTemperature() {
+        def tempReading = 10;
+        def i = 0;
+
+        
+        while (i < 20) {
+            tempReading = tempReading - 1;
+            i = i + 1;
+        }
+
+       
+
+        def calibration = 0;
+
+        
+        if (tempReading != 0) {
+            
+            calibration = 500 / tempReading;
+        } else {
+            calibration = -1; 
+        }
+
+        return calibration;
+    }
+}

@@ -31,71 +31,80 @@ import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
 
-public class OverflowIntervalChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
-SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
+public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
 
 	private IntInterval representableIntegers;
-	
+
 	public OverflowIntervalChecker(int l, int u) {
 		representableIntegers = new IntInterval(l, u);
 	}
+
 	@Override
 	public boolean visit(
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
-		
-		if(node instanceof Addition || node instanceof IMPAddOrConcat || node instanceof Subtraction 
+
+		if (node instanceof Addition || node instanceof IMPAddOrConcat || node instanceof Subtraction
 				|| node instanceof Multiplication || node instanceof Division) {
 			checkOverflow(tool, graph, node);
 		}
 		return true;
 	}
-	
-	private void checkOverflow(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
+
+	private void checkOverflow(
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
-		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> res : tool.getResultOf(graph)) {
-				AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res.getAnalysisStateAfter(node); // get post abstract state of denominator
-			
-				Set<SymbolicExpression> reachableIds = new HashSet<>();
-				Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
-				if (comExprIterator.hasNext()) {
+		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> res : tool
+				.getResultOf(graph)) {
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res
+					.getAnalysisStateAfter(node); // get post abstract state of denominator
 
-					SymbolicExpression boolExpr = comExprIterator.next();
-					try {
-						reachableIds
-								.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, node).elements);
+			Set<SymbolicExpression> reachableIds = new HashSet<>();
+			Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+			if (comExprIterator.hasNext()) {
 
-						for (SymbolicExpression s : reachableIds) {
-							Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, node);
+				SymbolicExpression boolExpr = comExprIterator.next();
+				try {
+					reachableIds.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, node).elements);
 
-							if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType() 
-									|| !t.isNumericType())) // check only if the type is numerical
-								continue;
-							//extraction of the abstract value
-							var valueState = postState.getExecutionState().valueState;
+					for (SymbolicExpression s : reachableIds) {
+						Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, node);
 
-							SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
-							
-							Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
-							
-							IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
-									(ProgramPoint) node, oracle);
-						
-							if(!representableIntegers.includes(abstractValue)) {
-								boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
-								boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
-								String sep = overflow && underflow ? "/" : "";
-								tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep + (underflow ? "under" : "") + "flow" + "// " + abstractValue.getHigh() + "//" + abstractValue.getLow());
-							}
+						if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType() || !t.isNumericType())) // check
+																															// only
+																															// if
+																															// the
+																															// type
+																															// is
+																															// numerical
+							continue;
+						// extraction of the abstract value
+						var valueState = postState.getExecutionState().valueState;
+
+						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+
+						Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
+
+						IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
+								(ProgramPoint) node, oracle);
+
+						if (!abstractValue.isBottom() && !representableIntegers.includes(abstractValue)) {
+							boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
+							boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
+							String sep = overflow && underflow ? "/" : "";
+							tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep
+									+ (underflow ? "under" : "") + "flow");
 						}
-					} catch (SemanticException e) {
-						e.printStackTrace();
 					}
+				} catch (SemanticException e) {
+					e.printStackTrace();
 				}
+			}
 
 		}
-		
+
 	}
 
 }

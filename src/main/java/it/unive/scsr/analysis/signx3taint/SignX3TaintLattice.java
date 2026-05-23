@@ -13,37 +13,31 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 	private final String sign;
 	private final String taint3;
 
-	public static String Bottom = "BOTTOM";
-	public static String Clean = "CLEAN";
-	public static String Taint = "TAINT";
-	public static String Top = "TOP";
+	public static final String Bottom = "BOTTOM";
+	public static final String Clean  = "CLEAN";
+	public static final String Taint  = "TAINT";
+	public static final String Top    = "TOP";
 
-	public static String POS = "+";
-	public static String NEG = "-";
-	public static String ZERO = "0";
+	public static final String POS  = "+";
+	public static final String NEG  = "-";
+	public static final String ZERO = "0";
 
-	public String getSign(){
-		return sign;
-	}
+	public String getSign()   { return sign;   }
+	public String get3Taint() { return taint3; }
 
-	public String get3Taint(){
-		return taint3;
-	}
-
-
-	public SignX3TaintLattice(String s, String t){
-		sign = s;
+	public SignX3TaintLattice(String s, String t) {
+		sign   = s;
 		taint3 = t;
 	}
 
 	@Override
 	public boolean isTop() {
-		return sign == Top && taint3 == Top;
+		return Top.equals(sign) && Top.equals(taint3);
 	}
 
 	@Override
 	public boolean isBottom() {
-		return sign == Bottom && taint3 == Bottom;
+		return Bottom.equals(sign) && Bottom.equals(taint3);
 	}
 
 	@Override
@@ -58,53 +52,71 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 
 	@Override
 	public StructuredRepresentation representation() {
-
-		StructuredRepresentation s = new StringRepresentation("-");
-		StructuredRepresentation t = Lattice.topRepresentation();
-
-		if(this.sign == Bottom)
+		StructuredRepresentation s;
+		if (Bottom.equals(this.sign))
 			s = Lattice.bottomRepresentation();
-		else if(this.sign == Top)
+		else if (Top.equals(this.sign))
 			s = Lattice.topRepresentation();
-		else if(this.sign == ZERO)
+		else if (ZERO.equals(this.sign))
 			s = new StringRepresentation("0");
-		else if(this.sign == POS)
+		else if (POS.equals(this.sign))
 			s = new StringRepresentation("+");
+		else
+			s = new StringRepresentation("-");
 
-		if(this.taint3 == Bottom)
+		StructuredRepresentation t;
+		if (Bottom.equals(this.taint3))
 			t = Lattice.bottomRepresentation();
-
-		if(this.taint3  == Clean)
+		else if (Clean.equals(this.taint3))
 			t = new StringRepresentation("C");
-
-		if(this.taint3  == Taint)
+		else if (Taint.equals(this.taint3))
 			t = new StringRepresentation("T");
-
+		else
+			t = Lattice.topRepresentation();
 
 		return new StringRepresentation("[" + s + "," + t + "]");
 	}
 
 	@Override
 	public SignX3TaintLattice lubAux(SignX3TaintLattice other) throws SemanticException {
-		String s = Top;
-		String t = Top;
-
-		if (this.sign.equals(other.getSign()))
+		String s;
+		if (this.sign.equals(other.sign))
 			s = this.sign;
-
-		if (this.sign == Bottom)
-			s = other.getSign();
-
-		if (other.getSign() == Bottom)
+		else if (Bottom.equals(this.sign))
+			s = other.sign;
+		else if (Bottom.equals(other.sign))
 			s = this.sign;
+		else
+			s = Top;
 
-		return new SignX3TaintLattice(s,t);
+		String t;
+		if (this.taint3.equals(other.taint3))
+			t = this.taint3;
+		else if (Bottom.equals(this.taint3))
+			t = other.taint3;
+		else if (Bottom.equals(other.taint3))
+			t = this.taint3;
+		else
+			t = Top;
+
+		return new SignX3TaintLattice(s, t);
 	}
 
 	@Override
 	public boolean lessOrEqualAux(SignX3TaintLattice other) throws SemanticException {
+		boolean signLeq;
+		if (Bottom.equals(this.sign) || Top.equals(other.sign))
+			signLeq = true;
+		else
+			signLeq = this.sign.equals(other.sign);
 
-		return false;
+		boolean taintLeq;
+		if (Bottom.equals(this.taint3) || Top.equals(other.taint3))
+			taintLeq = true;
+		else
+			taintLeq = this.taint3.equals(other.taint3);
+
+		return signLeq && taintLeq;
 	}
 
 	@Override
@@ -114,15 +126,11 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		SignX3TaintLattice other = (SignX3TaintLattice) obj;
-
-		return sign.equals(other.getSign() )&& taint3.equals(other.get3Taint());
+		return sign.equals(other.sign) && taint3.equals(other.taint3);
 	}
 
 	@Override
@@ -137,24 +145,26 @@ public class SignX3TaintLattice implements TaintLattice<SignX3TaintLattice> {
 
 	@Override
 	public SignX3TaintLattice or(SignX3TaintLattice other) throws SemanticException {
-		String t = Clean;
-		if (this.taint3 == Taint || other.get3Taint() == Taint)
-			t = Taint;
-
-		if (this.taint3 == Top || other.get3Taint() == Top)
+		String t;
+		if (this.taint3.equals(other.taint3))
+			t = this.taint3;
+		else if (Bottom.equals(this.taint3))
+			t = other.taint3;
+		else if (Bottom.equals(other.taint3))
+			t = this.taint3;
+		else
 			t = Top;
 
-		return new SignX3TaintLattice(this.sign,t);
-
+		return new SignX3TaintLattice(this.sign, t);
 	}
 
 	@Override
 	public boolean isAlwaysTainted() {
-		return this.taint3 == Taint;
+		return Taint.equals(this.taint3);
 	}
 
 	@Override
 	public boolean isPossiblyTainted() {
-		return this.taint3 == Top;
+		return Top.equals(this.taint3);
 	}
 }

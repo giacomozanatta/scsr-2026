@@ -92,9 +92,9 @@ public class SignX3TaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> 
 							SignX3TaintLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
-							if (abstractValue.get3Taint() == SignX3TaintLattice.Taint)
+							if (abstractValue.get3Taint().equals(SignX3TaintLattice.Taint))
 								tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
-							else if (abstractValue.get3Taint()  == SignX3TaintLattice.Top)
+							else if (abstractValue.get3Taint().equals(SignX3TaintLattice.Top))
 								tool.warnOn(uc, "There could be a taint value in a sink: " + par.getLocation());
 						}
 					} catch (SemanticException e) {

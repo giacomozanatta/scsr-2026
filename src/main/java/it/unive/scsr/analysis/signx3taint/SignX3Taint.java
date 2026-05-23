@@ -15,183 +15,153 @@ import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class SignX3Taint extends BaseTaint<SignX3TaintLattice> {
 
-
     public static final Annotation SINK_ANNOTATION = new Annotation("lisa.taint.Sink");
     public static final AnnotationMatcher SINK_MATCHER = new BasicAnnotationMatcher(SINK_ANNOTATION);
+
     @Override
     public SignX3TaintLattice top() {
         return new SignX3TaintLattice(SignX3TaintLattice.Top, SignX3TaintLattice.Top);
     }
+
     @Override
     public SignX3TaintLattice bottom() {
         return new SignX3TaintLattice(SignX3TaintLattice.Bottom, SignX3TaintLattice.Bottom);
     }
+
     @Override
     protected SignX3TaintLattice tainted() {
         return new SignX3TaintLattice(SignX3TaintLattice.Top, SignX3TaintLattice.Taint);
     }
+
     @Override
     protected SignX3TaintLattice clean() {
         return new SignX3TaintLattice(SignX3TaintLattice.Top, SignX3TaintLattice.Clean);
     }
 
     @Override
-    public SignX3TaintLattice
-    evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
+    public SignX3TaintLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
             throws SemanticException {
-
         String s;
-
-        if(constant.getValue() instanceof Integer) {
-            //I needt to check the integer value to
-            // assign the right approx value
+        if (constant.getValue() instanceof Integer) {
             Integer n = (Integer) constant.getValue();
-            if(n == 0)
-                s = SignX3TaintLattice.ZERO;
-            else if(n > 0)
-                s = SignX3TaintLattice.POS;
-            else
-                s = SignX3TaintLattice.NEG;
-        }
-        else
+            if (n == 0)     s = SignX3TaintLattice.ZERO;
+            else if (n > 0) s = SignX3TaintLattice.POS;
+            else            s = SignX3TaintLattice.NEG;
+        } else {
             s = SignX3TaintLattice.Top;
-
+        }
         return new SignX3TaintLattice(s, SignX3TaintLattice.Clean);
     }
 
     @Override
-    public SignX3TaintLattice evalUnaryExpression(UnaryExpression expression, SignX3TaintLattice arg, ProgramPoint pp,
-                                           SemanticOracle oracle) throws SemanticException {
+    public SignX3TaintLattice evalUnaryExpression(UnaryExpression expression, SignX3TaintLattice arg,
+                                                  ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+        String s = SignX3TaintLattice.Top;
+        String a = arg.getSign();
 
-        String a, s;
-        s = SignX3TaintLattice.Top;
-        a = arg.getSign();
-
-        if(expression.getOperator() == NumericNegation.INSTANCE) {
-            if(a == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.POS;
-            else if(a == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.NEG;
-            else if(a == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.ZERO;
-            else if(a == SignX3TaintLattice.Top)
-                s = SignX3TaintLattice.Top;
-            else if(a == SignX3TaintLattice.Bottom)
-                s = SignX3TaintLattice.Bottom;
+        if (expression.getOperator() == NumericNegation.INSTANCE) {
+            if      (SignX3TaintLattice.NEG.equals(a))    s = SignX3TaintLattice.POS;
+            else if (SignX3TaintLattice.POS.equals(a))    s = SignX3TaintLattice.NEG;
+            else if (SignX3TaintLattice.ZERO.equals(a))   s = SignX3TaintLattice.ZERO;
+            else if (SignX3TaintLattice.Top.equals(a))    s = SignX3TaintLattice.Top;
+            else if (SignX3TaintLattice.Bottom.equals(a)) s = SignX3TaintLattice.Bottom;
         }
 
         return new SignX3TaintLattice(s, arg.get3Taint());
     }
 
     @Override
-    public SignX3TaintLattice evalBinaryExpression(BinaryExpression expression, SignX3TaintLattice l, SignX3TaintLattice r,
-                                            ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
+    public SignX3TaintLattice evalBinaryExpression(BinaryExpression expression, SignX3TaintLattice l,
+                                                   SignX3TaintLattice r, ProgramPoint pp, SemanticOracle oracle)
+            throws SemanticException {
+        String s = SignX3TaintLattice.Top;
+        String left  = l.getSign();
+        String right = r.getSign();
 
-        String s, left, right;
+        final String POS  = SignX3TaintLattice.POS;
+        final String NEG  = SignX3TaintLattice.NEG;
+        final String ZERO = SignX3TaintLattice.ZERO;
+        final String T    = SignX3TaintLattice.Top;
+        final String BOT  = SignX3TaintLattice.Bottom;
 
-        s = SignX3TaintLattice.Top;
-        left = l.getSign();
-        right = r.getSign();
-
-        if(expression.getOperator() instanceof AdditionOperator) {
-            if(left == SignX3TaintLattice.POS && right == SignX3TaintLattice.NEG
-                    || left == SignX3TaintLattice.NEG && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.Top;
-            if(left == SignX3TaintLattice.POS && (right == SignX3TaintLattice.POS || right == SignX3TaintLattice.ZERO)
-                    || (left == SignX3TaintLattice.POS || left == SignX3TaintLattice.ZERO) && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.POS;
-            if(left == SignX3TaintLattice.NEG && (right == SignX3TaintLattice.NEG || right == SignX3TaintLattice.ZERO)
-                    || (left == SignX3TaintLattice.NEG || left == SignX3TaintLattice.ZERO) && right == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.NEG;
-            if(left == SignX3TaintLattice.ZERO && right == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.ZERO;
-            if(left == SignX3TaintLattice.Bottom || right == SignX3TaintLattice.Bottom)
-                s = SignX3TaintLattice.Bottom;
-            if(left == SignX3TaintLattice.Top || right == SignX3TaintLattice.Top)
-                s = SignX3TaintLattice.Top;
+        if (expression.getOperator() instanceof AdditionOperator) {
+            if ((POS.equals(left) && NEG.equals(right)) || (NEG.equals(left) && POS.equals(right)))
+                s = T;
+            if ((POS.equals(left) && (POS.equals(right) || ZERO.equals(right)))
+                    || ((POS.equals(left) || ZERO.equals(left)) && POS.equals(right)))
+                s = POS;
+            if ((NEG.equals(left) && (NEG.equals(right) || ZERO.equals(right)))
+                    || ((NEG.equals(left) || ZERO.equals(left)) && NEG.equals(right)))
+                s = NEG;
+            if (ZERO.equals(left) && ZERO.equals(right))
+                s = ZERO;
+            if (BOT.equals(left) || BOT.equals(right))
+                s = BOT;
+            if (T.equals(left) || T.equals(right))
+                s = T;
 
         } else if (expression.getOperator() instanceof MultiplicationOperator) {
-            if(left == SignX3TaintLattice.POS && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.POS;
-            else if(left == SignX3TaintLattice.POS  && right == SignX3TaintLattice.NEG
-                    || left == SignX3TaintLattice.NEG  && right == SignX3TaintLattice.POS)
-                s =  SignX3TaintLattice.NEG;
-            else if(left == SignX3TaintLattice.NEG && right == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.POS;
-            else if(left == SignX3TaintLattice.Bottom || right == SignX3TaintLattice.Bottom)
-                s = SignX3TaintLattice.Bottom;
-            else if(left == SignX3TaintLattice.ZERO || right == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.ZERO;
-            else if(left == SignX3TaintLattice.Top || right == SignX3TaintLattice.Top)
-                s = SignX3TaintLattice.Top;
+            if (POS.equals(left) && POS.equals(right))
+                s = POS;
+            else if ((POS.equals(left) && NEG.equals(right)) || (NEG.equals(left) && POS.equals(right)))
+                s = NEG;
+            else if (NEG.equals(left) && NEG.equals(right))
+                s = POS;
+            else if (BOT.equals(left) || BOT.equals(right))
+                s = BOT;
+            else if (ZERO.equals(left) || ZERO.equals(right))
+                s = ZERO;
+            else if (T.equals(left) || T.equals(right))
+                s = T;
+
         } else if (expression.getOperator() instanceof SubtractionOperator) {
-            UnaryExpression neg =
-                    new UnaryExpression(
-                            expression.getStaticType(),
-                            expression.getRight(),
-                            NumericNegation.INSTANCE,
-                            expression.getCodeLocation());
+            UnaryExpression neg = new UnaryExpression(
+                    expression.getStaticType(),
+                    expression.getRight(),
+                    NumericNegation.INSTANCE,
+                    expression.getCodeLocation());
 
             right = evalUnaryExpression(neg, r, pp, oracle).getSign();
 
-            if(left == SignX3TaintLattice.POS && right == SignX3TaintLattice.NEG
-                    || left == SignX3TaintLattice.NEG && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.Top;
-            if(left == SignX3TaintLattice.POS && (right == SignX3TaintLattice.POS || right == SignX3TaintLattice.ZERO)
-                    || (left == SignX3TaintLattice.POS || left == SignX3TaintLattice.ZERO) && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.POS;
-            if(left == SignX3TaintLattice.NEG && (right == SignX3TaintLattice.NEG || right == SignX3TaintLattice.ZERO)
-                    || (left == SignX3TaintLattice.NEG || left == SignX3TaintLattice.ZERO) && right == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.NEG;
-            if(left == SignX3TaintLattice.ZERO && right == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.ZERO;
-            if(left == SignX3TaintLattice.Bottom || right == SignX3TaintLattice.Bottom)
-                s = SignX3TaintLattice.Bottom;
-            if(left == SignX3TaintLattice.Top || right == SignX3TaintLattice.Top)
-                s = SignX3TaintLattice.Top;
+            if ((POS.equals(left) && NEG.equals(right)) || (NEG.equals(left) && POS.equals(right)))
+                s = T;
+            if ((POS.equals(left) && (POS.equals(right) || ZERO.equals(right)))
+                    || ((POS.equals(left) || ZERO.equals(left)) && POS.equals(right)))
+                s = POS;
+            if ((NEG.equals(left) && (NEG.equals(right) || ZERO.equals(right)))
+                    || ((NEG.equals(left) || ZERO.equals(left)) && NEG.equals(right)))
+                s = NEG;
+            if (ZERO.equals(left) && ZERO.equals(right))
+                s = ZERO;
+            if (BOT.equals(left) || BOT.equals(right))
+                s = BOT;
+            if (T.equals(left) || T.equals(right))
+                s = T;
+
         } else if (expression.getOperator() instanceof DivisionOperator) {
-            // x / 0 => non definito
-            if (right == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.Top;
+            if (BOT.equals(left) || BOT.equals(right))
+                s = BOT;
+            else if (ZERO.equals(right))
+                s = T;
+            else if (ZERO.equals(left))
+                s = ZERO;
+            else if (T.equals(left) || T.equals(right))
+                s = T;
+            else if (POS.equals(left) && POS.equals(right))
+                s = POS;
+            else if (POS.equals(left) && NEG.equals(right))
+                s = NEG;
+            else if (NEG.equals(left) && POS.equals(right))
+                s = NEG;
+            else if (NEG.equals(left) && NEG.equals(right))
+                s = POS;
 
-            // 0 / x => 0 (anche se x è Top, basta che non sia ZERO certo)
-            if (left == SignX3TaintLattice.ZERO)
-                s = SignX3TaintLattice.ZERO;
-
-            // Top propagazione
-            if (left == SignX3TaintLattice.Top || right == SignX3TaintLattice.Top)
-                s = SignX3TaintLattice.Top;
-
-            // Bottom propagazione
-            if (left == SignX3TaintLattice.Bottom || right == SignX3TaintLattice.Bottom)
-                s = SignX3TaintLattice.Bottom;
-
-            // POS / POS = POS
-            if (left == SignX3TaintLattice.POS && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.POS;
-
-            // POS / NEG = NEG
-            if (left == SignX3TaintLattice.POS && right == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.NEG;
-
-            // NEG / POS = NEG
-            if (left == SignX3TaintLattice.NEG && right == SignX3TaintLattice.POS)
-                s = SignX3TaintLattice.NEG;
-
-            // NEG / NEG = POS
-            if (left == SignX3TaintLattice.NEG && right == SignX3TaintLattice.NEG)
-                s = SignX3TaintLattice.POS;
-
-        } else if (expression.getOperator() instanceof ModuloOperator)
+        } else if (expression.getOperator() instanceof ModuloOperator) {
             s = right;
-        else if (expression.getOperator() instanceof RemainderOperator)
+        } else if (expression.getOperator() instanceof RemainderOperator) {
             s = left;
-
-
-
+        }
 
         return new SignX3TaintLattice(s, l.or(r).get3Taint());
     }
-
-
 }

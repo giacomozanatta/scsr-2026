@@ -1,3 +1,53 @@
+//LLM used:
+//To generate this test file I used the web free version of clause sonnet 4.6.
+//The company I work for gave me the license for the GitHub Copilot extension for VScode (with the Claude sonnet 4.6 agent)
+// but I wanted to test how the file was generated with the free version and few context as possible.
+//LLM context: 
+//I provided Claude sonnet with the project request pdf (scsr2026_final_task.pdf), the main project repository and the LiSA documentation.
+//Prompts and code generations:
+
+//FIRST PROMPT:
+
+//Since the claude chat didn't have all the context of the course i tried with a longer prompt with more specific requirements:
+
+//“adesso aiutami a creare dei file di test per il mio progetto universitario :
+//la repository del progetto è https://github.com/giacomozanatta/scsr-2026
+//il pdf allegato sono i task di progetto
+//questo è il link della documentazione di LiSA https://lisa-analyzer.github.io/documentation/
+//aiutami a risolvere il quesito  "To create (atleast3) meaningful program sto test the following checkers: Divisionby zero checkers"
+//Devi creare un file di test con il linguaggio imp che testi le divisioni per 0.
+//per meaningfull vuol dire che il codice deve essere un breve caso realistico di questo problema prendendo ispirazione anche dai testcase storici .”
+
+//FIRST PROMPT RESULT:
+
+//This first prompt generated 3 files but none of them was very interesting so i tried with a 
+//second prompt where i was more specific in what i wanted to test:
+
+//SECOND PROMPT:
+//“i file dovrebbero essere creati per testare le seguenti classi:
+//https://github.com/giacomozanatta/scsr-2026/blob/master/src/main/java/it/unive/scsr/checkers/DivByZeroIntervalChecker.java
+//https://github.com/giacomozanatta/scsr-2026/blob/master/src/main/java/it/unive/scsr/checkers/DivByZeroPentagonChecker.java
+//possibilmente crea un unico file con più classi di test”
+//SECOND PROMPT RESULT:
+
+//This second prompt actually generated all the test cases and the comment of all the methods with POSSIBLE/DEFINITE/NONE prediction.
+
+//The file contains six test classes, each targeting a specific scenario, but i wanted to see how the Claude agent in vs code would react with local context so i tried another prompt (with the local agent):
+
+//THIRD PROMPT:
+
+//“la versione web di claude mi ha creato il file di test 876957-div_by-zero.imp può andare bene come test per i checker?”
+
+//THIRD PROMPT RESULT:
+
+//The context was the same as the web version (the division by zero checkers + the newly created imp file). 
+//This prompt did not generate many changes: it removed a method in RequestDispatcher because it was deemed superfluous for the analysis, 
+//it changed an AnalyticsPipeline comment by altering the result, specifying that division by 0 is only definite with ContextBasedAnalysis, 
+//and finally it changed HashTable from key % table_size to key / table_size.
+
+//The generated predictions in the IMP file are also correct after launching an analysis with estDivByZeroIntervalAnalysis and 
+//testDivByZeroPentagonAnalysis and reading the report.json.
+
 // ================================================================
 //  DIV BY ZERO TEST SUITE
 //  Target checkers:

@@ -1,3 +1,15 @@
+
+//LLM used: gemini unsing the notebookLM tool and claude Sonnet 4.6 with the github copilot agent
+//LLM context: I provided notebookLM with all the course slides and the links for LiSA and the course project.
+ //While the Claude agent had the whole project, I gave it only the imp file created by notebookLM as a local context
+//prompt used:
+//1 - "can you generate a test file in imp language that are considered meaningful programs to test  Overflow and underflows code problems?"
+//result: the first prompt generated some test methods but i didn't like them because they were too generic
+//2 - “il programma dovrebbe testare 8-bit,16-bit e 32-bit sign integer”
+//result: the second prompt generated the all the test methods and comment of the overflow class
+//4 - "“Puoi sistemare il file di test e aggiungere delle casistiche per float” "
+// result: This prompt added the TestFloat method to the overflow class.
+
 class overflow {
 
     // ---------------------------------------------------------
@@ -107,6 +119,14 @@ class overflow {
         return result;
     }
 }
+
+//LLM used: gemini unsing the notebookLM tool
+//LLM context: I provided notebookLM with all the course slides and the links for LiSA and the course project.
+//prompt used:
+//3 - “now create a meaningful program to test a realistic code case where overflow/underflow could happen”
+//result: this prompt generated various realistic textbook scenarios but in the end i kept only the bankAccount class
+ 
+
 
 // ---------------------------------------------------------
 // Realistic scenario: bank account with deposit/withdraw.

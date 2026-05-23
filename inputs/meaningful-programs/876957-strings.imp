@@ -1,3 +1,16 @@
+//LLM used:
+//To generate this test file I used the GitHub Copilot extension for VScode (with the Claude sonnet 4.6 agent) 
+//LLM context: 
+//Since this was the third file generated after “876957-overflow.imp” and “876957-div_by_zero.imp” the chat had already
+// a lot of context on LiSA structure so i just used the string checkers and the StringAnalysesTest class.
+//Prompts and code generations:
+//Since there was a lot of context loaded in the discussion with all the previous test files generations 
+//i just written a very brief and naive prompt with the string checkers as context:
+
+//“ora puoi il codice per il file di test sulle stringe https e dot com?”
+
+//By just using this prompt Claude returned me the test file with all it’s test classes.
+
 // ================================================================
 //  STRING ANALYSIS TEST SUITE
 //  Target checkers:

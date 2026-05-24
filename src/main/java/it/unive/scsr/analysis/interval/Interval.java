@@ -116,7 +116,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice> {
 			} catch (ArithmeticException e) {
 				return IntervalLattice.BOTTOM;
 			}*/
-			if (right.lessOrEqual(IntervalLattice.ZERO))
+			if (IntervalLattice.ZERO.lessOrEqual(right))
 				return IntervalLattice.BOTTOM;
 			return new IntervalLattice(
 					l1.divide(l2)

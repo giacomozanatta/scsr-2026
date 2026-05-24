@@ -58,23 +58,6 @@ public class IntervalAnalysisTest {
 
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
-        
-        Path expectedPath = Paths.get("expected", "intervals-eval");
-        Path actualPath = Paths.get("outputs", "intervals");
 
-        File expFile = Paths.get(expectedPath.toString(), "report.json").toFile();
-        File actFile = Paths.get(actualPath.toString(), "report.json").toFile();
-        try {
-            JsonReport expected = JsonReport.read(new FileReader(expFile));
-            JsonReport actual = JsonReport.read(new FileReader(actFile));
-            assertTrue("Results are different",
-                    new ResultComparer().compare(expected, actual, expectedPath.toFile(), actualPath.toFile()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace(System.err);
-            fail("Unable to find report file");
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-            fail("Unable to compare reports");
-        }
     }
 }

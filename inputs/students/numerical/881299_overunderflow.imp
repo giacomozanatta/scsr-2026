@@ -1,0 +1,46 @@
+// AI-generated program for testing overflow/underflow checkers
+// Model: Claude Sonnet 4.6 | Manufacturer: Anthropic
+// Prompt: "Now I need to do this assignement:
+// To create (at least 3) meaningful programs to test the following checkers:
+// Overflow/underflows checkers, Division by zero checkers,
+// Prefix/suffix checkers, taint with three levels checker.
+// I'd like to test the first three checkers. Please write one program each,
+// some meaningful programs that could be found in real life, since trivial
+// programs are not allowed. Write them first in C language and then translate
+// them in IMP language. If you need clarifications about the syntax of IMP,
+// please ask me. Please put a comment on each program, stating that they are
+// made using AI, include your model and version, your manufacturer and this
+// prompt I'm giving you."
+//
+// Description: Simulates a bank account system where large deposits,
+// withdrawals and interest multiplications on values close to INT_MAX
+// can cause integer overflow and underflow.
+
+class BankAccount {
+
+    deposit(balance, amount) {
+        return balance + amount;
+    }
+
+    withdraw(balance, amount) {
+        return balance - amount;
+    }
+
+    apply_interest(balance, rate) {
+        return balance * rate;
+    }
+
+    main() {
+        def balance = 200;
+        def deposit_amount = 20;
+        def withdraw_amount = -200;
+        def rate = 3;
+
+        balance = this.deposit(balance, deposit_amount);
+        balance = this.withdraw(balance, withdraw_amount);
+        balance = this.apply_interest(balance, rate);
+
+        return balance;
+    }
+
+}

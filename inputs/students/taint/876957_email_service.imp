@@ -1,0 +1,51 @@
+// ----------------------------------------------------------------
+//  TEST 3 - Email Header Injection
+//
+//  Real-world inspiration: CWE-93 (Improper Neutralization of
+//  CRLF Sequences). An attacker injects newline characters into
+//  a user-supplied email address to add arbitrary headers to an
+//  outgoing email (e.g., BCC field to redirect mail to attacker).
+//
+//  testDirectInjection:    raw address used in email sink -> DEFINITE
+//  testSanitizedEmail:     address sanitized first        -> SAFE
+//  testConditionalSanitize: sanitized only for new users  -> POSSIBLE
+// ----------------------------------------------------------------
+class EmailService {
+
+    getUserInput() {
+        return "victim@example.com BCC: attacker@evil.com";
+    }
+
+    sanitizeInput(input) {
+        return "clean@example.com";
+    }
+
+    sendEmail(address) {
+        return 0;
+    }
+
+    testDirectInjection() {
+        def address = this.getUserInput();
+        this.sendEmail(address);
+        return 1;
+    }
+
+    testSanitizedEmail() {
+        def address = this.getUserInput();
+        def safe = this.sanitizeInput(address);
+        this.sendEmail(safe);
+        return 1;
+    }
+
+    testConditionalSanitize(isNewUser) {
+        def address = this.getUserInput();
+        def finalAddress = "";
+        if (isNewUser > 0) {
+            finalAddress = this.sanitizeInput(address);
+        } else {
+            finalAddress = address;
+        }
+        this.sendEmail(finalAddress);
+        return 1;
+    }
+}

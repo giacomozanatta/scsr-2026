@@ -1,0 +1,53 @@
+// ----------------------------------------------------------------
+//  TEST 1 - SQL Injection
+//
+//  Real-world inspiration: CVE-2008-4106 (WordPress SQL injection).
+//  A user-supplied search term is read from an HTTP request and
+//  concatenated directly into a SQL query string, which is then
+//  executed via the database sink. This is the canonical
+//  SQL injection vulnerability.
+//
+//  testDirectInjection:   user input flows directly into query  -> DEFINITE
+//  testSanitizedQuery:    input is sanitized before use          -> SAFE
+//  testMixedQuery:        branch: sanitized in one path, raw in other -> POSSIBLE
+// ----------------------------------------------------------------
+class SqlInjection {
+
+    GetRequest() {
+        return "malicious'; DROP TABLE users; --";
+    }
+
+    sanitizeInput(input) {
+        return "safe_input";
+    }
+
+    runQueryDB(query) {
+        return 0;
+    }
+
+    testDirectInjection() {
+        def userInput = this.GetRequest();
+        def query = userInput;
+        this.runQueryDB(query);
+        return 1;
+    }
+
+    testSanitizedQuery() {
+        def userInput = this.GetRequest();
+        def safe = this.sanitizeInput(userInput);
+        this.runQueryDB(safe);
+        return 1;
+    }
+
+    testMixedQuery(isAdmin) {
+        def userInput = this.GetRequest();
+        def query = "";
+        if (isAdmin > 0) {
+            query = this.sanitizeInput(userInput);
+        } else {
+            query = userInput;
+        }
+        this.runQueryDB(query);
+        return 1;
+    }
+}

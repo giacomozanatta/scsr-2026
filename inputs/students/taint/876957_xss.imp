@@ -1,0 +1,52 @@
+// ----------------------------------------------------------------
+//  TEST 2 - Cross-Site Scripting (XSS)
+//
+//  Real-world inspiration: CVE-2021-34473 (Microsoft Exchange XSS).
+//  A user-supplied value read from an HTTP request is embedded
+//  directly into an HTML response without escaping. This allows
+//  the attacker to inject JavaScript that executes in the victim's
+//  browser.
+//
+//  testDirectXss:      raw user input rendered in HTML  -> DEFINITE
+//  testEscapedOutput:  input escaped before rendering   -> SAFE
+//  testPartialEscape:  only escaped in one branch       -> POSSIBLE
+// ----------------------------------------------------------------
+class XssVulnerability {
+
+    getUserInput() {
+        return "<script>alert('xss')</script>";
+    }
+
+    escapeHtml(input) {
+        return "escaped_content";
+    }
+
+    renderHtml(content) {
+        return 0;
+    }
+
+    testDirectXss() {
+        def userInput = this.getUserInput();
+        this.renderHtml(userInput);
+        return 1;
+    }
+
+    testEscapedOutput() {
+        def userInput = this.getUserInput();
+        def safe = this.escapeHtml(userInput);
+        this.renderHtml(safe);
+        return 1;
+    }
+
+    testPartialEscape(isTrustedUser) {
+        def userInput = this.getUserInput();
+        def content = "";
+        if (isTrustedUser > 0) {
+            content = userInput;
+        } else {
+            content = this.escapeHtml(userInput);
+        }
+        this.renderHtml(content);
+        return 1;
+    }
+}

@@ -1,0 +1,35 @@
+class taintThreeSanitization {
+
+	getUserInput() { return 0; }
+	getData() { return 0; }
+	getInput() { return 0; }
+	sanitize(v) { return 0; }
+	partialSanitize(v) { return 0; }
+	executeCommand(v) { return 0; }
+	sink(v) { return 0; }
+
+	withSanitization() {
+		def tainted = this.getUserInput();
+		def clean = this.sanitize(tainted);
+		this.executeCommand(clean);
+		return clean;
+	}
+
+	partialSanitization() {
+		def tainted = this.getData();
+		def partiallyClean = this.partialSanitize(tainted);
+		this.sink(partiallyClean);
+		return partiallyClean;
+	}
+
+	branchSanitization(flag) {
+		def tainted = this.getInput();
+		def value = 0;
+		if (flag)
+			value = this.sanitize(tainted);
+		else
+			value = tainted;
+		this.sink(value);
+		return value;
+	}
+}

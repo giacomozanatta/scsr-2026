@@ -1,0 +1,38 @@
+class taintThreePropagation {
+
+	getValue() { return 0; }
+	getData() { return 0; }
+	getInitial() { return 0; }
+	useValue(v) { return 0; }
+	sink(v) { return 0; }
+
+	arithmeticPropagation() {
+		def tainted = this.getValue();
+		def result = tainted + 10;
+		def combined = result * 2;
+		this.useValue(combined);
+		return combined;
+	}
+
+	conditionalPropagation(flag) {
+		def tainted = this.getData();
+		def value = 0;
+		if (flag)
+			value = tainted;
+		else
+			value = tainted + 5;
+		this.sink(value);
+		return value;
+	}
+
+	loopPropagation(n) {
+		def tainted = this.getInitial();
+		def i = 0;
+		while (i < n) {
+			tainted = tainted + i;
+			this.sink(tainted);
+			i = i + 1;
+		}
+		return tainted;
+	}
+}

@@ -1,0 +1,30 @@
+class taintThreeSimple {
+
+	getUserInput() { return 0; }
+	readData() { return 0; }
+	getInput1() { return 0; }
+	getInput2() { return 0; }
+	executeCommand(v) { return 0; }
+	writeToDatabase(v) { return 0; }
+	process(a, b) { return 0; }
+
+	simpleTaint() {
+		def userInput = this.getUserInput();
+		this.executeCommand(userInput);
+		return userInput;
+	}
+
+	taintAssignment() {
+		def tainted = this.readData();
+		def copied = tainted;
+		this.writeToDatabase(copied);
+		return copied;
+	}
+
+	multipleSources() {
+		def source1 = this.getInput1();
+		def source2 = this.getInput2();
+		this.process(source1, source2);
+		return source1;
+	}
+}

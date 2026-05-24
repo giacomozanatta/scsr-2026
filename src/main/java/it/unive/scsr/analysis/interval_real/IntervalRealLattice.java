@@ -178,8 +178,6 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         return cmp != 0 ? cmp : this.getHigh().compareTo(obj.getHigh());
     }
 
-    // TODO: How to deal with widening counter and these two methods?
-
     @Override
     public IntervalRealLattice lubAux(IntervalRealLattice other) throws SemanticException {
         if (this.isBottom() || other.isBottom()) {

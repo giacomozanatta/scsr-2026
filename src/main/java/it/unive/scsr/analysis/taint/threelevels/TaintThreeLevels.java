@@ -1,9 +1,13 @@
 package it.unive.scsr.analysis.taint.threelevels;
 
+import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.program.annotations.Annotation;
 import it.unive.lisa.program.annotations.matcher.AnnotationMatcher;
 import it.unive.lisa.program.annotations.matcher.BasicAnnotationMatcher;
+import it.unive.lisa.program.cfg.ProgramPoint;
+import it.unive.lisa.symbolic.value.Identifier;
 
 /*
  * Lattice of  taint with three levels
@@ -29,15 +33,25 @@ public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice> {
 		return TaintThreeLevelsLattice.BOTTOM;
 	}
 
+	// Changed visibility to public just to make it easily callable from SignTaint class
 	@Override
-	protected TaintThreeLevelsLattice tainted() {
+	public TaintThreeLevelsLattice tainted() {
 		return TaintThreeLevelsLattice.TAINT;
 	}
 
+	// Changed visibility to public just to make it easily callable from SignTaint class
 	@Override
-	protected TaintThreeLevelsLattice clean() {
+	public TaintThreeLevelsLattice clean() {
 		return TaintThreeLevelsLattice.CLEAN;
 	}
 
-
+	// Changed visibility to public just to make it easily callable from SignTaint class
+	@Override
+	public TaintThreeLevelsLattice defaultApprox(
+	Identifier id,
+	ProgramPoint pp,
+	SemanticOracle oracle)
+			throws SemanticException {
+		return super.defaultApprox(id, pp, oracle);
+	}
 }

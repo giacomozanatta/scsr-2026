@@ -81,8 +81,7 @@ public class SignLattice
 
 	    @Override
 	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
+	    	return other == SignLattice.TOP || this == other;
 	    }
 
 		// For glb in this case we use default LiSA implementation

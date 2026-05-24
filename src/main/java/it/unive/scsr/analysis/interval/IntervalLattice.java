@@ -119,7 +119,7 @@ public class IntervalLattice
 	    public boolean lessOrEqualAux(IntervalLattice other) throws SemanticException {
 			if(this.i == null || other.i == null)
 				return false;
-	    	return this.i.includes(other.i);
+	    	return other.i.includes(this.i);
 	    }
 
 		@Override

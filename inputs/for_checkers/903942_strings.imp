@@ -1,3 +1,7 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp file to test StringAnalysesTest.";
+// I've generated this in the same session of div_by_zero.imp, so IA already knew what should be the structure of the tests.
 class strings {
 
     // Simulates fetching a remote resource

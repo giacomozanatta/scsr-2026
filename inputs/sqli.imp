@@ -1,0 +1,41 @@
+class sqli {
+
+    safeLogin() {
+        def query = "SELECT * FROM users WHERE id = 1";
+        this.runQueryDB(query);
+    }
+
+    injectedLogin() {
+        def malicious = "' OR '1'='1";
+        this.runQueryDB(malicious);
+    }
+
+    unionInjection() {
+        def malicious = "' UNION SELECT username, password FROM admins --";
+        this.runQueryDB(malicious);
+    }
+
+    dropInjection() {
+        def malicious = "'; DROP TABLE users; --";
+        this.executeQuery(malicious);
+    }
+
+    commentInjection() {
+        def malicious = "admin'--";
+        this.runQuery(malicious);
+    }
+
+    safeParametrized() {
+        def query = "SELECT name FROM products WHERE price < 100";
+        this.executeQuery(query);
+    }
+
+    runQueryDB(q) {
+    }
+
+    executeQuery(q) {
+    }
+
+    runQuery(q) {
+    }
+}

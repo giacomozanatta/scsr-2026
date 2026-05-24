@@ -1,3 +1,9 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp file to test Interval and DivByZeroIntervalChecker. Use the same logic of extendedsign_three_taint.imp";
+// In this case, I force the IA to take another .imp file as an example; this, plus its memory, let me to reduce the length of the prompt.
+// With the same file, i've tried to test even Pentagon, but finding a problem related to "zero_divisor" divisor method, which is the reason why I duplicated the .imp files.
+// I used this and div_by_zero_pentagon.imp to feed NumericalAnalysesTest.
 class div_by_zero {
 
     // -------------------------------------------------------------------------

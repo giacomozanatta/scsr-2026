@@ -1,0 +1,102 @@
+class prefix {
+
+    // --- sink functions ---
+
+    fetch(url) {
+    }
+
+    redirect(target) {
+    }
+
+    // CASE 1: http:// URL passed directly to fetch
+    insecureUrl() {
+        def url = "http://example.com/api/data";
+        this.fetch(url);
+    }
+
+    // CASE 2: https:// URL — HTTPStringChecker also matches
+    secureUrl() {
+        def url = "https://example.com/api/data";
+        this.fetch(url);
+    }
+
+
+    // CASE 3: join of two http:// branches
+    joinedHttpUrls(flag) {
+        def target = "http://primary.com/home";
+        if (flag) {
+            target = "http://fallback.com/home";
+        }
+        this.redirect(target);
+    }
+
+    // CASE 4: join of two branches (one with http)
+    joinedOneHttpUrl(flag) {
+        def target = "http://primary.com/home";
+        if (flag) {
+            target = "foo";
+        }
+        this.redirect(target);
+    }
+
+    // CASE 5: multiple http calls
+        multipleCalls(flag) {
+            def i = 3;
+            def target = "http://primary.com/home";
+            while(i > 0){
+                this.redirect(target);
+                i = i - 1;
+            }
+        }
+
+
+
+    /*
+        Real-world scenario: Template Injection leading to SSRF.
+
+        A report generation service accepts a template name from the
+        request parameter "template" and builds a file path by prepending
+        a local base directory. The system is designed to read only local
+        files: the expected input is a simple identifier like "invoice"
+        or "monthly_report", which gets resolved to:
+            /srv/templates/invoice.html
+
+        An attacker supplies "http://internal-service.corp/admin/dump"
+        as the template name. The backend naively concatenates it:
+            /srv/templates/http://internal-service.corp/admin/dump
+
+        In some templating engines (e.g. Jinja2 with certain loaders,
+        or Node.js template engines that follow include() semantics),
+        a value starting with a recognised URL scheme overrides the base
+        path and triggers a remote fetch instead of a local file read.
+        The server ends up making an outbound HTTP request to the internal
+        admin endpoint, leaking sensitive configuration data.
+
+        The HTTPStringChecker fires on renderTemplate() because the
+        resolved path carries prefix "http://" — signalling that what
+        should be a local file read has become an outbound HTTP call.
+        In a correctly validated system this code path should be
+        unreachable: template names containing "://" must be rejected
+        before reaching the renderer.
+
+    */
+
+        // VULNERABLE: attacker-controlled template name bypasses validation
+        // and causes renderTemplate() to receive an http:// prefixed path
+        generateReportVulnerable() {
+            //template_name should be passed as parameter to the function, for simplicity we define it here to trigger the checker
+            def template_name = "http://internal-service.corp/admin/dump";
+            def safe_name = this.sanitizeTemplateName(template_name);
+            this.renderTemplate(safe_name);
+        }
+
+        renderTemplate(path) { }
+
+        sanitizeTemplateName(name) {
+            def base = "/srv/templates/";
+            // models a MISSING or BROKEN sanitizer:
+            // should reject names containing "http" but does not
+            return "/srv/templates/http://internal-service.corp/admin/dump";
+        }
+
+}

@@ -1,3 +1,30 @@
+//LLM used:
+//To generate this test file I used the GitHub Copilot extension for VScode (with the Claude sonnet 4.6 agent).
+
+//LLM context: 
+//Since this was the fourth file generated after “876957-overflow.imp” ,“876957-div_by_zero.imp” and  “876957-strings.imp”
+//the chat had already a lot of context on the LiSA structure so i just usedTaintThreeLevels checker and the TaintAnalysisTest class as context.
+//Prompts and code generations:
+//I wanted to test the IMP file generation with a more specific requirement: 
+
+//FIRST PROMPT:
+
+//“ora puoi creare un file di test meaningful per il quesito:
+//To create (atleast3) meaningfulprogramsto test the following checkers: taint with threelevelschecker
+//come esempio realistico potresti usare quello delle sql injection”
+
+//PROMPT RESULT:
+
+//This prompt generated without too much trouble the whole file and test classes writing in the code comments the real world example of the problem.
+
+//It also provided new sink(unQueryDB, renderHtml, sendEmail), sanitizers(sanitizeInput, escapeHtml) and source (GetRequest, getUserInput ) names to provide a more meaningful code description.
+
+//Note: these additions are required to reproduce the expected results and must be added in the java test configuration.
+// Without them, all custom methods would be treated as unknown by the checker and the analysis would produce different output.
+
+
+
+
 // ================================================================
 //  TAINT ANALYSIS TEST SUITE  (TaintThreeLevelsChecker)
 //

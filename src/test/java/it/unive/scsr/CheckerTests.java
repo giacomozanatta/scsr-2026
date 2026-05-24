@@ -147,6 +147,22 @@ public class CheckerTests {
     }
 
     @Test
+    public void testAssignmentNotUsed() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/checkertests/assignment-not-used.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/checkers/assignment-not-used";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(defaultHeapDomain(), defaultValueDomain(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        conf.semanticChecks.add(new AssignmentNotUsedChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    @Test
     public void testTaintedSignAnalysis() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/checkertests/taintthreelevel_1-2.imp");
 

@@ -5,46 +5,37 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
-/*
- * Lattice of  taint with three levels
- *	 Top 
- * 	/	\
- * C	 T	 
- *  \	/
- *  BOTTOM
- * 
+/**
+ * Three-level taint lattice (same shape as LiSA {@code ThreeTaint}):
+ *
+ * <pre>
+ *        Top (⊤, possibly tainted or clean)
+ *       / \
+ *   Clean  Tainted
+ *       \ /
+ *     Bottom (⊥)
+ * </pre>
+ *
+ * {@code ⊤} means the value might be tainted or clean along different paths.
  */
 public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintThreeLevelsLattice> {
 
-	private final int element;
+	public static final TaintThreeLevelsLattice TOP = new TaintThreeLevelsLattice((byte) 3);
 
-	public static final TaintThreeLevelsLattice TOP = new TaintThreeLevelsLattice(0);
-	public static final TaintThreeLevelsLattice CLEAN = new TaintThreeLevelsLattice(1);
-	public static final TaintThreeLevelsLattice TAINT = new TaintThreeLevelsLattice(2);
-	public static final TaintThreeLevelsLattice BOTTOM = new TaintThreeLevelsLattice(3);
+	public static final TaintThreeLevelsLattice TAINTED = new TaintThreeLevelsLattice((byte) 2);
 
-	public TaintThreeLevelsLattice(int element) {
-		this.element = element;
+	public static final TaintThreeLevelsLattice CLEAN = new TaintThreeLevelsLattice((byte) 1);
+
+	public static final TaintThreeLevelsLattice BOTTOM = new TaintThreeLevelsLattice((byte) 0);
+
+	private final byte level;
+
+	public TaintThreeLevelsLattice() {
+		this((byte) 3);
 	}
 
-	@Override
-	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
-		if (this.isBottomElement())
-			return other;
-		if (other.isBottomElement())
-			return this;
-		if (this.isTopElement() || other.isTopElement())
-			return TOP;
-		if (this.element == other.element)
-			return this;
-		return TOP;
-	}
-
-	@Override
-	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
-		if (this.element == other.element || other.isTopElement() || this.isBottomElement())
-			return true;
-		return false;
+	private TaintThreeLevelsLattice(byte level) {
+		this.level = level;
 	}
 
 	@Override
@@ -59,18 +50,18 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public StructuredRepresentation representation() {
-		if (this.isTopElement())
-			return Lattice.topRepresentation();
-		if (this.isBottomElement())
+		if (this == BOTTOM)
 			return Lattice.bottomRepresentation();
-		if (this.isTaintElement())
-			return new StringRepresentation("T");
-		return new StringRepresentation("C");
+		if (this == CLEAN)
+			return new StringRepresentation("_");
+		if (this == TAINTED)
+			return new StringRepresentation("#");
+		return Lattice.topRepresentation();
 	}
 
 	@Override
 	public TaintThreeLevelsLattice tainted() {
-		return TAINT;
+		return TAINTED;
 	}
 
 	@Override
@@ -79,24 +70,45 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 	}
 
 	@Override
-	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
-		return lubAux(other);
-	}
-
-	@Override
 	public boolean isAlwaysTainted() {
-		return this.isTaintElement();
+		return this == TAINTED;
 	}
 
 	@Override
 	public boolean isPossiblyTainted() {
-		return this.isTaintElement() || this.isTopElement();
+		return this == TOP;
+	}
+
+	@Override
+	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
+		// Clean and tainted are incomparable: join is ⊤
+		return TOP;
+	}
+
+	@Override
+	public TaintThreeLevelsLattice wideningAux(TaintThreeLevelsLattice other) throws SemanticException {
+		return TOP;
+	}
+
+	@Override
+	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
+		return false;
+	}
+
+	@Override
+	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
+		if (this == TAINTED || other == TAINTED)
+			return TAINTED;
+		if (this == TOP || other == TOP)
+			return TOP;
+		return CLEAN;
 	}
 
 	@Override
 	public int hashCode() {
-		return Integer.hashCode(element);
+		return level;
 	}
+	
 
 	@Override
 	public boolean equals(Object obj) {
@@ -104,24 +116,11 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 			return true;
 		if (obj == null || getClass() != obj.getClass())
 			return false;
-		TaintThreeLevelsLattice other = (TaintThreeLevelsLattice) obj;
-		return element == other.element;
+		return level == ((TaintThreeLevelsLattice) obj).level;
 	}
 
-	private boolean isTopElement() {
-		return element == 0;
+	@Override
+	public String toString() {
+		return representation().toString();
 	}
-
-	private boolean isCleanElement() {
-		return element == 1;
-	}
-
-	private boolean isTaintElement() {
-		return element == 2;
-	}
-
-	private boolean isBottomElement() {
-		return element == 3;
-	}
-
 }

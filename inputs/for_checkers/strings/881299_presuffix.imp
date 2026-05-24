@@ -14,25 +14,34 @@
 //
 // Description: Simulates a URL router that assembles API endpoint paths
 // by concatenating a base URL, a version prefix and a resource name,
-// then appending a format extension. The checker should verify that the
-// final string always starts with "https://" and ends with ".json".
+// then appending a format extension. The HTTPStringChecker should detect
+// that the endpoint starts with "https://" and the DotComStringChecker
+// should detect that it ends with ".com". Both checkers are triggered
+// by passing the assembled URL to a sink function.
 
-build_endpoint(base, version, resource) {
-    return base + version + resource;
-}
+class router {
 
-apply_format(path, extension) {
-    return path + extension;
-}
+    build_endpoint(base, version, resource) {
+        return base + version + resource;
+    }
 
-main() {
-    def base      = "https://api.example.com/";
-    def version   = "v2/";
-    def resource  = "users";
-    def extension = ".json";
+    apply_format(path, extension) {
+        return path + extension;
+    }
 
-    def path     = build_endpoint(base, version, resource);
-    def endpoint = apply_format(path, extension);
+    // sink function — visited by both checkers
+    send_request(url) {
+    }
 
-    return endpoint;
+    main() {
+        def base      = "https://api.example.com";
+        def version   = "/v2/";
+        def resource  = "users";
+        def extension = ".json";
+
+        def path     = this.build_endpoint(base, version, resource);
+        def endpoint = this.apply_format(path, extension);
+
+        this.send_request(endpoint);
+    }
 }

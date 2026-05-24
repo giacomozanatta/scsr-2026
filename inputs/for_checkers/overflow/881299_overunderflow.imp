@@ -16,27 +16,30 @@
 // withdrawals and interest multiplications on values close to INT_MAX
 // can cause integer overflow and underflow.
 
-deposit(balance, amount) {
-    return balance + amount;
-}
+class bank {
 
-withdraw(balance, amount) {
-    return balance - amount;
-}
+    deposit(balance, amount) {
+        return balance + amount;
+    }
 
-apply_interest(balance, rate) {
-    return balance * rate;
-}
+    withdraw(balance, amount) {
+        return balance - amount;
+    }
 
-main() {
-    def balance = 2000000000;
-    def deposit_amount = 200000000;
-    def withdraw_amount = -2000000000;
-    def rate = 3;
+    apply_interest(balance, rate) {
+        return balance * rate;
+    }
 
-    balance = deposit(balance, deposit_amount);
-    balance = withdraw(balance, withdraw_amount);
-    balance = apply_interest(balance, rate);
+    main() {
+        def balance         = 2000000000;
+        def deposit_amount  = 200000000;
+        def withdraw_amount = -2000000000;
+        def rate            = 3;
 
-    return balance;
+        def balance2 = this.deposit(balance, deposit_amount);
+        def balance3 = this.withdraw(balance2, withdraw_amount);
+        def balance4 = this.apply_interest(balance3, rate);
+
+        return balance4;
+    }
 }

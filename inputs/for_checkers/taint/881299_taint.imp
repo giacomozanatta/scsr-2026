@@ -1,0 +1,90 @@
+// AI-generated program for testing taint with three levels checker
+// Model: Claude Sonnet 4.6 | Manufacturer: Anthropic
+// Prompt: "Now I need to do this assignment: To create (at least 3) meaningful
+// programs to test the following checker: taint with three levels checker.
+// Please write a meaningful program that could be found in real life, since
+// trivial programs are not allowed. Write it first in C language and then
+// translate it in IMP language. If you need clarifications about the syntax
+// of IMP, please ask me. Please put a comment in the program, stating that
+// it is made using AI, include your model and version, your manufacturer and
+// this prompt I'm giving you."
+//
+// Description: Simulates a web API authentication system where user input
+// (tainted) flows through sanitization functions before reaching sensitive
+// sinks (database queries, session tokens). Tests all three taint levels:
+// tainted input from HTTP requests, sanitized values after validation,
+// and clean hardcoded values.
+
+class webapi {
+
+    // sources: annotated as tainted in the test class
+    GetRequest() {
+        return 42;
+    }
+
+    GetRequestUnsafe() {
+        return -99;
+    }
+
+    // sanitizer: annotated as clean in the test class
+    sanitize(v) {
+        return 0;
+    }
+
+    // sinks: annotated as sinks in the test class
+    runQueryDB(v) {
+    }
+
+    writeSession(v) {
+    }
+
+    logAudit(v) {
+    }
+
+    // test 1: tainted input flows directly to sink — should warn
+    test1() {
+        def userId = this.GetRequest();
+        this.runQueryDB(userId);
+    }
+
+    // test 2: tainted input sanitized before sink — should NOT warn
+    test2() {
+        def rawInput = this.GetRequest();
+        def cleanInput = this.sanitize(rawInput);
+        this.runQueryDB(cleanInput);
+    }
+
+    // test 3: clean hardcoded value to sink — should NOT warn
+    test3() {
+        def hardcoded = 1;
+        this.runQueryDB(hardcoded);
+    }
+
+    // test 4: tainted value flows to session — should warn
+    test4() {
+        def token = this.GetRequestUnsafe();
+        this.writeSession(token);
+    }
+
+    // test 5: arithmetic on tainted values still tainted — should warn
+    test5() {
+        def a = this.GetRequest();
+        def b = this.GetRequest();
+        def combined = a + b;
+        this.runQueryDB(combined);
+    }
+
+    // test 6: sanitized then arithmetic then to sink — should NOT warn
+    test6() {
+        def raw = this.GetRequest();
+        def clean = this.sanitize(raw);
+        def processed = clean + 1;
+        this.runQueryDB(processed);
+    }
+
+    // test 7: tainted flows to audit log — should warn
+    test7() {
+        def suspicious = this.GetRequestUnsafe();
+        this.logAudit(suspicious);
+    }
+}

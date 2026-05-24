@@ -16,29 +16,32 @@
 // speed and energy density. Mass and time delta are initialized to zero,
 // triggering division by zero in the corresponding computations.
 
-compute_acceleration(force, mass) {
-    return force / mass;
-}
+class physics {
 
-compute_speed(distance, time) {
-    return distance / time;
-}
+    compute_acceleration(force, mass) {
+        return force / mass;
+    }
 
-compute_energy_density(energy, volume) {
-    return energy / volume;
-}
+    compute_speed(distance, time) {
+        return distance / time;
+    }
 
-main() {
-    def force    = 100.0;
-    def mass     = 0.0;
-    def distance = 50.0;
-    def time     = 0.0;
-    def energy   = 200.0;
-    def volume   = 5.0;
+    compute_energy_density(energy, volume) {
+        return energy / volume;
+    }
 
-    def acc     = compute_acceleration(force, mass);
-    def speed   = compute_speed(distance, time);
-    def density = compute_energy_density(energy, volume);
+    main() {
+        def force    = 100;
+        def mass     = 0;
+        def distance = 50;
+        def time     = 0;
+        def energy   = 200;
+        def volume   = 5;
 
-    return density;
+        def acc     = this.compute_acceleration(force, mass);
+        def speed   = this.compute_speed(distance, time);
+        def density = this.compute_energy_density(energy, volume);
+
+        return density;
+    }
 }

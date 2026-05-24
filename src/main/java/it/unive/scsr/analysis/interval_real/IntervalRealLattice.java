@@ -191,7 +191,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         // Get the maximum of the upper bounds
         MathNumber newHigh = getHigh().max(other.getHigh());
 
-        return new IntervalRealLattice(newLow, newHigh);
+        return new IntervalRealLattice(newLow, newHigh, this.getWideningCounter()); // We keep the same counter for lub
     }
 
     @Override
@@ -211,7 +211,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
             return BOTTOM;
         }
 
-        return new IntervalRealLattice(maxLow, minHigh);
+        return new IntervalRealLattice(maxLow, minHigh, this.getWideningCounter()); // We keep the same counter for glb
     }
 
     @Override

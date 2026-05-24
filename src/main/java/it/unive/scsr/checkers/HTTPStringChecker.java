@@ -35,9 +35,10 @@ import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 
 /**
- * It checks if there are calls where their parameters contain string values with the prefix "http://" or "https://"
+ * It checks if there are calls where their parameters contain string values
+ * with the prefix "http://" or "https://"
  */
-public class HTTPStringChecker <H extends HeapValue<H>, T extends TypeValue<T>> implements
+public class HTTPStringChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
         SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<StrPrefix>, TypeEnvironment<T>>> {
 
     @Override
@@ -83,22 +84,21 @@ public class HTTPStringChecker <H extends HeapValue<H>, T extends TypeValue<T>> 
 
                 SymbolicExpression boolExpr = comExprIterator.next();
                 try {
-                    reachableIds
-                            .addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements);
+                    reachableIds.addAll(tool.getAnalysis().reachableFrom(postState, boolExpr, (Statement) uc).elements);
 
                     for (SymbolicExpression s : reachableIds) {
                         Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, (Statement) uc);
 
                         if (types.stream().allMatch(t -> t.isInMemoryType() || t.isPointerType()))
                             continue;
-                        //extraction of the abstract value
+                        // extraction of the abstract value
                         ValueEnvironment<StrPrefix> valueState = postState.getExecutionState().valueState;
                         Prefix analysisValueDomain = (Prefix) tool.getAnalysis().domain.valueDomain;
                         SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
                         StrPrefix abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
                                 (ProgramPoint) uc, oracle);
 
-                        //check the abstractValue of the parameter
+                        // check the abstractValue of the parameter
                         if (abstractValue.prefix.startsWith("http://") || abstractValue.prefix.startsWith("https://"))
                             paramsToWarn[i] = true;
                     }
@@ -109,23 +109,24 @@ public class HTTPStringChecker <H extends HeapValue<H>, T extends TypeValue<T>> 
             }
 
         }
-        if(requireWarning(paramsToWarn))
-            tool.warnOn(uc, "The function uses an http/https url in the following parameters: " + prettyPrintParamsToWarn(paramsToWarn));
+        if (requireWarning(paramsToWarn))
+            tool.warnOn(uc, "The function uses an http/https url in the following parameters: "
+                    + prettyPrintParamsToWarn(paramsToWarn));
     }
 
     private boolean requireWarning(boolean[] paramsToWarn) {
-        for(boolean p :paramsToWarn)
-            if(p)
+        for (boolean p : paramsToWarn)
+            if (p)
                 return true;
         return false;
     }
 
     private String prettyPrintParamsToWarn(boolean[] paramsToWarn) {
         String res = "";
-        for(int i= 0; i< paramsToWarn.length; i++) {
-            if(paramsToWarn[i]) {
+        for (int i = 0; i < paramsToWarn.length; i++) {
+            if (paramsToWarn[i]) {
                 res += (res.isEmpty() ? "" : ", ") + i;
-                switch(i) {
+                switch (i) {
                     case 1:
                         res += "st";
                         break;
@@ -142,6 +143,5 @@ public class HTTPStringChecker <H extends HeapValue<H>, T extends TypeValue<T>> 
         }
         return res;
     }
-
 
 }

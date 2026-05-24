@@ -71,11 +71,12 @@ public class DivByZeroIntervalChecker <H extends HeapValue<H>, T extends TypeVal
                         IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
                                 (ProgramPoint) div, oracle);
 
-                        if(abstractValue.equals(new IntInterval(0, 0)))
-                            tool.warnOn(div, "This is definitly a division by zero");
-                        else if(abstractValue.includes(new IntInterval(0, 0)))
-                            tool.warnOn(div, "This may be possible division by zero");
-
+                        if(!abstractValue.isBottom()) {
+                            if(abstractValue.equals(new IntInterval(0, 0)))
+                                tool.warnOn(div, "This is definitly a division by zero");
+                            else if(abstractValue.includes(new IntInterval(0, 0)))
+                                tool.warnOn(div, "This may be possible division by zero");
+                        }
                     }
                 } catch (SemanticException e) {
                     e.printStackTrace();

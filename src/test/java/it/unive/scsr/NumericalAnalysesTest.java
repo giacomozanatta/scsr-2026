@@ -55,7 +55,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/project/divbyzeropentagon/bank_transfer.imp");
+        Program program = IMPFrontend.processFile("inputs/project/divbyzeropentagon/parallel_sync.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

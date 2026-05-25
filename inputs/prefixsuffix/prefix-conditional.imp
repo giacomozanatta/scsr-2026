@@ -1,0 +1,36 @@
+class prefixConditional {
+
+	connect(url) { return url; }
+
+	conditionalHttp(useHttps) {
+		def url = "ftp://neutral.load/";
+		if (useHttps)
+			url = "https://secure.down.load/" + "page";
+		else
+			url = "http://down.load/" + "page";
+		this.connect(url);
+		return url;
+	}
+
+	branchHttp(flag) {
+		def url = "ftp://up.load/" + "file";
+		if (flag)
+			url = "http://down.load/" + "file";
+		this.connect(url);
+		return url;
+	}
+
+	nestedConditional(isSecure, isPublic) {
+		def url = "ftp://neutral.load/";
+		if (isSecure) {
+			if (isPublic)
+				url = "https://public.down.load/" + "data";
+			else
+				url = "https://private.down.load/" + "data";
+		} else {
+			url = "http://down.load/" + "data";
+		}
+		this.connect(url);
+		return url;
+	}
+}

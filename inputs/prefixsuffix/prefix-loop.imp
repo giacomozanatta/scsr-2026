@@ -1,0 +1,35 @@
+class prefixLoop {
+
+	fetch(url) { return url; }
+	connect(url) { return url; }
+
+	loopHttp(n) {
+		def i = 0;
+		while (i < n) {
+			def url = "http://api.down.load/" + i;
+			this.fetch(url);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	alternatingHttp(n) {
+		def i = 0;
+		while (i < n) {
+			def url = "ftp://neutral.load/";
+			if (i % 2 == 0)
+				url = "http://down.load/" + i;
+			else
+				url = "https://secure.down.load/" + i;
+			this.connect(url);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	concatenationHttp(base, path) {
+		def url = base + path;
+		this.connect(url);
+		return url;
+	}
+}

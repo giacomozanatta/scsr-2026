@@ -1,0 +1,28 @@
+class prefixHttp {
+
+	connect(url) { return url; }
+	secureConnect(url) { return url; }
+	fetch(url) { return url; }
+
+	directHttp() {
+		def baseURL = "http://down.load/";
+		def url = baseURL + "example";
+		this.connect(url);
+		return url;
+	}
+
+	directHttps() {
+		def baseURL = "https://secure.down.load/";
+		def url = baseURL + "home";
+		this.secureConnect(url);
+		return url;
+	}
+
+	multipleHttpCalls() {
+		def url1 = "http://api.down.load/" + "v1";
+		def url2 = "http://cdn.down.load/" + "v2";
+		this.fetch(url1);
+		this.fetch(url2);
+		return url1;
+	}
+}

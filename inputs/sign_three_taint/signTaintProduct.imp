@@ -1,0 +1,30 @@
+class signTaintProduct {
+	externalSource() {
+		return -3;
+	}
+
+	sanitize(v) {
+		return 0;
+	}
+
+	sink(v) {
+	}
+
+	mixed(flag) {
+		def x = this.externalSource();
+		def y = 5;
+		if (flag) {
+			y = -7;
+		} else {
+			y = y + 1;
+		}
+		def z = x + y;
+		this.sink(z);
+	}
+
+	safePath() {
+		def value = 2;
+		def result = value * 4;
+		this.sink(result);
+	}
+}

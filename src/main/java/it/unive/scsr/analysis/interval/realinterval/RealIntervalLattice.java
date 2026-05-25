@@ -10,6 +10,12 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
 
 import java.util.Objects;
 
+
+/* The implementation is really similar to the integer Interval, the main differences are
+ * - manual interval management via two MathNumber variables (since there is no DoubleInterval like IntInterval)
+ * - slightly change in the widening operator to allow for small increments instead o jumping immediately to infinite
+ */
+
 public class RealIntervalLattice
 		implements BaseLattice<RealIntervalLattice>, Comparable<RealIntervalLattice> {
 
@@ -40,10 +46,6 @@ public class RealIntervalLattice
 			}
 		}
 	}
-
-	/*public RealIntervalLattice(double l, double h) {
-		this(new MathNumber(l), new MathNumber(h));
-	}*/
 
 	public RealIntervalLattice(Number l, Number h) {
 		this(new MathNumber(l.doubleValue()), new MathNumber(h.doubleValue()));
@@ -132,15 +134,26 @@ public class RealIntervalLattice
 		if (this.low == null || this.high == null || other.low == null || other.high == null)
 			return BOTTOM;
 
-		MathNumber MARGIN = new MathNumber(1e-10);
+		// We use a margin of 1 to avoid jumping to infinity even for small increment
+		// A better alternative would be to implement a round-based system, that performs
+		// small widening up to the nth round, after which the bound is widened to infinity
+		MathNumber MARGIN = new MathNumber(1);
 
-		MathNumber lResult = other.low; // By default, adopt other bounds
-		if (this.low.subtract(other.low).gt(MARGIN)) // But if other is too far (the distance is greater than MARGIN)
-			lResult = MathNumber.MINUS_INFINITY; // Set bound to infinity
+		MathNumber lResult = this.low; // By default, keep same bound
+		if (this.low.gt(other.low)) { // If other has a smaller bound
+			if (this.low.subtract(other.low).gt(MARGIN)) // Check if other is within the MARGIN
+				lResult = MathNumber.MINUS_INFINITY; // Set bound to infinity if bound is too far
+			else
+				lResult = other.low.roundDown(); // Widen to other bound if within MARIGN
+		}
 
-		MathNumber hResult = other.high;
-		if (other.high.subtract(this.high).gt(MARGIN))
-			hResult = MathNumber.PLUS_INFINITY;
+		MathNumber hResult = this.high;
+		if (this.high.lt(other.high)) {
+			if (other.high.subtract(this.high).gt(MARGIN))
+				hResult = MathNumber.PLUS_INFINITY;
+			else
+				hResult = other.high.roundUp();
+		}
 
 		return new RealIntervalLattice(lResult, hResult);
 	}

@@ -16,6 +16,8 @@ import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 import it.unive.lisa.util.numeric.IntInterval;
 import it.unive.lisa.util.numeric.MathNumber;
 
+
+// Almost identical to the integer Interval domain
 public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLattice> {
 
 	@Override

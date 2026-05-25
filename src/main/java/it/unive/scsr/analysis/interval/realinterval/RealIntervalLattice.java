@@ -25,6 +25,8 @@ public class RealIntervalLattice
 	public static RealIntervalLattice TOP = new RealIntervalLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY);
 	public static RealIntervalLattice BOTTOM = new RealIntervalLattice((MathNumber) null, null);
 	public static RealIntervalLattice ZERO = new RealIntervalLattice(0., 0.);
+	public static RealIntervalLattice ONE = new RealIntervalLattice(1., 1.);
+	public static RealIntervalLattice MINUS_ONE = new RealIntervalLattice(-1., -1.);
 
 	public RealIntervalLattice(MathNumber l, MathNumber h) {
 		// Copied and adapted from it.unive.lisa.util.numeric.IntIntervall constructor (lines 129-149)

@@ -1,0 +1,23 @@
+class intervals {
+
+	basic() {
+		def i = 2;
+		def j = 0;
+		def a = i + j; // Useless
+		def b = 0 + 0; // Useless
+		a = 1 + 2;
+		a = 1 + 0.0000001;
+		b = 2 - 0; // Useless
+		b = 0 - 4;
+		b = 2 * 2;
+		b = 2 * 0; // Useless
+		b = 2 * 1; // Useless
+		b = 1 * 1; // Useless
+		b = 0 * 4; // Useless
+		b = 0 / 5.12; // Useless
+		b = 4890 / 1; // Useless
+		b = 4890 / 1.546;
+		i = -1;
+		a = 5 * i;
+	}
+}

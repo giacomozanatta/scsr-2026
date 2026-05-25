@@ -1,0 +1,41 @@
+class divByZeroLoop {
+
+	// Test 1: Division by zero in loop
+	loopDivision(n) {
+		def result = 0;
+		def i = 0;
+		while (i < n) {
+			def denominator = n - i;
+			result = 100 / denominator;
+			i = i + 1;
+		}
+		return result;
+	}
+
+	// Test 2: Division with decrementing denominator
+	decrementingDivision(start) {
+		def value = 100;
+		def divisor = start;
+		while (divisor >= 0) {
+			value = value / divisor;
+			divisor = divisor - 1;
+		}
+		return value;
+	}
+
+	// Test 3: Division in nested loop
+	nestedLoopDivision(m, n) {
+		def result = 0;
+		def i = 0;
+		while (i < m) {
+			def j = 0;
+			while (j < n) {
+				def divisor = m - i - j;
+				result = 1000 / divisor;
+				j = j + 1;
+			}
+			i = i + 1;
+		}
+		return result;
+	}
+}

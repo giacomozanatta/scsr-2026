@@ -88,10 +88,10 @@ public class SignTaintChecker<H extends HeapValue<H>, T extends TypeValue<T>> im
 							SignTaintLattice abstractValue = signAnalysisValueDomain.eval(valueState, (ValueExpression) s,
 									(ProgramPoint) uc, oracle);
 
-							if (abstractValue.getTaintLattice().isPossiblyTainted())
+							if (abstractValue.taintLattice.isPossiblyTainted())
 								tool.warnOn(uc, "There may be a taint value in a sink: " + par.getLocation());
 
-							if (abstractValue.getTaintLattice().isAlwaysTainted())
+							if (abstractValue.taintLattice.isAlwaysTainted())
 								tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
 						}
 					} catch (SemanticException e) {

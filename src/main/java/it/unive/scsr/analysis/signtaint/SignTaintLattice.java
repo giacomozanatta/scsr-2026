@@ -1,15 +1,34 @@
 package it.unive.scsr.analysis.signtaint;
 
-import it.unive.lisa.analysis.BaseLattice;
-import it.unive.lisa.analysis.Lattice;
-import it.unive.lisa.analysis.SemanticException;
-import it.unive.lisa.util.representation.StringRepresentation;
-import it.unive.lisa.util.representation.StructuredRepresentation;
+import it.unive.lisa.analysis.combination.CartesianCombination;
 import it.unive.scsr.analysis.sign.extended.ExtendedSignLattice;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
-import java.util.Objects;
+// Automatic implementation of the Cartesian product between ExtendedSignLattice
+// and TaintThreeLevelsLattice via the CartesianCombination class
+public class SignTaintLattice extends CartesianCombination<SignTaintLattice, ExtendedSignLattice, TaintThreeLevelsLattice> {
 
+	public static final SignTaintLattice TOP =
+			new SignTaintLattice(ExtendedSignLattice.TOP, TaintThreeLevelsLattice.TOP);
+	public static final SignTaintLattice BOTTOM =
+			new SignTaintLattice(ExtendedSignLattice.BOTTOM, TaintThreeLevelsLattice.BOTTOM);
+
+	// Rename for better readability
+	public final ExtendedSignLattice signLattice = this.first;
+	public final TaintThreeLevelsLattice taintLattice = this.second;
+
+	public SignTaintLattice(ExtendedSignLattice first, TaintThreeLevelsLattice second) {
+		super(first, second);
+	}
+
+	@Override
+	public SignTaintLattice mk(ExtendedSignLattice first, TaintThreeLevelsLattice second) {
+		return new SignTaintLattice(first, second);
+	}
+}
+
+/*
+// Variant, manual implementation of the Cartesian product between ExtendedSignLattice and TaintThreeLevelsLattice
 public class SignTaintLattice implements BaseLattice<SignTaintLattice> {
 	private final ExtendedSignLattice signLattice;
 	private final TaintThreeLevelsLattice taintLattice;
@@ -98,3 +117,4 @@ public class SignTaintLattice implements BaseLattice<SignTaintLattice> {
 		return Objects.hash(signLattice, taintLattice);
 	}
 }
+*/

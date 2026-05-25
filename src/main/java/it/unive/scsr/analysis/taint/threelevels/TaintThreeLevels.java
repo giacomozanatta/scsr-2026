@@ -33,25 +33,13 @@ public class TaintThreeLevels extends BaseTaint<TaintThreeLevelsLattice> {
 		return TaintThreeLevelsLattice.BOTTOM;
 	}
 
-	// Changed visibility to public just to make it easily callable from SignTaint class
 	@Override
-	public TaintThreeLevelsLattice tainted() {
+	protected TaintThreeLevelsLattice tainted() {
 		return TaintThreeLevelsLattice.TAINT;
 	}
 
-	// Changed visibility to public just to make it easily callable from SignTaint class
 	@Override
-	public TaintThreeLevelsLattice clean() {
+	protected TaintThreeLevelsLattice clean() {
 		return TaintThreeLevelsLattice.CLEAN;
-	}
-
-	// Changed visibility to public just to make it easily callable from SignTaint class
-	@Override
-	public TaintThreeLevelsLattice defaultApprox(
-	Identifier id,
-	ProgramPoint pp,
-	SemanticOracle oracle)
-			throws SemanticException {
-		return super.defaultApprox(id, pp, oracle);
 	}
 }

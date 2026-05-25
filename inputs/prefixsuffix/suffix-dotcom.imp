@@ -1,0 +1,25 @@
+class suffixDotCom {
+
+	resolve(domain) { return domain; }
+	connect(domain) { return domain; }
+
+	directDotCom() {
+		def domain = "api.example" + ".com";
+		this.resolve(domain);
+		return domain;
+	}
+
+	multipleDotCom() {
+		def domain1 = "api.example" + ".com";
+		def domain2 = "cdn.example" + ".com";
+		this.resolve(domain1);
+		this.resolve(domain2);
+		return domain1;
+	}
+
+	subdomainDotCom() {
+		def domain = "www.api.example" + ".com";
+		this.connect(domain);
+		return domain;
+	}
+}

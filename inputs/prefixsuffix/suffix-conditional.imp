@@ -1,0 +1,37 @@
+class suffixConditional {
+
+	resolve(domain) { return domain; }
+	connect(domain) { return domain; }
+
+	conditionalDotCom(useCom) {
+		def domain = "example" + ".net";
+		if (useCom)
+			domain = "example" + ".com";
+		else
+			domain = "example" + ".org";
+		this.resolve(domain);
+		return domain;
+	}
+
+	branchDotCom(flag) {
+		def domain = "example" + ".net";
+		if (flag)
+			domain = "example" + ".com";
+		this.resolve(domain);
+		return domain;
+	}
+
+	nestedConditional(isCommercial, isSecure) {
+		def domain = "example" + ".net";
+		if (isCommercial) {
+			if (isSecure)
+				domain = "secure.example" + ".com";
+			else
+				domain = "example" + ".com";
+		} else {
+			domain = "example" + ".org";
+		}
+		this.connect(domain);
+		return domain;
+	}
+}

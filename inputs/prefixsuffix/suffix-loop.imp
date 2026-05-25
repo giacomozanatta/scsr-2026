@@ -1,0 +1,35 @@
+class suffixLoop {
+
+	ping(domain) { return domain; }
+	resolve(domain) { return domain; }
+
+	loopDotCom(n) {
+		def i = 0;
+		while (i < n) {
+			def domain = "server" + i + ".com";
+			this.ping(domain);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	alternatingTld(n) {
+		def i = 0;
+		while (i < n) {
+			def domain = "example" + ".net";
+			if (i % 2 == 0)
+				domain = "example" + i + ".com";
+			else
+				domain = "example" + i + ".org";
+			this.resolve(domain);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	concatenationDotCom(base, tld) {
+		def domain = base + tld;
+		this.resolve(domain);
+		return domain;
+	}
+}

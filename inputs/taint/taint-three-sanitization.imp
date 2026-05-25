@@ -1,0 +1,30 @@
+class taintThreeSanitization {
+
+	// Test 1: Taint with sanitization
+	withSanitization() {
+		def tainted = @taint getUserInput();
+	 def clean = sanitize(tainted);
+	 executeCommand(clean);
+	 return clean;
+	}
+
+	// Test 2: Partial sanitization
+	partialSanitization() {
+		def tainted = @taint getData();
+	 def partiallyClean = partialSanitize(tainted);
+	 sink(partiallyClean);
+	 return partiallyClean;
+	}
+
+	// Test 3: Sanitization in branch
+	branchSanitization(flag) {
+		def tainted = @taint getInput();
+	 def value;
+	 if (flag)
+		 value = sanitize(tainted);
+	 else
+		 value = tainted;
+	 sink(value);
+	 return value;
+	}
+}

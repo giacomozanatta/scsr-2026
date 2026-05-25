@@ -1,0 +1,25 @@
+class taintThreeSimple {
+
+	// Test 1: Simple taint source to sink
+	simpleTaint() {
+		def userInput = @taint getUserInput();
+		executeCommand(userInput);
+		return userInput;
+	}
+
+	// Test 2: Taint through assignment
+	taintAssignment() {
+		def tainted = @taint readData();
+		def copied = tainted;
+		writeToDatabase(copied);
+		return copied;
+	}
+
+	// Test 3: Multiple taint sources
+	multipleSources() {
+		def source1 = @taint getInput1();
+		def source2 = @taint getInput2();
+		process(source1, source2);
+		return source1;
+	}
+}

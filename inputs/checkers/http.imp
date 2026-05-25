@@ -11,17 +11,28 @@ class http{
     string_concat(){
         def base = "www.hi.com";
         def protocol = "https://";
-        def res = protocol + base; // Only returns the first argument for some reason
+
+        // Only returns the first argument due to the way that string concat is abstracted
+        def res = protocol + base;
         this.func(res);
     }
 
+    // Memory abstraction does not allow the checker to detect that arr[0] contains h
     string_array(){
-        def arr = new string[2];
+         def arr = new string[8];
         arr[0] = "h";
         arr[1] = "t";
-        //def a = "ciao";
-        this.func(arr[0]);
-        //this.func(a);
+        arr[2] = "t";
+        arr[3] = "p";
+        arr[4] = "s";
+        arr[5] = ":";
+        arr[6] = "/";
+        arr[7] = "/";
+        def protocol = "";
+        for(def i = 0; i < 8; i = i + 1){
+            protocol = protocol + strcat(protocol, arr[i]);
+        }
+        this.func(protocol);
     }
 
 }

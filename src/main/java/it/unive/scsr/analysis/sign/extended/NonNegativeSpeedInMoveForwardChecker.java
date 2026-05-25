@@ -29,11 +29,11 @@ import java.util.Set;
 // If such a function contains a call to "setSpeed", it inspects the 1st argument 
 // passed to that call and emits a warning when its value is or may be negative.
 public class NonNegativeSpeedInMoveForwardChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
-		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<SignLattice>, TypeEnvironment<T>>> {
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignLattice>, TypeEnvironment<T>>> {
 
 	@Override
 	public boolean visit(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<SignLattice>, TypeEnvironment<T>>> tool,
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<ExtendedSignLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
 		if (graph.getDescriptor().getName().startsWith("moveForward")) { // check if the current visited CFG is that one of a function that is named with a prefix "moveForward"
@@ -41,7 +41,7 @@ public class NonNegativeSpeedInMoveForwardChecker<H extends HeapValue<H>, T exte
 				Call c = (Call) node;
 				if (c.getTargetName().equals("setSpeed")) { // check if the called function is named "setSpeed"
 					for (var res : tool.getResultOf(graph)) { // get analysis result for that graph
-						AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignLattice>, TypeEnvironment<T>>> postState = res
+						AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<ExtendedSignLattice>, TypeEnvironment<T>>> postState = res
 								.getAnalysisStateAfter(c.getCallType() == CallType.STATIC ? c.getParameters()[0] : c.getParameters()[1]); // compute the post state related to the 1st parameter of function "setSpeed"
 						Set<SymbolicExpression> reachableIds = new HashSet<>();
 						Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
@@ -60,17 +60,17 @@ public class NonNegativeSpeedInMoveForwardChecker<H extends HeapValue<H>, T exte
 										continue;
 
 									// extraction of the abstract value
-									ValueEnvironment<SignLattice> valueState = postState.getExecutionState().valueState;
-									Sign signAnalysisValueDomain = (Sign) tool.getAnalysis().domain.valueDomain;
+									ValueEnvironment<ExtendedSignLattice> valueState = postState.getExecutionState().valueState;
+									ExtendedSign signAnalysisValueDomain = (ExtendedSign) tool.getAnalysis().domain.valueDomain;
 									SemanticOracle oracle = tool.getAnalysis().domain
 											.makeOracle(postState.getExecutionState());
-									SignLattice abstractValue = signAnalysisValueDomain.eval(valueState,
+									ExtendedSignLattice abstractValue = signAnalysisValueDomain.eval(valueState,
 											(ValueExpression) s, (ProgramPoint) node, oracle);
 
 									// check the abstractValue of the parameter
-									if(abstractValue == SignLattice.NEG)
+									if(abstractValue == ExtendedSignLattice.NEG)
 										tool.warnOn(c, "The speed is negative within the function " + graph.getDescriptor().getName());
-									else if(abstractValue == SignLattice.TOP)
+									else if(abstractValue == ExtendedSignLattice.TOP)
 										tool.warnOn(c, "The speed may be negative within the function " + graph.getDescriptor().getName());
 								}
 							} catch (SemanticException e) {

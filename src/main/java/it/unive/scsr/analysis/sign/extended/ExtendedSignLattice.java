@@ -31,34 +31,43 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
     public ExtendedSignLattice lubAux(ExtendedSignLattice other) throws SemanticException {
         if(this == TOP || other == TOP)
             return TOP;
+
+        // TODO bot or bot -> ret bot may not be correct. Maybe, if we have BOT and NEG, lub = NEG?
         if(this == BOTTOM || other == BOTTOM)
             return BOTTOM;
 
-        if(this == NEG || other == NEG){
+        else if(this == NEG || other == NEG){
            if(this == NOTPOS || other == NOTPOS)
+               return NOTPOS;
+           else if(this == ZERO || other == ZERO)
                return NOTPOS;
            else if(this == NOTZERO || other == NOTZERO)
                return NOTZERO;
+           else if(this == POS || other == POS)
+               return NOTZERO;
         }
-        if(this == ZERO || other == ZERO){
+        else if(this == ZERO || other == ZERO){
             if(this == NOTPOS || other == NOTPOS)
                 return NOTPOS;
             else if(this == NOTNEG || other == NOTNEG)
                 return NOTNEG;
+            else if(this == POS || other == POS)
+                return NOTNEG;
         }
-        if(this == POS || other == POS){
+        else if(this == POS || other == POS){
             if(this == NOTNEG || other == NOTNEG)
                 return NOTNEG;
             else if(this == NOTZERO || other == NOTZERO)
                 return NOTZERO;
         }
 
-        // SHouldnt be reached
+        // Should not be reached
         return TOP;
     }
 
     @Override
     public boolean lessOrEqualAux(ExtendedSignLattice other) throws SemanticException {
+        if(this == BOTTOM) return true;
         if(this == NEG && other == NOTPOS)
             return true;
         if(this == ZERO && (other == NOTPOS || other == NOTNEG))
@@ -87,18 +96,18 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
             return Lattice.topRepresentation();
 
         else if(this == ExtendedSignLattice.NOTNEG )
-            return new StringRepresentation(">=");
+            return new StringRepresentation("0+");
         else if(this == ExtendedSignLattice.NOTZERO )
-            return new StringRepresentation("!=");
+            return new StringRepresentation("+-");
         else if(this == ExtendedSignLattice.NOTPOS )
-            return new StringRepresentation("<=");
+            return new StringRepresentation("-0");
 
         else if(this == ExtendedSignLattice.NEG )
-            return new StringRepresentation("<");
+            return new StringRepresentation("-");
         else if(this == ExtendedSignLattice.ZERO )
             return new StringRepresentation("0");
 
-        return new StringRepresentation(">"); // POS
+        return new StringRepresentation("+"); // POS
     }
 
     @Override

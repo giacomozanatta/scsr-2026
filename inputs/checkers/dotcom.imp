@@ -1,5 +1,33 @@
 class dotcom{
-    notImpl(){
-
-    }
+    func(s){
+            return 0;
+        }
+    
+        string_1(){
+            def obvious = "http://www.dfos.com";
+            this.func(obvious);
+        }
+    
+        string_concat(){
+            def url = "www.hi.com";
+            def protocol = "https://";
+            
+            // Only returns the first argument due to the way that string concat is abstracted
+            def res = protocol + url; 
+            this.func(res);
+        }
+    
+        // Memory abstraction does not allow the checker to detect that arr[0] contains h
+        string_array(){
+            def arr = new string[4];
+            arr[0] = ".";
+            arr[1] = "c";
+            arr[2] = "o";
+            arr[3] = "m";
+            def url = "www.dfos";
+            for(def i = 0; i < 4; i = i + 1){
+                url = url + strcat(url, arr[i]);
+            }
+            this.func(url);
+        }
 }

@@ -37,6 +37,22 @@ class intervals {
 			return c; 
 	}
 
+	looping_indefinite(b){
+	    def res = 0.5;
+	    while(b){
+	        res = res + 0.5;
+	        b = 0;
+	    }
+        b = 1;
+	    while(b){
+	        res = res - 0.5;
+	        b = 0;
+	    }
+
+        // res is between 0 and 0.5. Lower bound if init b is false (or 0, if C style), higher bound if b is true
+	    return res;
+	}
+
 	slides(z) {
 	    def x = 11;
 	    x = x + 10;
@@ -71,4 +87,6 @@ class intervals {
 	    def add = x + y;
 	    return add;
 	}
+
+
 }

@@ -29,7 +29,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 			throws SemanticException {
 		
 		if(constant.getValue() instanceof Integer) {
-			//I needt to check the integer value to 
+			//I need to check the integer value to
 			// assign the right approx value
 			Integer n = (Integer) constant.getValue();
 			if(n == 0)
@@ -78,6 +78,7 @@ public class Sign implements BaseNonRelationalValueDomain<SignLattice>{
 				return SignLattice.NEG;
 			if(left == SignLattice.ZERO && right == SignLattice.ZERO)
 				return SignLattice.ZERO;
+
 			if(left == SignLattice.BOTTOM || right == SignLattice.BOTTOM)
 				return SignLattice.BOTTOM;
 			if(left == SignLattice.TOP || right == SignLattice.TOP)

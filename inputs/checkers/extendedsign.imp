@@ -1,0 +1,57 @@
+class extsign{
+    basic(){
+        return 1;
+    }
+
+    branching_definite_notneg(val){
+        def x = 1;
+        if(val == 0){
+            x = val;
+        }
+
+        return x;
+    }
+
+    looping_definite_notzero(val){
+        def start = 0;
+        // start is either positive or negative. It can't be zero
+        // this is not detected, tho.
+        for(def i = 0; i < 10; i = i + 1){
+            if(val > 0){
+                start = start + 1;
+            }
+            else{
+                start = start - 1;
+            }
+        }
+
+        return start;
+    }
+
+    bunch_of_if_statements_notzero(val){
+        def start = 0;
+        // the if condition is the same for all three if-else blocks, yet the analysis cannot recognize this fact
+        //  and so the analysis only sees the first if-else outputting NOTZERO, with the next if-else adding or subtracting a val
+         // from start == NONZERO, hence the start == TOP result
+        if(val > 0){
+            start = start + 1;
+        }
+        else{
+            start = start - 1;
+        }
+
+        if(val > 0){
+            start = start + 1;
+        }
+        else{
+            start = start - 1;
+        }
+
+        if(val > 0){
+            start = start + 1;
+        }
+        else{
+            start = start - 1;
+        }
+    }
+}

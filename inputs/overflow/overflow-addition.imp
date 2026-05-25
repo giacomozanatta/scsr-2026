@@ -1,0 +1,31 @@
+class overflowAddition {
+
+	// Test 1: Simple addition overflow
+	simpleOverflow() {
+		def a = 2000000000;
+		def b = 2000000000;
+		def result = a + b;
+		return result;
+	}
+
+	// Test 2: Addition overflow in loop
+	loopOverflow(n) {
+		def sum = 0;
+		def i = 0;
+		while (i < n) {
+			sum = sum + 1000000000;
+			i = i + 1;
+		}
+		return sum;
+	}
+
+	// Test 3: Conditional addition overflow
+	conditionalOverflow(x) {
+		def base = 1500000000;
+		if (x > 0)
+			base = base + 1000000000;
+		else
+			base = base + 500000000;
+		return base;
+	}
+}

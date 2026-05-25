@@ -1,0 +1,31 @@
+class overflowSubtraction {
+
+	// Test 1: Simple subtraction underflow
+	simpleUnderflow() {
+		def a = -2000000000;
+		def b = 1000000000;
+		def result = a - b;
+		return result;
+	}
+
+	// Test 2: Subtraction underflow in loop
+	loopUnderflow(n) {
+		def value = 0;
+		def i = 0;
+		while (i < n) {
+			value = value - 1000000000;
+			i = i + 1;
+		}
+		return value;
+	}
+
+	// Test 3: Conditional subtraction underflow
+	conditionalUnderflow(x) {
+		def base = -1500000000;
+		if (x < 0)
+			base = base - 1000000000;
+		else
+			base = base - 500000000;
+		return base;
+	}
+}

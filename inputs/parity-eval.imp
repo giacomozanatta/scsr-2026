@@ -1,0 +1,49 @@
+class parity {
+
+    f0() {
+        def a = 2;
+        def b = 4;
+        def c = a + b;
+        def d = a * b;
+        def e = a - b;
+        return;
+    }
+
+    f1() {
+        def a = 2;
+        def b = 3;
+        def c = a + b;
+        def d = a * b;
+        def e = a - b;
+        def f = -b;
+        return;
+    }
+
+    f2() {
+        def a = 3;
+        def b = 5;
+        def c = a + b;
+        def d = a * b;
+        def e = a - b;
+        return;
+    }
+
+    f3() {
+        def x = 2;
+        def y = 0;
+        if (y == 0) {
+            x = x + 1;
+        } else {
+            x = x + 2;
+        }
+        return x;
+    }
+
+    f4() {
+        def x = 0;
+        def c = 2;
+        while (x < 10)
+            x = x + c;
+        return x;
+    }
+}

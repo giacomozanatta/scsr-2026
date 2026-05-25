@@ -1,0 +1,14 @@
+class userLogin {
+
+	getRequestParam() {
+		return 0;
+	}
+
+	runQueryDB(v) {
+	}
+
+	handleLogin() {
+		def username = this.getRequestParam();
+		this.runQueryDB(username);
+	}
+}

@@ -1,0 +1,21 @@
+class shellExec {
+
+	readUserCommand() {
+		return 0;
+	}
+
+	sanitize(cmd) {
+		return 0;
+	}
+
+	executeCommand(c) {
+	}
+
+	run(trusted) {
+		def cmd = this.readUserCommand();
+		if (trusted) {
+			cmd = this.sanitize(cmd);
+		}
+		this.executeCommand(cmd);
+	}
+}

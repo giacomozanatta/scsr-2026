@@ -1,13 +1,11 @@
 class DefiniteTaintTest {
 
-    
-    @lisa.taint.Source
+
     readSecretFile() {
         return "password123";
     }
 
-    
-    @lisa.taint.Sink
+
     sendToExternalServer(data) {
         return 0;
     }

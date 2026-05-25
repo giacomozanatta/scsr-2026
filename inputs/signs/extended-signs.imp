@@ -15,7 +15,7 @@ class ExtendedSigns {
        def a = i + j; // a = POS + NEG = TOP
        def s = i - j; // s = POS - NEG = POS
        def m = i * j; // POS * NEG = NEG
-       def d = i / j; // POS / NEG = NEG
+       def d = i / j; // POS / NEG = NEGZERO (may truncate decimal part towards 0 if |i| < |j|)
     }
 
     branches() {
@@ -147,19 +147,19 @@ class ExtendedSigns {
        this.setSpeed(n); // NEGZERO warning
     }
 
-    moveForward6() {
+    moveForward5() {
        def p = 4; // POS
        def q = -9; // NEG
        def n = p + q; // POS + NEG = TOP
        this.setSpeed(n); // TOP, possibly negative var warning
     }
 
-    moveForward7() {
+    moveForward6() {
        def n = 0; // ZERO
        this.setSpeed(n); // no warning
     }
 
-    moveForward8(b) {
+    moveForward7(b) {
        def n = 0; // ZERO
        if (b)
             n = 12; // POS
@@ -167,14 +167,14 @@ class ExtendedSigns {
        this.setSpeed(n); // no warning
     }
 
-    moveForward9() {
+    moveForward8() {
        def n = -10; // NEG
        n = n * -1; // NEG * NEG = POS
        this.setSpeed(n); // no warning
     }
 
 
-    moveForward10() {
+    moveForward9() {
        def n = 50; // POS
        n = -50; // NEG (overwrites)
        this.setSpeed(n); // NEG warning
@@ -186,12 +186,12 @@ class ExtendedSigns {
        return o;
     }
 
-    moveForward11() {
+    moveForward10() {
        def n = this.getOffset(); // sees TOP
        this.setSpeed(n); // TOP, possibly negative var warning
     }
 
-    moveForward12(b) {
+    moveForward11(b) {
        def pz = 0; // ZERO
        if (b)
             pz = 5; // POS -> pz is POSZERO after join

@@ -1,77 +1,127 @@
 class SignTaint {
 
-    // helper functions
+    // Helpers
+    // sources: source1 (returns -99, NEG), source2 (returns 1, POS) -> both TAINTED
+    // sanitizer: sanitizer1 (returns 0, ZERO) -> CLEAN
+    // sinks: sink1
+    // semi-sink: setSpeed warns on taint only if it negative/possibly negative too
 
-    setSpeed(n){
-        // do something about speed
+    setSpeed(n) {
     }
 
-	source1(){
-		return -99;
-	}
+    source1() {
+        return -99;
+    }
 
-    source2(){
+    source2() {
         return 1;
     }
 
-	sanitizer1(v){
-		return 0;
-	}
+    sanitizer1(v) {
+        return 0;
+    }
 
-	sink1(v){
-	}
+    sink1(v) {
+    }
 
-    // standalone taint analysis tests
+    // =========================================================================
+    // [TAINT] Standalone taint tests.
+    // sink1 is the only registered sink. Sign is not relevant here and
+    // both Simple and Extended checkers behave identically.
+    // =========================================================================
 
-	clean() {
-		def c = 0;
-		this.sink1(c);  // the value is clean
-	}
+    // Clean-to-sink: ZERO literal flows directly into sink1
+    // Both: no warning
+    clean() {
+        def c = 0;
+        this.sink1(c);
+    }
 
-	tainted() {
-		def t = this.source1();
-		this.sink1(t); // a tainted value flows in a sink!
-	}
+    // Direct taint: source1 (TAINTED, NEG) flows directly into sink1
+    // Both: TAINT/DEFINITE
+    tainted() {
+        def t = this.source1();
+        this.sink1(t);
+    }
 
-	sanitized() {
-		def t = this.source1();
+    // Sanitized: source1 sanitized to CLEAN before sink1
+    // Both: no warning
+    sanitized() {
+        def t = this.source1();
+        def s = this.sanitizer1(t);
+        this.sink1(s);
+    }
 
-		def s = this.sanitizer1(t);
+    // Branch-taint: TAINTED on one path, CLEAN (literal) on the other; join = POSSIBLY_TAINTED
+    // Both: TAINT/POSSIBLE at sink1
+    branchTaint(b) {
+        def m = 0;
+        if (b) {
+            m = this.source1();
+        } else {
+            m = 5;
+        }
+        this.sink1(m);
+    }
 
-		this.sink1(s);  // the value is clean due to sanitization
-	}
+    // Both-branches tainted: source1 (NEG) or source2 (POS), both TAINTED; TAINTED ⊔ TAINTED = TAINTED
+    // Both: TAINT/DEFINITE (definite even through the branch join)
+    taintedBothBranches(b) {
+        def t = 0;
+        if (b) {
+            t = this.source1();
+        } else {
+            t = this.source2();
+        }
+        this.sink1(t);
+    }
 
-	branchTaint(b) {
-		def m = 0;
+    // Alias propagation: taint flows through raw → alias → result
+    // Both: TAINT/DEFINITE at sink1
+    taintedAlias() {
+        def raw = this.source1();
+        def alias = raw;
+        def result = alias;
+        this.sink1(result);
+    }
 
-		if(b) {
-			m = this.source1();
-		} else {
-		  m = 5;
-		}
+    // Re-taint: source1 sanitized to CLEAN, then overwritten by source2 (TAINTED) before sink1
+    // Both: TAINT/DEFINITE (sanitization is overwritten before the sink)
+    retaintAfterSanitize() {
+        def t = this.source1();
+        def s = this.sanitizer1(t);
+        s = this.source2();
+        this.sink1(s);
+    }
 
-		this.sink1(m); // the value may be tainted
-	}
+    // =========================================================================
+    // [SIGN] Arithmetic tests. No setSpeed, no sink, no warning expected.
+    // =========================================================================
 
-	// standalone sign analysis tests
-
+    // Loop accumulator: b grows by c=POS each step
+    // both: no warning
     loopSign() {
         def c = 1;
         def b = 0;
         while (b < 10)
             b = b + c;
+        // b should be POSZERO, CLEAN (extended) or POS, CLEAN (simple sign)
         return b;
     }
 
+    // Basic sign arithmetic on POS/NEG constants
+    // both: no warning (no setSpeed call)
     basicSign() {
-            def i = 2; // i = +
-            def j = -10; // j = -
-            def a = i + j; // a = + ADD - = TOP
-            def s = i - j; // s = + SUB - = + --- TOP because it should be implemented before
-            def m = i * j;
-            def d = i / j;
-        }
+        def i = 2;
+        def j = -10;
+        def a = i + j;
+        def s = i - j;
+        def m = i * j;
+        def d = i / j;
+    }
 
+    // Sign through control flow + division
+    // both: no warning
     branchesSign() {
         def a = 3;
         def b = 5;
@@ -83,46 +133,166 @@ class SignTaint {
         def y = x / x;
     }
 
+    // =========================================================================
+    // [SIGN] setSpeed tests inside moveForward* with CLEAN values.
+    // Only Check 1 (sign) fires; Check 3 (combined) cannot trigger (no taint).
+    // =========================================================================
+
+    // POS clean: n = 10. No warning
     moveForward1() {
         def n = 10;
-        this.setSpeed(n); // pos, clean -> ok
+        this.setSpeed(n);
     }
 
+    // NEG clean: n = -10
+    // both: [SIGN] speed is negative
     moveForward2() {
         def n = -10;
-        this.setSpeed(n); // negative, clean -> problem
+        this.setSpeed(n);
     }
 
-    moveForward3(b) {
+    // ZERO clean: n = 0
+    // both: no warning
+    moveForward3() {
+        def n = 0;
+        this.setSpeed(n);
+    }
+
+    // NOTZERO/TOP clean: n = -1 (NEG) or 1 (POS); join = NOTZERO (Ext) / TOP (Basic)
+    // Simple: [SIGN] may be negative  |  Extended: [SIGN] may be negative
+    moveForward4(b) {
         def n = -1;
         if (b)
             n = 1;
+        // n is NOTZERO at join for Extended sign / TOP for Simple Sign
         def y = n;
-        this.setSpeed(n); // possible problem : n may be negative depending on b
+        this.setSpeed(n);
     }
 
-    // combined taint + sign analysis
-
-	moveForward4(){
-        def m = 0; // clean, zero
-        m = this.source1(); // tainted, neg
-        this.setSpeed(m); // warning ! value is tainted AND negative and reaches speed !
-	}
-
-    moveForward5(){
-        def m = 0; // clean, zero
-        m = this.source1(); // tainted, neg
-        def s = this.sanitizer1(m); // clean, zero
-        this.setSpeed(s); // no warning
+    // NEGZERO/TOP clean: n = -5 (NEG) or stays 0 (ZERO); join = NEGZERO (Ext) / TOP (Basic)
+    // Simple: [SIGN] may be negative  |  Extended: [SIGN] speed is negative or zero
+    moveForward5(b) {
+        def n = 0;
+        if (b)
+            n = -5;
+        this.setSpeed(n);
     }
 
+    // POSZERO/TOP clean: n = 5 (POS) or stays 0 (ZERO); join = POSZERO (Ext) / TOP (Basic)
+    // Simple: [SIGN] may be negative  (false positive: Basic lacks POSZERO precision)
+    // Extended: no warning (POSZERO means speed >= 0, always safe)
     moveForward6(b) {
-        def n = -1; // negative but clean
+        def n = 0;
+        if (b)
+            n = 5;
+        this.setSpeed(n);
+    }
+
+    // =========================================================================
+    // [COMBINED] setSpeed tests inside moveForward* with tainted values.
+    // Check 1 (sign) and Check 3 (combined) both apply.
+    // Check 2 (taint-in-sink) does NOT fire: setSpeed is not a registered sink.
+    // =========================================================================
+
+    // NEG + ALWAYS_TAINTED: source1 (NEG, TAINTED) directly to setSpeed
+    // Both: [SIGN] speed is negative + [COMBINED/DEFINITE]
+    moveForward7() {
+        def m = 0;
+        m = this.source1();
+        this.setSpeed(m);
+    }
+
+    // NEG + TAINTED then sanitized: source1 sanitized to (ZERO, CLEAN) before setSpeed
+    // Both: no warning
+    moveForward8() {
+        def m = 0;
+        m = this.source1();
+        def s = this.sanitizer1(m);
+        this.setSpeed(s);
+    }
+
+    // POS + ALWAYS_TAINTED: source2 (POS, TAINTED) directly to setSpeed
+    // Both: no warning (positive tainted speed is safe; combined check requires possibly-negative)
+    moveForward9() {
+        def n = this.source2();
+        this.setSpeed(n);
+    }
+
+    // ZERO + ALWAYS_TAINTED: source1() * 0 → (ZERO, TAINTED); ZERO kills negativity, taint propagates
+    // Both: no warning (ZERO is not negative; combined check requires possibly-negative)
+    moveForward10() {
+        def t = this.source1();
+        def n = t * 0;
+        this.setSpeed(n);
+    }
+
+    // NEGZERO/TOP + ALWAYS_TAINTED: source1 (NEG,TAINTED) or source1()*0 (ZERO,TAINTED)
+    // join = (NEGZERO, TAINTED) (Ext) / (TOP, TAINTED) (Basic)
+    // Simple: [SIGN] may be negative + [COMBINED/POSSIBLE]
+    // Extended: [SIGN] speed is negative or zero + [COMBINED/POSSIBLE]
+    //   Note: POSSIBLE not DEFINITE because NEGZERO ≠ NEG (speed could be zero, not strictly negative)
+    moveForward11(b) {
+        def n = 0;
         if (b) {
-            n = this.source2(); // tainted but positive
+            n = this.source1();
+        } else {
+            def t = this.source1();
+            n = t * 0;
         }
-        def y = n; // may be tainted, not zero
-        this.setSpeed(n); // possible problem : n may be negative depending on b, and may be tainted as well
+        this.setSpeed(n);
+    }
+
+    // POSZERO/TOP + ALWAYS_TAINTED: source2 (POS,TAINTED) or source1()*0 (ZERO,TAINTED)
+    // join = (POSZERO, TAINTED) (Ext) / (TOP, TAINTED) (Basic)
+    // Simple: [SIGN] may be negative + [COMBINED/POSSIBLE]  (false positive on both counts!)
+    // Extended: no warning (POSZERO means speed >= 0; possiblyNegative = false, combined skipped)
+    moveForward12(b) {
+        def n = 0;
+        if (b) {
+            n = this.source2();
+        } else {
+            def t = this.source1();
+            n = t * 0;
+        }
+        this.setSpeed(n);
+    }
+
+    // NOTZERO/TOP + ALWAYS_TAINTED: source1 (NEG,TAINTED) or source2 (POS,TAINTED)
+    // join = (NOTZERO, TAINTED) (Ext) / (TOP, TAINTED) (Basic)
+    // Simple: [SIGN] may be negative + [COMBINED/POSSIBLE]
+    // Extended: [SIGN] may be negative + [COMBINED/POSSIBLE]
+    //   Note: POSSIBLE not DEFINITE because NOTZERO ≠ NEG (speed could be positive or negative)
+    moveForward13(b) {
+        def n = 0;
+        if (b) {
+            n = this.source1();
+        } else {
+            n = this.source2();
+        }
+        this.setSpeed(n);
+    }
+
+    // NEG + POSSIBLY_TAINTED: source1 (NEG,TAINTED) or -5 (NEG,CLEAN); join = (NEG, POSSIBLY_TAINTED)
+    // Both: [SIGN] speed is negative + [COMBINED/POSSIBLE]
+    //   Note: POSSIBLE not DEFINITE because taint is only possibly-tainted (one CLEAN branch)
+    //   Compare with moveForward4: same NEG sign but POSSIBLE vs DEFINITE due to taint level
+    moveForward14(b) {
+        def n = this.source1();
+        if (b) {
+            n = -5;
+        }
+        this.setSpeed(n);
+    }
+
+    // NOTZERO/TOP + POSSIBLY_TAINTED: -1 (NEG,CLEAN) or source2 (POS,TAINTED)
+    // join = (NOTZERO, POSSIBLY_TAINTED) (Ext) / (TOP, POSSIBLY_TAINTED) (Basic)
+    // Both: [SIGN] may be negative + [COMBINED/POSSIBLE]
+    moveForward15(b) {
+        def n = -1;
+        if (b) {
+            n = this.source2();
+        }
+        this.setSpeed(n);
     }
 
 }

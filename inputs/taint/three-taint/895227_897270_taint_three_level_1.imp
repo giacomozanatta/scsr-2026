@@ -1,6 +1,5 @@
 class CleanTaintTest {
 
-    @lisa.taint.Sink
     writeToDatabase(query) {
         return 0;
     }

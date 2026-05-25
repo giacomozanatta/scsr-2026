@@ -14,7 +14,7 @@ class FileDownloader {
         return this.download(fullURL);
     }
 
-    downloadFromSRV3(resource) {
+    downloadFromSRV2(resource) {
         def baseURL = "ftp://up.load/";
         def fullURL = baseURL + resource;
         return this.download(fullURL);

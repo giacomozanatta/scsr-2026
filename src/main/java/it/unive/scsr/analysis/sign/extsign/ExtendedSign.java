@@ -167,7 +167,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 
 		// cases where divisor might be zero (POSZERO OR NEGZERO) have already been eliminated by now when reaching this
 
-		// pos/neg or neg/pos => neg or zero (because integers might be floored to 0)
+		// pos/neg or neg/pos => neg or zero (because integers might be truncated towards 0)
 		// only dividend might still be POSZERO or NEGZERO
 		if(ExtendedSignLattice.pair(l,r, ExtendedSignLattice.POS, ExtendedSignLattice.NEG)) return ExtendedSignLattice.NEGZERO;
 		if(l == ExtendedSignLattice.POSZERO && r == ExtendedSignLattice.NEG) return ExtendedSignLattice.NEGZERO;

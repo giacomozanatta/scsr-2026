@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Unified semantic check for the ExtendedSign × TaintThreeLevels product domain.
+ * Unified semantic check for the Sign x TaintThreeLevels product domain.
  * We will consider that "moveForward" functions to "setSpeed" are sinks and we want to
  * check both if the speed is correctly set non-negative, and if it's tainted or not.
  *
@@ -78,10 +78,8 @@ public class TaintedNegativeSpeedChecker<H extends HeapValue<H>, T extends TypeV
         return true;
     }
 
-    // -------------------------------------------------------------------------
-    // Check 1 + 3: sign and combined analysis for setSpeed in moveForward*
-    // -------------------------------------------------------------------------
 
+    // Check 1 + 3: sign and combined analysis for setSpeed in moveForward*
     private void checkSpeed(
             SemanticTool<
                     SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignTaintLattice>, TypeEnvironment<T>>,
@@ -125,7 +123,7 @@ public class TaintedNegativeSpeedChecker<H extends HeapValue<H>, T extends TypeV
                         if (signPart == SignLattice.NEG && taintPart.isAlwaysTainted())
                             tool.warnOn(c, "[COMBINED/DEFINITE] Speed is tainted and negative in " + fn);
                         else
-                            tool.warnOn(c, "[COMBINED/POSSIBLE] Speed may be tainted and/or negative in " + fn);
+                            tool.warnOn(c, "[COMBINED/POSSIBLE] Speed may be tainted and negative in " + fn);
                     }
                 }
             } catch (SemanticException e) {
@@ -134,10 +132,8 @@ public class TaintedNegativeSpeedChecker<H extends HeapValue<H>, T extends TypeV
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Check 2: general taint-in-sink analysis (mirrors TaintThreeLevelsChecker)
-    // -------------------------------------------------------------------------
 
+    // Check 2: general taint-in-sink analysis (mirrors TaintThreeLevelsChecker)
     private void checkSink(
             SemanticTool<
                     SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignTaintLattice>, TypeEnvironment<T>>,
@@ -207,10 +203,8 @@ public class TaintedNegativeSpeedChecker<H extends HeapValue<H>, T extends TypeV
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Helper: evaluate the product abstract value for a symbolic expression
-    // -------------------------------------------------------------------------
 
+    // Helper: evaluate the product abstract value for a symbolic expression
     private SignTaintLattice evalProduct(
             SemanticTool<
                     SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<SignTaintLattice>, TypeEnvironment<T>>,

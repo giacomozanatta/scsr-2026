@@ -22,16 +22,68 @@ import static it.unive.lisa.DefaultConfiguration.simpleDomain;
 
 public class ThreeTaintAnalysisTest {
 
-	String[] nameSources    = { "GetRequest", "readUserInput", "readCookie", "getCardNumber", "getCVV", "getBillingAddress" };
-	String[] nameSinks      = { "runQueryDB", "storeSession", "logAudit", "executeQuery", "executeUpdate", "chargeCard", "sendToGateway", "persistTransaction" };
-	String[] nameSanitizers = { "hashPassword", "validateUsername", "escapeSQL", "parameterize", "tokenizeCard", "normalizeAddress" };
+	// All possible sources/sinks/sanitizers from all IMP test files (merged) for three taint analysis
 
-	private final String INPUT_PATH = "/taint/three-taint/three-taint.imp";
+	String[] nameSources = {
+			"GetRequest",
+			"readUserInput",
+			"readCookie",
+			"getCardNumber",
+			"getCVV",
+			"getBillingAddress",
+			"getExternalRequest",
+			"getInternalToken",
+			"getUserInput",
+			"sourceSerializedObject",
+			"readSecretFile",
+			"source1"
+	};
+
+	String[] nameSinks = {
+			"runQueryDB",
+			"storeSession",
+			"logAudit",
+			"executeQuery",
+			"executeUpdate",
+			"chargeCard",
+			"sendToGateway",
+			"persistTransaction",
+			"db_execute",
+			"log_to_public_file",
+			"renderHtml",
+			"sendEmail",
+			"readFile",
+			"writeToDatabase",
+			"sendToExternalServer",
+			"executeSystemCommand",
+			"sink1"
+	};
+
+	String[] nameSanitizers = {
+			"hashPassword",
+			"validateUsername",
+			"escapeSQL",
+			"parameterize",
+			"tokenizeCard",
+			"normalizeAddress",
+			"basicSanitize",
+			"advancedEncrypt",
+			"sanitizeInput",
+			"escapeHtml",
+			"sanitizeJob",
+			"sanitizeParam",
+			"deserializePathJob",
+			"sanitizer1"
+	};
+
+	private final String INPUT_PATH_LOG4SHELL = "/taint/three-taint/1003406_log4shell_log_injection.imp";
+	private final String INPUT_PATH_PATH_TRAVERSAL = "/taint/three-taint/1003406_path_traversal.imp";
+	private final String INPUT_PATH_CMD_INJECTION = "/taint/three-taint/1003406_command_injection.imp";
 
 	@Test
 	public void testThreeLevelsTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH);
+		Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH_PATH_TRAVERSAL);
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();

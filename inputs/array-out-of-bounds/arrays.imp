@@ -1,12 +1,13 @@
 class Arrays {
 
-    // We consider the analysis is performed with a field-sensitive point based heap,
-    // so the heap tracks abstract identifiers for each concrete variable,
-    // including concrete indices for an array in the program.
-    // Example, for an array of size 3, x = arr[0] would have its abstract interval be [arr[0] value, arr[0] value].
-
-    // Alternative option would be field-sensitive point based heap (less precise) :
-    // Instead of generalizing all indices under one abstract identifier for the whole array,
+    // We consider the analysis is performed with a field-sensitive point-based heap.
+    // Each array index gets its own abstract heap identifier, so, for example, arr[0] = 10
+    // followed by x = arr[0] gives x the precise interval [10,10].
+    //
+    // The less precise alternative option would be field-insensitive point-based heap :
+    // all the indices of the same array share 1 abstract identifier, so reading arr[i] returns
+    // the join of all values ever written to that array (e.g. [10,14] if values 10...14 were stored
+    // at different indices
     // it generalizes x to be in [min(size of the array, min element in the array), max(array size, max element in the array)]
 
 
@@ -26,7 +27,7 @@ class Arrays {
 		def b = arr[1];
 		def c = arr[2];
 		def d = arr[3];
-		def f = arr[4];
+		def e = arr[4];
     }
 
     // -------- Test 2 : Literal access to out of bounds indexes --------

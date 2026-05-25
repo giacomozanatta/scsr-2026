@@ -1,0 +1,527 @@
+class WebClient {
+
+    /* Web application controller/client fetching pages.
+     * Purpose: prefix/suffix detection from
+     * complete URLs where both domains see the full string.
+     */
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP A : PREFIX checker fires, SUFFIX checker does NOT            */
+    /* ------------------------------------------------------------------ */
+
+    /* Fetch the home page of the app (http URL ending with an HTML page)
+     * prefix = "http://example.com/index.html" -> starts with "http://"
+     * suffix = "http://example.com/index.html" -> ends with ".html", NOT ".com"
+     *
+     * PREFIX : WARNING : starts with "http://"
+     * SUFFIX : no warning : ends with ".html"
+     */
+    getHomePage() {
+        def url = "http://example.com/index.html";
+        this.fetch(url);
+    }
+
+    /* Fetch the endpoint for the list of users (https URL ending with a REST endpoint path segment)
+     * prefix = "https://api.example.com/users" -> starts with "https://"
+     * suffix = "https://api.example.com/users" -> ends with "/users", NOT ".com"
+     *
+     * PREFIX : WARN ; starts with "https://"
+     * SUFFIX : no warn : ends with "/users"
+     */
+    getUsers() {
+        def url = "https://api.example.com/users";
+        this.fetch(url);
+    }
+
+    /* Fetch the safe address for the app (https URL with a .net domain, not .com)
+     * prefix starts with "https://", suffix ends with ".net".
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : no warn : ends with ".net"
+     */
+    fetchHttpsNet() {
+        def url = "https://api.example.net";
+        this.fetch(url);
+    }
+
+    /*
+     * Fetch the FTP URL with a .net domain.
+     * prefix = "ftp://files.example.net" -> does NOT start with "http(s)://"
+     * suffix = "ftp://files.example.net" -> ends with ".net", NOT ".com"
+     *
+     * PREFIX : no warning
+     * SUFFIX : no warning
+     *
+     */
+    fetchFtpNet() {
+        def url = "ftp://files.example.net";
+        this.fetch(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP B : SUFFIX checker fires, PREFIX checker does NOT            */
+    /* ------------------------------------------------------------------ */
+
+    /* Fetch the FTP URL with a .com domain
+     * prefix = "ftp://files.example.com" -> does NOT start with "http(s)://"
+     * suffix = "ftp://files.example.com" -> ends with ".com"
+     *
+     * PREFIX : no warn
+     * SUFFIX : WARN
+     */
+    fetchFtpCom() {
+        def url = "ftp://files.example.com";
+        this.fetch(url);
+    }
+
+    /* DNS resolution with a bare .com domain (no scheme at all).
+     * prefix = "example.com" -> does NOT start with "http(s)://"
+     * suffix = "example.com" -> ends with ".com"
+     *
+     * PREFIX: no warn, no http(s):// prefix
+     * SUFFIX: WARN : ends with ".com"
+     */
+    resolveDotCom() {
+        def domain = "example.com";
+        this.resolve(domain);
+    }
+
+    /* DNS resolution with a bare .net domain (no scheme).
+     * prefix = "example.net" -> does NOT start with "http(s)://"
+     * suffix = "example.net" -> ends with ".net", NOT ".com"
+     *
+     * PREFIX : no warn, no http(s):// prefix
+     * SUFFIX : no warn, ends with ".net"
+     *
+     * Control case for resolveDotCom: same pattern, different TLD, no warn.
+     */
+    resolveDotNet() {
+        def domain = "example.net";
+        this.resolve(domain);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP C : BOTH checkers fire                                        */
+    /* ------------------------------------------------------------------ */
+
+    /* Fetch the basic .com url for the website
+     * Full http URL ending exactly in .com.
+     *
+     * PREFIX : WARN, starts with "http://"
+     * SUFFIX : WARN, ends with ".com"
+     */
+    fetchHttpCom() {
+        def url = "http://example.com";
+        this.fetch(url);
+    }
+
+    /* Fetch the safe (https) .com url for the website
+     *
+     * PREFIX : WARN, starts with "https://"
+     * SUFFIX : WARN, ends with ".com"
+     */
+    fetchHttpsCom() {
+        def url = "https://example.com";
+        this.fetch(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP D : NEITHER checker fires                                     */
+    /* ------------------------------------------------------------------ */
+
+    /* Retrieve a local data file path
+     * Local file path, no scheme, no .com.
+     *
+     * PREFIX : no warn
+     * SUFFIX : no warn
+     */
+    fetchLocal() {
+        def path = "/local/resource/data";
+        this.fetch(path);
+    }
+
+    /* Fetch the address to an internal service address
+     *
+     * PREFIX: no warn
+     * SUFFIX : no warn
+     */
+    fetchInternal() {
+        def addr = "internal-service:8080/health";
+        this.fetch(addr);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    // Sink / helper
+    /* ------------------------------------------------------------------ */
+
+    fetch(url) {
+        return url;
+    }
+
+    resolve(domain) {
+        return domain;
+    }
+}
+
+class ApiGateway {
+
+    /* API gateway that receives requests and routes them.
+     * Purpose: stress-test what the prefix and suffix domains compute when
+     * strings are partially or wholly unknown at analysis time, and what
+     * information survives (or is lost) at branch join points.
+     */
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP A : STRING CONCATENATION                                     */
+    /* ------------------------------------------------------------------ */
+
+    /* Dispatch using a known https scheme with an unknown host
+     * prefix = "https://" + host -> starts with "https://"
+     * suffix = "https://" + host -> unknown end value
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : no warn : suffix is unknown
+     */
+    dispatchKnownSchemeUnknownHost(host) {
+        def url = "https://" + host;
+        this.dispatch(url);
+    }
+
+    /* Dispatch using an unknown host with a fixed .com suffix
+     * prefix = host + ".com" -> unknown start value
+     * suffix = host + ".com" -> ends with ".com"
+     *
+     * PREFIX : no warn : prefix is unknown
+     * SUFFIX : WARN : ends with ".com"
+     */
+    dispatchUnknownHostDotCom(host) {
+        def url = host + ".com";
+        this.dispatch(url);
+    }
+
+    /* Dispatch using a fully constructed https .com URL
+     * prefix = "https://" + host + ".com" -> starts with "https://"
+     * suffix = "https://" + host + ".com" -> ends with ".com"
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : WARN : ends with ".com"
+     */
+    dispatchFullConstruction(host) {
+        def scheme = "https://";
+        def url = scheme + host + ".com";
+        this.dispatch(url);
+    }
+
+    /* Dispatch to a versioned API endpoint with an unknown version suffix
+     * prefix = "https://api.example.com/v" + version -> starts with "https://"
+     * suffix = "https://api.example.com/v" + version -> unknown end value
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : no warn : suffix is unknown
+     */
+    dispatchVersionedEndpoint(version) {
+        def base = "https://api.example.com/v";
+        def endpoint = base + version;
+        this.dispatch(endpoint);
+    }
+
+    /* Dispatch using an unknown subdomain under a fixed .example.com root
+     * prefix = "https://" + subdomain + ".example.com" -> starts with "https://"
+     * suffix = "https://" + subdomain + ".example.com" -> ends with ".com"
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : WARN : ends with ".com"
+     */
+    dispatchSubdomain(subdomain) {
+        def url = "https://" + subdomain + ".example.com";
+        this.dispatch(url);
+    }
+
+    /* Dispatch using completely unknown scheme, host, and path values
+     * prefix = scheme + host + path -> unknown start value
+     * suffix = scheme + host + path -> unknown end value
+     *
+     * PREFIX : no warn : prefix is unknown
+     * SUFFIX : no warn : suffix is unknown
+     */
+    dispatchFullyUnknown(scheme, host, path) {
+        def url = scheme + host + path;
+        this.dispatch(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP B : BRANCH JOINS                                             */
+    /* ------------------------------------------------------------------ */
+
+    /* Dispatch one of two https .com URLs selected by environment
+     * Joined prefix = "https://api." -> starts with "https://"
+     * Joined suffix = ".com"
+     *
+     * PREFIX : WARN : joined prefix starts with "https://"
+     * SUFFIX : WARN : joined suffix ends with ".com"
+     */
+    dispatchByEnvironment(isProd) {
+        def url = "https://api.staging.com";
+        if (isProd)
+            url = "https://api.prod.com";
+        else
+            url = "https://api.staging.com";
+        this.dispatch(url);
+    }
+
+    /* Dispatch either an https URL or an http URL
+     * "https://secure.example.com" vs "http://legacy.example.com"
+     * Joined prefix = "http" -> missing "://"
+     * Joined suffix = ".com"
+     *
+     * PREFIX : no warn : joined prefix does not contain "http://"
+     * SUFFIX : WARN : joined suffix ends with ".com"
+     *
+     * Control-flow merge case where both branches individually match
+     * the prefix checker, but the join loses enough precision to silence it.
+     */
+    dispatchByProtocol(useSecure) {
+        def url = "http://legacy.example.com";
+        if (useSecure)
+            url = "https://secure.example.com";
+        else
+            url = "http://legacy.example.com";
+        this.dispatch(url);
+    }
+
+    /* Dispatch either an external https .com URL or an internal address
+     * "https://api.example.com" vs "internal-service:9090"
+     * Joined prefix = unknown
+     * Joined suffix = unknown
+     *
+     * PREFIX : no warn : prefix lost at join
+     * SUFFIX : no warn : suffix lost at join
+     */
+    dispatchOrInternal(useExternal) {
+        def url = "internal-service:9090";
+        if (useExternal)
+            url = "https://api.example.com";
+        else
+            url = "internal-service:9090";
+        this.dispatch(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP C : INTERPROCEDURAL DISPATCH CHAINS                          */
+    /* ------------------------------------------------------------------ */
+
+    /* Delegate to dispatchVersionedEndpoint
+     * Warning behavior occurs inside the callee dispatch call.
+     *
+     * PREFIX : WARN : starts with "https://"
+     * SUFFIX : no warn : suffix is unknown
+     */
+    proxyVersionedCall(version) {
+        this.dispatchVersionedEndpoint(version);
+    }
+
+    /* Validate and dispatch the same https .com URL
+     * prefix = "https://payments.example.com" -> starts with "https://"
+     * suffix = "https://payments.example.com" -> ends with ".com"
+     *
+     * PREFIX : WARN on validate ; WARN on dispatch
+     * SUFFIX : WARN on validate ; WARN on dispatch
+     */
+    validateThenDispatch() {
+        def url = "https://payments.example.com";
+        this.validate(url);
+        this.dispatch(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    // Sink / helper
+    /* ------------------------------------------------------------------ */
+
+    dispatch(url) {
+        return url;
+    }
+
+    validate(url) {
+        return url;
+    }
+
+    redirect(target) {
+        return target;
+    }
+}
+
+
+class Mailer {
+
+    /* Mail delivery utility handling links, addresses, and tracking data.
+     * Purpose: demonstrate edge cases and non-obvious checker behavior
+     * involving paths after .com, non-URL strings, loop-built URLs,
+     * and reassignment before sink calls.
+     */
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP A : PATH SEGMENT AFTER .com CHANGES SUFFIX MATCH             */
+    /* ------------------------------------------------------------------ */
+
+    /* Send an unsubscribe link ending with a path after .com
+     * prefix = base + ".com/unsubscribe" -> unknown start value
+     * suffix = base + ".com/unsubscribe" -> ends with "/unsubscribe"
+     *
+     * PREFIX : no warn : prefix is unknown
+     * SUFFIX : no warn : does not end with ".com"
+     *
+     * Control case showing that adding a path segment after ".com"
+     * prevents the suffix checker from firing.
+     */
+    sendUnsubscribeLink(base) {
+        def link = base + ".com/unsubscribe";
+        this.sendEmail(link);
+    }
+
+    /* Send a tracked pixel URL with an unknown tracking identifier
+     * prefix = "http://track.mailer.com/open?id=" + trackingId -> starts with "http://"
+     * suffix = "http://track.mailer.com/open?id=" + trackingId -> unknown end value
+     *
+     * PREFIX : WARN : starts with "http://"
+     * SUFFIX : no warn : suffix is unknown
+     */
+    sendTrackedPixel(trackingId) {
+        def pixel = "http://track.mailer.com/open?id=" + trackingId;
+        this.sendEmail(pixel);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP B : NON-URL STRINGS THAT MATCH SYNTACTICALLY                 */
+    /* ------------------------------------------------------------------ */
+
+    /* Send a plain email address ending with .com
+     * prefix = "user@example.com" -> does NOT start with "http(s)://"
+     * suffix = "user@example.com" -> ends with ".com"
+     *
+     * PREFIX : no warn : not an http(s) URL
+     * SUFFIX : WARN : ends with ".com"
+     *
+     * Demonstrates that the suffix checker is purely syntactic
+     * and does not distinguish URLs from email addresses.
+     */
+    sendToEmailAddress() {
+        def recipient = "user@example.com";
+        this.sendEmail(recipient);
+    }
+
+    /* Send an RFC 5322 display-name email header
+     * prefix = "John Doe <john@company.com>" -> does NOT start with "http(s)://"
+     * suffix = "John Doe <john@company.com>" -> ends with ".com>", NOT ".com"
+     *
+     * PREFIX : no warn
+     * SUFFIX : no warn : trailing ">" prevents ".com" match
+     */
+    sendWithDisplayName() {
+        def header = "John Doe <john@company.com>";
+        this.sendEmail(header);
+    }
+
+    /* Send a reply-to header ending in .net
+     * prefix = "noreply@service.net" -> does NOT start with "http(s)://"
+     * suffix = "noreply@service.net" -> ends with ".net"
+     *
+     * PREFIX : no warn
+     * SUFFIX : no warn : ends with ".net"
+     */
+    sendReplyTo() {
+        def replyTo = "noreply@service.net";
+        this.sendEmail(replyTo);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP C : LOOP-BUILT URLS                                          */
+    /* ------------------------------------------------------------------ */
+
+    /* Send tracked URLs built repeatedly inside a loop
+     * prefix = "http://track.mailer.com/?id=" + "i" -> starts with "http://"
+     * suffix = "http://track.mailer.com/?id=" + "i" -> unknown after widening
+     *
+     * PREFIX : WARN on sendEmail inside loop : starts with "http://"
+     * SUFFIX : no warn : suffix becomes unknown after widening
+     */
+    sendBulkTracked(n) {
+        def i = 0;
+        def concat = "";
+        while (i < n) {
+            concat = concat + "i"; // looks awful but IMP doesn't seem to support concatenation of string AND an integer so we'll count by adding "i"s
+            def url = "http://track.mailer.com/?id="+concat;
+            this.sendEmail(url);
+            i = i + 1;
+        }
+    }
+
+    /* Send the same static https .com URL during every loop iteration
+     * prefix = "https://newsletter.mailer.com" -> starts with "https://"
+     * suffix = "https://newsletter.mailer.com" -> ends with ".com"
+     *
+     * PREFIX : WARN on sendEmail inside loop : starts with "https://"
+     * SUFFIX : WARN on sendEmail inside loop : ends with ".com"
+     */
+    sendBulkStatic(n) {
+        def i = 0;
+        while (i < n) {
+            def url = "https://newsletter.mailer.com";
+            this.sendEmail(url);
+            i = i + 1;
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* GROUP D : STRING REASSIGNMENT BEFORE THE SINK                      */
+    /* ------------------------------------------------------------------ */
+
+    /* Reassign an https .com URL before sending
+     * Initial value overwritten by "/local/unsubscribe" before sink call.
+     *
+     * PREFIX : no warn : final value is a local path
+     * SUFFIX : no warn : final value does not end with ".com"
+     */
+    sendReassigned() {
+        def url = "https://click.mailer.com";
+        url = "/local/unsubscribe";
+        this.sendEmail(url);
+    }
+
+    /* Send a URL before reassignment, then send a local path afterward
+     * First call sees "https://click.mailer.com"
+     * Second call sees "/local/fallback"
+     *
+     * PREFIX : WARN on first sendEmail ; no warn on second
+     * SUFFIX : WARN on first sendEmail ; no warn on second
+     */
+    sendBeforeAndAfterReassign() {
+        def url = "https://click.mailer.com";
+        this.sendEmail(url);
+        url = "/local/fallback";
+        this.sendEmail(url);
+    }
+
+
+    /* ------------------------------------------------------------------ */
+    // Sink / helper
+    /* ------------------------------------------------------------------ */
+
+    sendEmail(content) {
+        return content;
+    }
+
+    log(msg) {
+        return msg;
+    }
+}

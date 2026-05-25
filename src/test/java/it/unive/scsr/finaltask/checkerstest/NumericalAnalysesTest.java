@@ -25,7 +25,7 @@ public class NumericalAnalysesTest {
 
     private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/intervals/div-by-zero.imp";
     private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/div-by-zero-pentagon.imp";
-    private final String INPUT_PATH_OVERFLOW = "overflows/overflows.imp";
+    private final String INPUT_PATH_OVERFLOW = "overflows/876957-overflow.imp";
 
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {

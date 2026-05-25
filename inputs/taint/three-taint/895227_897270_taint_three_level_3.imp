@@ -1,6 +1,5 @@
 class PossibleTaintTest {
 
-    @lisa.taint.Sink
     executeSystemCommand(cmd) {
         return 0;
     }

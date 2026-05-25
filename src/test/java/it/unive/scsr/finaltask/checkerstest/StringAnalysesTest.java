@@ -21,7 +21,7 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class StringAnalysesTest {
 
-    private final String INPUT_PATH_STRINGS = "strings/strings.imp";
+    private final String INPUT_PATH_STRINGS = "strings/1003406_strings.imp";
 	
     @Test
     public void testStringPrefixAnalysis() throws ParsingException, AnalysisException {

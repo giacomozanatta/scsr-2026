@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Unified semantic check for the ExtendedSign × TaintThreeLevels product domain.
+ * Unified semantic check for the ExtendedSign x TaintThreeLevels product domain.
  * We will consider that "moveForward" functions to "setSpeed" are sinks and we want to
  * check both if the speed is correctly set non-negative, and if it's tainted or not.
  *
@@ -129,8 +129,10 @@ public class TaintedNegativeSpeedExtSignChecker<H extends HeapValue<H>, T extend
                     if (possiblyNegative && possiblyTainted) {
                         if (signPart == ExtendedSignLattice.NEG && taintPart.isAlwaysTainted())
                             tool.warnOn(c, "[COMBINED/DEFINITE] Speed is tainted and negative in " + fn);
+                        else if (signPart == ExtendedSignLattice.NEGZERO && taintPart.isAlwaysTainted())
+                            tool.warnOn(c, "[COMBINED/DEFINITE] Speed is tainted and negative or zero in " + fn);
                         else
-                            tool.warnOn(c, "[COMBINED/POSSIBLE] Speed may be tainted and/or negative in " + fn);
+                            tool.warnOn(c, "[COMBINED/POSSIBLE] Speed may be tainted and negative in " + fn);
                     }
                 }
             } catch (SemanticException e) {

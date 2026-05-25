@@ -75,13 +75,59 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 			MathNumber l2 = right.i.getLow();
 			
 			return new IntervalLattice(l1.add(l2), u1.add(u2));
-			
+
 		} else if (expression.getOperator() instanceof MultiplicationOperator) {
-			// TODO: homework
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber u1 = left.i.getHigh();
+			MathNumber l2 = right.i.getLow();
+			MathNumber u2 = right.i.getHigh();
+
+			// All four corner products — needed because of negative numbers
+			MathNumber ll = l1.multiply(l2);
+			MathNumber lu = l1.multiply(u2);
+			MathNumber ul = u1.multiply(l2);
+			MathNumber uu = u1.multiply(u2);
+
+			// Result is [min of all corners, max of all corners]
+			MathNumber lower = ll.min(lu).min(ul).min(uu);
+			MathNumber upper = ll.max(lu).max(ul).max(uu);
+
+			return new IntervalLattice(lower, upper);
+
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
-			// TODO: homework
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber u1 = left.i.getHigh();
+			MathNumber l2 = right.i.getLow();
+			MathNumber u2 = right.i.getHigh();
+
+			// [l1,u1] - [l2,u2] = [l1-u2, u1-l2]
+			return new IntervalLattice(l1.subtract(u2), u1.subtract(l2));
+
 		} else if (expression.getOperator() instanceof DivisionOperator) {
-			// TODO: homework
+
+			MathNumber l2 = right.i.getLow();
+			MathNumber u2 = right.i.getHigh();
+
+			// If 0 is inside the divisor interval, result is unknown
+			MathNumber zero = new MathNumber(0);
+			if (l2.leq(zero) && zero.leq(u2))
+				return IntervalLattice.TOP;
+
+			MathNumber l1 = left.i.getLow();
+			MathNumber u1 = left.i.getHigh();
+
+			// Same corner approach as multiplication
+			MathNumber ll = l1.divide(l2);
+			MathNumber lu = l1.divide(u2);
+			MathNumber ul = u1.divide(l2);
+			MathNumber uu = u1.divide(u2);
+
+			MathNumber lower = ll.min(lu).min(ul).min(uu);
+			MathNumber upper = ll.max(lu).max(ul).max(uu);
+
+			return new IntervalLattice(lower, upper);
 		}
 		
 		return IntervalLattice.TOP;

@@ -25,6 +25,21 @@ import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLattice> {
 
+	/*
+	 * Real interval abstract domain implementation. Each method maps
+	 * concrete numeric operations to safe interval approximations.
+	 *
+	 * Key concepts used here:
+	 * - TOP: unknown interval (could be any real number)
+	 * - BOTTOM: inconsistent / unreachable state
+	 * - Intervals are closed [low, high]
+	 *
+	 * The implementation tries to be conservative: when exact
+	 * information cannot be determined (division by intervals
+	 * containing zero, remainder with unbounded operands, etc.),
+	 * it returns TOP or BOTTOM as appropriate.
+	 */
+
 	@Override
 	public RealIntervalLattice top() {
 		return RealIntervalLattice.TOP;
@@ -41,8 +56,10 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 		Object value = constant.getValue();
 		if (value instanceof Number) {
 			double number = ((Number) value).doubleValue();
+			// NaN cannot be represented as a precise interval -> conservatively TOP
 			if (Double.isNaN(number))
 				return RealIntervalLattice.TOP;
+			// Represent concrete numeric constant as the singleton interval [n, n]
 			return new RealIntervalLattice(number);
 		}
 		return RealIntervalLattice.TOP;
@@ -53,6 +70,7 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 			SemanticOracle oracle) throws SemanticException {
 		if (arg.isBottom())
 			return RealIntervalLattice.BOTTOM;
+		// Numeric negation flips the sign of the interval and swaps bounds
 		if (expression.getOperator() == NumericNegation.INSTANCE)
 			return new RealIntervalLattice(-arg.getHigh(), -arg.getLow());
 		return RealIntervalLattice.TOP;
@@ -66,8 +84,11 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 
 		BinaryOperator op = expression.getOperator();
 		if (op instanceof AdditionOperator)
+			// Addition: add lower bounds and upper bounds respectively
 			return new RealIntervalLattice(left.getLow() + right.getLow(), left.getHigh() + right.getHigh());
 		if (op instanceof SubtractionOperator)
+			// Subtraction: left - right -> low = left.low - right.high,
+			// high = left.high - right.low (conservative bounds)
 			return new RealIntervalLattice(left.getLow() - right.getHigh(), left.getHigh() - right.getLow());
 		if (op instanceof MultiplicationOperator)
 			return multiply(left, right);
@@ -86,6 +107,9 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 
 		BinaryOperator op = expression.getOperator();
 		if (op == ComparisonEq.INSTANCE) {
+			// Equality: if intervals are disjoint -> definitely false.
+			// If both are exact singletons with same value -> definitely true.
+			// Otherwise unknown.
 			if (left.getHigh() < right.getLow() || right.getHigh() < left.getLow())
 				return Satisfiability.NOT_SATISFIED;
 			if (left.getLow() == left.getHigh() && left.getLow() == right.getLow() && right.getLow() == right.getHigh())
@@ -93,6 +117,7 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 			return Satisfiability.UNKNOWN;
 		}
 		if (op == ComparisonNe.INSTANCE) {
+			// Not-equals is the negation of equals. Compute equals then negate.
 			Satisfiability eq;
 			if (left.getHigh() < right.getLow() || right.getHigh() < left.getLow())
 				eq = Satisfiability.NOT_SATISFIED;
@@ -104,12 +129,18 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 			return eq.negate();
 		}
 		if (op == ComparisonGt.INSTANCE)
+			// left > right: definitely true when left.low > right.high,
+			// definitely false when left.high <= right.low
 			return compare(left.getLow() > right.getHigh(), left.getHigh() <= right.getLow());
 		if (op == ComparisonGe.INSTANCE)
+			// left >= right: similar logic but using >= and <
 			return compare(left.getLow() >= right.getHigh(), left.getHigh() < right.getLow());
 		if (op == ComparisonLt.INSTANCE)
+			// left < right: definitely true when left.high < right.low,
+			// definitely false when left.low >= right.high
 			return compare(left.getHigh() < right.getLow(), left.getLow() >= right.getHigh());
 		if (op == ComparisonLe.INSTANCE)
+			// left <= right: analogous to >= case
 			return compare(left.getHigh() <= right.getLow(), left.getLow() > right.getHigh());
 		return Satisfiability.UNKNOWN;
 	}
@@ -123,16 +154,24 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 	}
 
 	private static RealIntervalLattice multiply(RealIntervalLattice left, RealIntervalLattice right) {
+		// Multiplication of intervals requires considering all combinations
+		// of bounds because sign changes can move extremes to different products.
+		// If either side is exactly zero, result is exact zero.
 		if (left.isZero() || right.isZero())
 			return RealIntervalLattice.ZERO;
 		double a = multiplyBound(left.getLow(), right.getLow());
 		double b = multiplyBound(left.getLow(), right.getHigh());
 		double c = multiplyBound(left.getHigh(), right.getLow());
 		double d = multiplyBound(left.getHigh(), right.getHigh());
+		// The resulting interval is [min(all products), max(all products)]
 		return new RealIntervalLattice(min(a, b, c, d), max(a, b, c, d));
 	}
 
 	private static RealIntervalLattice divide(RealIntervalLattice left, RealIntervalLattice right) {
+		// Division must handle division by zero carefully.
+		// If divisor is exactly zero -> inconsistent (BOTTOM).
+		// If divisor interval contains zero -> result can be unbounded -> TOP.
+		// Otherwise, compute division as multiplication by reciprocal interval.
 		if (right.isZero())
 			return RealIntervalLattice.BOTTOM;
 		if (right.containsZero())
@@ -142,6 +181,11 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 	}
 
 	private static RealIntervalLattice remainder(RealIntervalLattice left, RealIntervalLattice right) {
+		// Remainder (mod) semantics: result magnitude is bounded by the maximum
+		// absolute value of the divisor bounds. Handle edge cases conservatively:
+		// - divisor zero -> BOTTOM
+		// - left zero -> exact zero
+		// - divisor containing zero or unbounded -> TOP (cannot safely bound)
 		if (right.isZero())
 			return RealIntervalLattice.BOTTOM;
 		if (left.isZero())
@@ -149,10 +193,13 @@ public class RealInterval implements BaseNonRelationalValueDomain<RealIntervalLa
 		if (right.containsZero() || Double.isInfinite(right.getLow()) || Double.isInfinite(right.getHigh()))
 			return RealIntervalLattice.TOP;
 		double bound = Math.max(Math.abs(right.getLow()), Math.abs(right.getHigh()));
+		// Remainder lies in [-bound, bound]
 		return new RealIntervalLattice(-bound, bound);
 	}
 
 	private static double multiplyBound(double left, double right) {
+		// Small helper: if one operand is exact zero, return zero to avoid
+		// producing -0.0 or inf/nan artifacts in boundary calculations.
 		if (left == 0.0 || right == 0.0)
 			return 0.0;
 		return left * right;

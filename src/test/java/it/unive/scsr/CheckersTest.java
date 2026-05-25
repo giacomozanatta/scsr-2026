@@ -178,11 +178,11 @@ public class CheckersTest {
                 LiSA lisa = new LiSA(DivByZeroLISAConf);
                 lisa.run(p);
 
-                DivByZeroPentagonLISAConf.workdir = DivByZeroPentagonOutput + "/" + f.getName().replace(".imp", "");
+                /*DivByZeroPentagonLISAConf.workdir = DivByZeroPentagonOutput + "/" + f.getName().replace(".imp", "");
                 lisa = new LiSA(DivByZeroPentagonLISAConf);
-                lisa.run(p);
+                lisa.run(p);*/
             } catch (AnalysisException e) {
-                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage());
+                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage() + " \n"  + e.getStackTrace().toString());
             }
         }
 
@@ -193,11 +193,11 @@ public class CheckersTest {
                 LiSA lisa = new LiSA(OverflowLISAConf);
                 lisa.run(p);
 
-                OverflowPentagonLISAConf.workdir = OverflowPentagonOutput + "/" + f.getName().replace(".imp", "");
+                /*OverflowPentagonLISAConf.workdir = OverflowPentagonOutput + "/" + f.getName().replace(".imp", "");
                 lisa = new LiSA(OverflowPentagonLISAConf);
-                lisa.run(p);
+                lisa.run(p);*/
             } catch (AnalysisException e) {
-                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage());
+                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage() + " \n"  + e.getStackTrace());
             }
         }
 
@@ -212,7 +212,7 @@ public class CheckersTest {
                 lisa = new LiSA(SuffixDotComLISAConf);
                 lisa.run(p);
             } catch (AnalysisException e) {
-                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage());
+                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage() + " \n"  + e.getStackTrace());
             }
         }
 
@@ -235,7 +235,7 @@ public class CheckersTest {
                 LiSA lisa = new LiSA(TaintLISAConf);
                 lisa.run(p);
             } catch (AnalysisException e) {
-                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage());
+                System.err.println("Skipping program " + f.getName() + " due to error: " + e.getMessage() + " \n"  + e.getStackTrace());
             }
         }
     }

@@ -1,0 +1,32 @@
+class webDownloader {
+
+	download(url) {
+		return url;
+	}
+
+	fetch() {
+		this.download("http://example.com");
+	}
+}
+
+class emailService {
+
+	sendEmail(addr) {
+		return addr;
+	}
+
+	notify() {
+		this.sendEmail("user@example.com");
+	}
+}
+
+class fileLoader {
+
+	readFile(path) {
+		return path;
+	}
+
+	load() {
+		this.readFile("config.txt");
+	}
+}

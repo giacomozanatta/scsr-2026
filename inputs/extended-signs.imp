@@ -1,0 +1,28 @@
+class extendedSigns {
+
+	constants() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 7;
+		def nonzero = neg * pos;
+		return nonzero;
+	}
+
+	branches(b) {
+		def x = 0;
+		if (b)
+			x = x + 5;
+		else
+			x = x - 3;
+		return x;
+	}
+
+	guards(v) {
+		def x = v;
+		if (x >= 0)
+			x = x + 1;
+		else
+			x = -x;
+		return x;
+	}
+}

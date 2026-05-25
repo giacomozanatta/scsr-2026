@@ -1,0 +1,10 @@
+class normalizer {
+
+	rescale(value) {
+		def min = 10;
+		def max = 10;
+		def range = max - min;
+		def scaled = value / range;
+		return scaled;
+	}
+}

@@ -32,7 +32,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-divbyzero-interval";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -61,7 +61,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-divbyzero-pentagon";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -91,7 +91,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-8bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -121,7 +121,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-16bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -151,7 +151,7 @@ public class NumericalAnalysesTest {
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/overflow";
+        conf.workdir = "outputs/overflow-32bit";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -169,6 +169,51 @@ public class NumericalAnalysesTest {
         LiSA lisa = new LiSA(conf);
 
         // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
+
+    @Test
+    public void testDivByZeroAverage() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/divbyzero-average.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/divbyzero-average";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    @Test
+    public void testDivByZeroNormalizer() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/divbyzero-normalizer.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/divbyzero-normalizer";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    @Test
+    public void testDivByZeroSafeIncrement() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/divbyzero-safeIncrement.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/divbyzero-safeIncrement";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+
+        LiSA lisa = new LiSA(conf);
         lisa.run(program);
     }
 }

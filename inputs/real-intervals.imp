@@ -1,0 +1,28 @@
+class realIntervals {
+
+	// [-1.5, 0.0]: negative and zero float constants
+	negativeRange() {
+		def low = -1.5;
+		def zero = 0.0;
+		def sum = low + zero;
+		return sum;
+	}
+
+	// [0.0, 1.0]: unit interval refinement (widening in loop)
+	unitIntervalLoop(b) {
+		def x = 0.0;
+		while (b < 3) {
+			x = x + 0.1;
+			b = b + 1;
+		}
+		return x;
+	}
+
+	// [0.99, 98]: bounded positive floats and multiplication
+	boundedPositive() {
+		def a = 0.99;
+		def b = 98.0;
+		def product = a * b;
+		return product;
+	}
+}

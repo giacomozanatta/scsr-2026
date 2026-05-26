@@ -25,6 +25,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
     public static final MathNumber ONE = new MathNumber(1.0f);
     public static final IntervalRealLattice TOP = new IntervalRealLattice(MathNumber.MINUS_INFINITY, MathNumber.PLUS_INFINITY, 0);
+    public static final IntervalRealLattice ZERO = new IntervalRealLattice(MathNumber.ZERO, MathNumber.ZERO, 0);
     public static final IntervalRealLattice BOTTOM = new IntervalRealLattice(null, null, 0);
 
     public IntervalRealLattice(MathNumber low, MathNumber high, int wideningCounter) {

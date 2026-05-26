@@ -1,0 +1,35 @@
+class suffixLoop {
+
+	// Test 1: .com suffix in loop
+	loopDotCom(n) {
+		def i = 0;
+		while (i < n) {
+			def domain = "server" + i + ".com";
+			ping(domain);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	// Test 2: Alternating .com and other TLDs
+	alternatingTld(n) {
+		def i = 0;
+		while (i < n) {
+			def domain;
+			if (i % 2 == 0)
+				domain = "example" + i + ".com";
+			else
+				domain = "example" + i + ".org";
+			resolve(domain);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	// Test 3: .com suffix with concatenation
+	concatenationDotCom(base, tld) {
+		def domain = base + tld;
+		lookup(domain);
+		return domain;
+	}
+}

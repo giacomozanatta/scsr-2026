@@ -1,0 +1,37 @@
+class suffixConditional {
+
+	// Test 1: Conditional .com suffix
+	conditionalDotCom(useCom) {
+		def domain;
+		if (useCom)
+			domain = "example.com";
+		else
+			domain = "example.org";
+		lookup(domain);
+		return domain;
+	}
+
+	// Test 2: .com suffix in branch
+	branchDotCom(flag) {
+		def domain = "example.net";
+		if (flag)
+			domain = "example.com";
+		resolve(domain);
+		return domain;
+	}
+
+	// Test 3: Nested conditional .com
+	nestedConditional(isCommercial, isSecure) {
+		def domain;
+		if (isCommercial) {
+			if (isSecure)
+				domain = "secure.example.com";
+			else
+				domain = "example.com";
+		} else {
+			domain = "example.org";
+		}
+		connect(domain);
+		return domain;
+	}
+}

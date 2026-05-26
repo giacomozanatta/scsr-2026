@@ -1,0 +1,33 @@
+class overflowMultiplication {
+
+	// Test 1: Simple multiplication overflow
+	simpleOverflow() {
+		def a = 100000;
+		def b = 100000;
+		def result = a * b;
+		return result;
+	}
+
+	// Test 2: Multiplication overflow with negative
+	negativeOverflow() {
+		def a = -100000;
+		def b = 100000;
+		def result = a * b;
+		return result;
+	}
+
+	// Test 3: Multiplication in nested loop
+	nestedLoopOverflow(m, n) {
+		def product = 1;
+		def i = 0;
+		while (i < m) {
+			def j = 0;
+			while (j < n) {
+				product = product * 2;
+				j = j + 1;
+			}
+			i = i + 1;
+		}
+		return product;
+	}
+}

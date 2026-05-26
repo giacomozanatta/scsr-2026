@@ -1,0 +1,146 @@
+// ================================================================
+// STREAMING THROUGHPUT MONITOR — INTERVAL DOMAIN
+//
+// Scenario:
+// Network streaming servers (RTMP, HLS, DASH) continuously track
+// throughput by dividing transferred bytes by elapsed time windows
+// or segment frame counts.
+// If not coded safely, division-by-zero bugs could arise when:
+// - Two measurements land on the same clock tick (time delta = 0)
+// - A group of pictures (consecutive video frames grouped for compression & transmission)
+//  has no frames (empty or malformed manifest segment)
+// - A loop counter reaches 0 and is reused as divisor afterward
+//
+// Basically, any code that derives a rate as (bytes / time_delta)
+// without guarding against a zero delta is vulnerable.
+//
+// Definite-zero cases are excluded because LiSA's Pentagon domain crashes on them.
+//
+// The key Pentagon advantage shown here is the subtraction rule
+// in Pentagon.assign :
+// When r = x - y is processed and the upper-bounds component already records y < x
+// the interval of r is immediately intersected with [1, +INF], proving r > 0
+// without any constant bounds on x or y.
+//
+// This fires only when the assignment happens AFTER the assume that
+// established the relational bound (inside a guard branch for example)
+// ================================================================
+
+class ThroughputMonitor {
+
+    // -----------------------------------------------------------------------
+    // Compute raw throughput from byte count and elapsed ticks.
+    // Both parameters come from untrusted external sources (packet headers
+    // and OS clock), so both are TOP.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] POSSIBLE warning
+    // -----------------------------------------------------------------------
+    rawThroughput(bytes, delta) {
+        def throughput = bytes / delta;
+        return throughput;
+    }
+
+    // -----------------------------------------------------------------------
+    // Throughput properly guarded with if (delta > 0) -> narrows delta's interval
+    // to [1, +INF].
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] No warning
+    // -----------------------------------------------------------------------
+    guardedThroughput(bytes, delta) {
+        def rate = 0;
+        if (delta > 0) {
+            rate = bytes / delta;
+        }
+        return rate;
+    }
+
+    // -----------------------------------------------------------------------
+    // Loop falling to 0 : a packet-window counter decrements from its
+    // initial value down to 0. After the loop, the counter is mistakenly
+    // reused as the divisor.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] POSSIBLE warning (count widened to [-INF, 0])
+    // -----------------------------------------------------------------------
+    windowDrainAverage(total, window_size) {
+        def count = window_size;
+        while (count > 0) {
+            count = count - 1;
+        }
+        def avg = total / count;
+        return avg;
+    }
+
+    // -----------------------------------------------------------------------
+    // Per-frame bit allocation iterating backward over GOP (Group of Pictures) frames.
+    // The loop condition while (i > 0) refines i to [1, +INF] inside the body.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] No warning (loop guard forces i in [1,+INF] inside the body)
+    // -----------------------------------------------------------------------
+    perFrameAllocation(budget, gop_size) {
+        def i = gop_size;
+        def acc = 0;
+        while (i > 0) {
+            def alloc = budget / i;
+            acc = acc + alloc;
+            i = i - 1;
+        }
+        return acc;
+    }
+
+    // -----------------------------------------------------------------------
+    // Sliding-window average where the window GROWS from 1.
+    // The abstract interval of w starts at [1,1]; widening gives [1, +INF]
+    // because the lower bound never drops below 1. After the loop w is in
+    // [1, +INF], so division is safe for both Interval and Pentagon.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] No warning
+    // -----------------------------------------------------------------------
+    growingWindowAverage(total, max_window) {
+        def w = 1;
+        while (w < max_window) {
+            w = w + 1;
+        }
+        def avg = total / w;
+        return avg;
+    }
+
+    // -----------------------------------------------------------------------
+    // Time-delta computed BEFORE the guard on current > last.
+    // current and last are TOP, so delta is TOP too.
+    // EXPECT:
+    // [INTERVAL & PENTAGON] POSSIBLE warning
+    // -----------------------------------------------------------------------
+    throughputDeltaBeforeGuard(bytes, current, last) {
+        def delta = current - last;
+        def rate = 0;
+        if (current > last) {
+            rate = bytes / delta;
+        }
+        return rate;
+    }
+
+    // -----------------------------------------------------------------------
+    // Time-delta computed INSIDE the guard on current > last.
+    //
+    // current and last are still TOP, so delta = current - last is also TOP.
+    // Interval domain can't refine better than that, but Pentagon can.
+    //
+    // EXPECT:
+    // [INTERVAL]  POSSIBLE warning on rate = bytes / delta (delta = TOP)
+    // [PENTAGON]  NO warning (delta proven in [1,+INF] via subtraction rule)
+    // -----------------------------------------------------------------------
+    throughputDeltaInsideGuard(bytes, current, last) {
+        def rate = 0;
+        if (current > last) {
+            def delta = current - last;
+            rate = bytes / delta;
+        }
+        return rate;
+    }
+
+}

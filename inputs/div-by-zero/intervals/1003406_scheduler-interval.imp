@@ -1,0 +1,138 @@
+// ================================================================
+// REAL-TIME TASK SCHEDULER — PENTAGON DOMAIN
+//
+// Scenario:
+// Real-time operating systems like FreeRTOS or Zephyr assign
+// CPU time to tasks using a priority-based scheduler. Each task has:
+// - a runtime (how many ticks of CPU it needs per period)
+// - a period (how often it is allowed to run, in ticks)
+// - a priority (higher number = higher priority)
+//
+// CPU utilization of a task = runtime / period.
+// If a period of 0 is accepted (bad input validation or a bug), this crashes.
+// ================================================================
+
+
+class RtosScheduler {
+
+    // -----------------------------------------------------------------------
+    // Compute CPU utilization of one task.
+    // Both parameters are TOP
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] POSSIBLE warning
+    // -----------------------------------------------------------------------
+    computeUtilization(runtime, period) {
+        def util = runtime / period;
+        return util;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute CPU utilization of one task, safe version.
+    // Guarded branch narrows period to [1,+INF].
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] No warning
+    // -----------------------------------------------------------------------
+    guardedUtilization(runtime, period) {
+        def util = 0;
+        if (period > 0) {
+            util = runtime / period;
+        }
+        return util;
+    }
+
+    // -----------------------------------------------------------------------
+    // Priority-based nested scheduler
+    //
+    // Two nested while-loop guards each protect their own divisor:
+    //  priority > 0 refines priority to [1,+INF] in the outer body.
+    //  n > 0 refines n to [1,+INF] in the inner body.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] No warning
+    // -----------------------------------------------------------------------
+    priorityScheduler(total_time, max_priority, tasks_per_level) {
+        def priority = max_priority;
+        def acc = 0;
+        while (priority > 0) {
+            def time_slice = total_time / priority;
+            def n = tasks_per_level;
+            while (n > 0) {
+                def task_share = time_slice / n;
+                acc = acc + task_share;
+                n = n - 1;
+            }
+            priority = priority - 1;
+        }
+        return acc;
+    }
+
+    // -----------------------------------------------------------------------
+    // Conditional accumulation
+    // Count active tasks by incrementing a counter only when a task is
+    // active, then use the count as the divisor to compute the share
+    // of budget each active task receives.
+    //
+    // The counter active_count increments only when has_active is true.
+    // Since has_active is TOP, both branches of the if are
+    // reachable on every iteration. After the loop the counter may be 0.
+    //
+    // EXPECT:
+    // [INTERVAL & PENTAGON] POSSIBLE warning
+    // -----------------------------------------------------------------------
+    activeTaskShare(budget, n_slots, has_active) {
+        def active_count = 0;
+        def i = 0;
+        while (i < n_slots) {
+            if (has_active) {
+                active_count = active_count + 1;
+            }
+            i = i + 1;
+        }
+        def share = budget / active_count;
+        return share;
+    }
+
+    // -----------------------------------------------------------------------
+    // Misconfigured task: period is literally 0.
+    //
+    // EXPECT:
+    // [INTERVAL] DEFINITE warning
+    // -----------------------------------------------------------------------
+    zeroTaskPeriod(budget) {
+        def util = budget / 0;
+        return util;
+    }
+
+    // -----------------------------------------------------------------------
+    // Nested loop inner guards :
+    // Distribute budget across sub-ticks of a scheduling window.
+    //
+    // Outer loop: w grows from 1; each w represents one scheduling window.
+    // Inner loop: t iterates from 0 to w-1 (guard: t < w).
+    //
+    // The INNER loop guard while (t < w) gives Pentagon the knowledge
+    // that remaining is > 0
+    //
+    // EXPECT:
+    // [INTERVAL]  POSSIBLE warning
+    // [PENTAGON]  No warning (remaining = [1,+INF] via inner loop guard)
+    // -----------------------------------------------------------------------
+    nestedWindowScheduler(budget, n_windows) {
+        def w = 1;
+        def acc = 0;
+        while (w < n_windows) {
+            def t = 0;
+            while (t < w) {
+                def remaining = w - t;
+                def share = budget / remaining;
+                acc = acc + share;
+                t = t + 1;
+            }
+            w = w + 1;
+        }
+        return acc;
+    }
+
+}

@@ -23,8 +23,8 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class NumericalAnalysesTest {
 
-    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/intervals/div-by-zero.imp";
-    private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/div-by-zero-pentagon.imp";
+    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/intervals/1003406_stream_throughput-interval.imp";
+    private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/1003406_stream_throughput-pentagon.imp";
     private final String INPUT_PATH_OVERFLOW = "overflows/876957-overflow.imp";
 
     @Test
@@ -85,6 +85,7 @@ public class NumericalAnalysesTest {
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
+
 
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {

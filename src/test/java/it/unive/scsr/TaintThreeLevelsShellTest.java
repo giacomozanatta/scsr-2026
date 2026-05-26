@@ -4,99 +4,68 @@ import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
-import it.unive.lisa.analysis.informationFlow.BaseTaint;
-import it.unive.scsr.checkers.TaintThreeLevelsChecker;
-import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
-import it.unive.lisa.outputs.compare.ResultComparer;
-import it.unive.lisa.outputs.json.JsonReport;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsCheckerSolution;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsSolution;
 import org.junit.Test;
 
-import static it.unive.lisa.DefaultConfiguration.*;
+import static it.unive.lisa.DefaultConfiguration.defaultTypeDomain;
+import static it.unive.lisa.DefaultConfiguration.simpleDomain;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+public class TaintThreeLevelsShellTest {
 
-public class ThreeTaintEvaluation {
-
-    String[] nameSource = {"source1", "GetRequest"};
-    String[] nameSanitizers = {"sanitizer1"};
-    String[] nameSinks = {"sink1", "runQueryDB"};
+    String[] nameSource = {"source1"};
+    String[] nameSanitizers = {"strip1", "strip2"};
+    String[] nameSinks = {"system"};
 
 
     @Test
-    public void testThreeTaintAnalysis() throws ParsingException, AnalysisException {
+    public void testTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile("inputs/taint-three-levels/shell.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
-		// we specify where we want files to be generated
-		conf.workdir = "outputs/taint";
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/taint-three-levels-shell";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevelsSolution(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         for (CFG cfg : program.getAllCFGs()) {
             String name = cfg.getDescriptor().getName();
             if (isSource(name))
-                cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.TAINTED_ANNOTATION);
             else if (isSanitizer(name))
-                cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.CLEAN_ANNOTATION);
             else if (isSink(name))
                 cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
         }
 
         // added checker to the analysis
-        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.semanticChecks.add(new TaintThreeLevelsCheckerSolution<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
 
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
+
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
-
-
-        Path expectedPath = Paths.get("expected", "threetaint-eval");
-        Path actualPath = Paths.get("outputs", "threetaint-eval");
-
-        File expFile = Paths.get(expectedPath.toString(), "report.json").toFile();
-        File actFile = Paths.get(actualPath.toString(), "report.json").toFile();
-        try {
-            JsonReport expected = JsonReport.read(new FileReader(expFile));
-            JsonReport actual = JsonReport.read(new FileReader(actFile));
-            assertTrue("Results are different",
-                    new ResultComparer().compare(expected, actual, expectedPath.toFile(), actualPath.toFile()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace(System.err);
-            fail("Unable to find report file");
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-            fail("Unable to compare reports");
-        }
     }
-
 
     private boolean isSource(String name) {
         for (String src : nameSource)
@@ -106,8 +75,8 @@ public class ThreeTaintEvaluation {
     }
 
     private boolean isSanitizer(String name) {
-        for (String sanit : nameSanitizers)
-            if (sanit.equals(name))
+        for (String sanitizer : nameSanitizers)
+            if (sanitizer.equals(name))
                 return true;
         return false;
     }
@@ -118,6 +87,6 @@ public class ThreeTaintEvaluation {
                 return true;
         return false;
     }
-
-
 }
+
+

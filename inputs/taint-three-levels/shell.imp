@@ -1,0 +1,67 @@
+class shell {
+
+    // User input
+    source1() {
+        def input = 44;
+        return input;
+    }
+
+    // Mock sanitizer 1: strips shell
+    strip1(input) {
+        return input - "/bin/sh";
+    }
+
+    // Mock sanitizer 2: removes path traversal and sensitive file access
+    strip2(input) {
+        return input - "/etc/passwd" - "../";
+    }
+
+    // Sink
+    system(input) {
+        return input;
+    }
+
+    system_input_non_sanitized(req) {
+        def input = this.source1();
+        def result = this.system(input); // taint
+        return result;
+    }
+
+    system_input_sanitized_completely() {
+        def data = this.source1();
+        data = this.strip1(data);
+        data = this.strip2(data);
+        def result = this.system(data); // Clean
+        return result;
+    }
+
+    system_input_sanitized_conditional(req, q) {
+        def data = this.source1();
+        if (q > 0) {
+            data = this.strip1(data);
+        }
+        def result = this.system(data); // Possibly tainted
+        return result;
+    }
+
+   run_app(cmd, flag) {
+       def result = 0;
+
+       if (cmd == 1) {
+           result = this.source1();
+       }
+       if (cmd == 2) {
+           def data = this.source1();
+           if (flag > 0) {
+               data = this.strip1(data);
+           }
+           result = this.system(data); // Possibly tainted
+       }
+
+       if (cmd == 3) {
+           result = this.system(this.source1()); // Tainted
+       }
+
+       return result;
+   }
+}

@@ -41,12 +41,12 @@ public class DoubleInterval implements BaseNonRelationalValueDomain<DoubleInterv
     public DoubleIntervalLattice evalUnaryExpression(UnaryExpression expression, DoubleIntervalLattice arg, ProgramPoint pp,
                                                      SemanticOracle oracle) throws SemanticException {
 
-        if (arg.getLow() == null)
+        if (arg.low() == null)
             return DoubleIntervalLattice.BOTTOM;
 
         if (expression.getOperator() == NumericNegation.INSTANCE) {
-            MathNumber u = arg.getHigh();
-            MathNumber l = arg.getLow();
+            MathNumber u = arg.high();
+            MathNumber l = arg.low();
 
             return new DoubleIntervalLattice(u.multiply(MathNumber.MINUS_ONE), l.multiply(MathNumber.MINUS_ONE));
         }
@@ -58,14 +58,14 @@ public class DoubleInterval implements BaseNonRelationalValueDomain<DoubleInterv
     public DoubleIntervalLattice evalBinaryExpression(BinaryExpression expression, DoubleIntervalLattice left,
                                                       DoubleIntervalLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
-        if ((left.getLow() == null || left.getHigh() == null) || (right.getLow() == null || right.getHigh() == null))
+        if ((left.low() == null || left.high() == null) || (right.low() == null || right.high() == null))
             return DoubleIntervalLattice.BOTTOM;
 
-        MathNumber l1 = left.getLow();
-        MathNumber l2 = right.getLow();
+        MathNumber l1 = left.low();
+        MathNumber l2 = right.low();
 
-        MathNumber u1 = left.getHigh();
-        MathNumber u2 = right.getHigh();
+        MathNumber u1 = left.high();
+        MathNumber u2 = right.high();
 
         if (expression.getOperator() instanceof AdditionOperator) {
             return new DoubleIntervalLattice(l1.add(l2), u1.add(u2));
@@ -94,8 +94,8 @@ public class DoubleInterval implements BaseNonRelationalValueDomain<DoubleInterv
                 else if (includes(higher, lower))
                     return higher;
                 else {
-                    MathNumber l = lower.getLow().compareTo(higher.getLow()) > 0 ? higher.getLow() : lower.getLow();
-                    MathNumber u = lower.getHigh().compareTo(higher.getHigh()) < 0 ? higher.getHigh() : lower.getHigh();
+                    MathNumber l = lower.low().compareTo(higher.low()) > 0 ? higher.low() : lower.low();
+                    MathNumber u = lower.high().compareTo(higher.high()) < 0 ? higher.high() : lower.high();
                     return round(new DoubleIntervalLattice(l, u));
                 }
             }
@@ -107,15 +107,15 @@ public class DoubleInterval implements BaseNonRelationalValueDomain<DoubleInterv
     private DoubleIntervalLattice round(DoubleIntervalLattice doubleIntervalLattice) {
         if (doubleIntervalLattice.isBottom() || doubleIntervalLattice.isTop())
             return doubleIntervalLattice;
-        return new DoubleIntervalLattice(doubleIntervalLattice.getLow().roundDown(), doubleIntervalLattice.getLow().roundUp());
+        return new DoubleIntervalLattice(doubleIntervalLattice.low().roundDown(), doubleIntervalLattice.low().roundUp());
     }
 
     private DoubleIntervalLattice mul(DoubleIntervalLattice left, DoubleIntervalLattice right) {
-        MathNumber l1 = left.getLow();
-        MathNumber l2 = right.getLow();
+        MathNumber l1 = left.low();
+        MathNumber l2 = right.low();
 
-        MathNumber u1 = left.getHigh();
-        MathNumber u2 = right.getHigh();
+        MathNumber u1 = left.high();
+        MathNumber u2 = right.high();
 
         if (left.equals(DoubleIntervalLattice.ZERO) || right.equals(DoubleIntervalLattice.ZERO))
             return DoubleIntervalLattice.ZERO;
@@ -158,6 +158,6 @@ public class DoubleInterval implements BaseNonRelationalValueDomain<DoubleInterv
                             DoubleIntervalLattice b) {
         if (a.isBottom() || b.isBottom())
             return false;
-        return a.getLow().compareTo(b.getLow()) <= 0 && a.getHigh().compareTo(b.getHigh()) >= 0;
+        return a.low().compareTo(b.low()) <= 0 && a.high().compareTo(b.high()) >= 0;
     }
 }

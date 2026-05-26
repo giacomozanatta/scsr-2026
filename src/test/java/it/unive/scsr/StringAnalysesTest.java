@@ -25,13 +25,13 @@ public class StringAnalysesTest {
     @Test
     public void testStringPrefixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/strings/strings.imp");
+        Program program = IMPFrontend.processFile("inputs/strings/http-strings.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/strings/prefix";
+        conf.workdir = "outputs/strings/http-strings";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -55,13 +55,13 @@ public class StringAnalysesTest {
     @Test
     public void testStringSuffixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/strings/strings.imp");
+        Program program = IMPFrontend.processFile("inputs/strings/dotcom-strings.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/strings/suffix";
+        conf.workdir = "outputs/strings/dotcom-strings";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

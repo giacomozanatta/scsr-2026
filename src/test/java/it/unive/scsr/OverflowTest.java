@@ -10,7 +10,6 @@ import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
-import it.unive.scsr.checkers.DivByZeroIntervalChecker;
 import it.unive.scsr.checkers.OverflowIntervalChecker;
 import org.junit.Test;
 

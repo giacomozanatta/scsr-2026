@@ -188,16 +188,6 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
         }
 
         if (operator instanceof AdditionOperator) {
-            // Catch: (+∞) + (-∞) or (-∞) + (+∞)
-            if (
-                (l1.isPlusInfinity() && l2.isMinusInfinity()) || 
-                (l1.isMinusInfinity() && l2.isPlusInfinity()) ||
-                (u1.isPlusInfinity() && u2.isMinusInfinity()) || 
-                (u1.isMinusInfinity() && u2.isPlusInfinity())
-            ) {
-                return top();
-            }
-
             MathNumber lAdd = l1.add(l2);
             MathNumber uAdd = u1.add(u2);
 
@@ -205,16 +195,6 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
         }
 
         if (operator instanceof SubtractionOperator) {
-            // Catch: (+∞) - (+∞) or (-∞) - (-∞)
-            if (
-                (l1.isPlusInfinity() && u2.isPlusInfinity()) || 
-                (l1.isMinusInfinity() && u2.isMinusInfinity()) ||
-                (u1.isPlusInfinity() && l2.isPlusInfinity()) || 
-                (u1.isMinusInfinity() && l2.isMinusInfinity())
-            ) {
-                return top();
-            }
-
             MathNumber lSub = l1.subtract(u2);
             MathNumber uSub = u1.subtract(l2);
 

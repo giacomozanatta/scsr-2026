@@ -29,12 +29,25 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
     public IntervalRealLattice(MathNumber low, MathNumber high, int wideningCounter) {
         this.wideningCounter = wideningCounter;
-        if (low != null && high != null && low.compareTo(high) > 0) {
-            this.low = high;
-            this.high = low;
+
+        if (low == null && high == null) {
+            this.low = null;
+            this.high = null;
         } else {
-            this.low = low;
-            this.high = high;
+            Objects.requireNonNull(low, "Low bound must not be null");
+            Objects.requireNonNull(high, "High bound must not be null");
+            if (!low.isNaN() && !high.isNaN()) {
+                if (low.compareTo(high) <= 0) {
+                    this.low = low;
+                    this.high = high;
+                } else {
+                    this.low = high;
+                    this.high = low;
+                }
+            } else {
+            this.low = MathNumber.NaN;
+            this.high = MathNumber.NaN;
+            }
         }
     }
 
@@ -224,7 +237,6 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         return getLow().geq(other.getLow()) && getHigh().leq(other.getHigh());
     }
 
-    // TODO: Sound but loss of precision, we can try to use small increments...
     @Override
     public IntervalRealLattice wideningAux(IntervalRealLattice other) throws SemanticException {
         System.out.println(

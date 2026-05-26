@@ -35,9 +35,9 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class ColleaguesProgramsAnalysesTest {
     // Fields for TaintThreeLevels analysis
-    String[] nameSource = {"source1", "GetRequest", "getExternalRequest", "getInternalToken"};
-	String[] nameSanitizers = {"sanitizer1", "basicSanitize", "advancedEncrypt"};
-	String[] nameSinks = {"sink1", "runQueryDB", "db_execute", "log_to_public_file"};
+    String[] nameSource = {"source1", "GetRequest", "getExternalRequest", "getInternalToken", "getUserInput", "sourceSerializedObject"};
+	String[] nameSanitizers = {"sanitizer1", "basicSanitize", "advancedEncrypt", "sanitizeInput", "escapeHtml", "sanitizeParam"};
+	String[] nameSinks = {"sink1", "runQueryDB", "db_execute", "log_to_public_file", "runQueryDB", "renderHtml", "sendEmail", "deserializePathJob"};
 
     // Fields for sig
 

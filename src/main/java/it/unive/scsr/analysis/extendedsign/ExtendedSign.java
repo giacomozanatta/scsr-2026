@@ -28,9 +28,9 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
     public ExtendedSignLattice evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
         if (constant.getValue() instanceof Integer) {
             Integer n = (Integer) constant.getValue();
-            if(n < 0)
+            if (n < 0)
                 return ExtendedSignLattice.LT_ZERO;
-            if(n == 0)
+            if (n == 0)
                 return ExtendedSignLattice.ZERO;
             return ExtendedSignLattice.GT_ZERO;
         }
@@ -65,60 +65,60 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 
     @Override
     public ExtendedSignLattice evalBinaryExpression(BinaryExpression expression, ExtendedSignLattice left, ExtendedSignLattice right, ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
-        if(left == ExtendedSignLattice.TOP || right == ExtendedSignLattice.TOP)
+        if (left == ExtendedSignLattice.TOP || right == ExtendedSignLattice.TOP)
             return ExtendedSignLattice.TOP;
-        if(left == ExtendedSignLattice.BOTTOM || right == ExtendedSignLattice.BOTTOM)
+        if (left == ExtendedSignLattice.BOTTOM || right == ExtendedSignLattice.BOTTOM)
             return ExtendedSignLattice.BOTTOM;
 
-        if(expression.getOperator() instanceof AdditionOperator) {
-            if(left == ExtendedSignLattice.ZERO)    return right;
-            if(right == ExtendedSignLattice.ZERO)   return left;
+        if (expression.getOperator() instanceof AdditionOperator) {
+            if (left == ExtendedSignLattice.ZERO) return right;
+            if (right == ExtendedSignLattice.ZERO) return left;
 
             // <0 + <0 -> always negative
-            if(left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LT_ZERO)
+            if (left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LT_ZERO)
                 return ExtendedSignLattice.LT_ZERO;
 
             // ≤0 + ≤0 -> zero or negative
-            if(left == ExtendedSignLattice.LE_ZERO && right == ExtendedSignLattice.LE_ZERO)
+            if (left == ExtendedSignLattice.LE_ZERO && right == ExtendedSignLattice.LE_ZERO)
                 return ExtendedSignLattice.LE_ZERO;
 
             // >0 + >0 -> always positive
-            if(left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.GT_ZERO)
+            if (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.GT_ZERO)
                 return ExtendedSignLattice.GT_ZERO;
 
             // ≥0 + ≥0 -> zero or positive
-            if(left == ExtendedSignLattice.GE_ZERO && right == ExtendedSignLattice.GE_ZERO)
+            if (left == ExtendedSignLattice.GE_ZERO && right == ExtendedSignLattice.GE_ZERO)
                 return ExtendedSignLattice.GE_ZERO;
 
             // ≤0 + <0 -> always negative, never zero
-            if((left == ExtendedSignLattice.LE_ZERO && right == ExtendedSignLattice.LT_ZERO) || (left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LE_ZERO))
+            if ((left == ExtendedSignLattice.LE_ZERO && right == ExtendedSignLattice.LT_ZERO) || (left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LE_ZERO))
                 return ExtendedSignLattice.LT_ZERO;
 
             // ≥0 + >0 -> always positive, never zero
-            if((left == ExtendedSignLattice.GE_ZERO && right == ExtendedSignLattice.GT_ZERO) || (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.GE_ZERO))
+            if ((left == ExtendedSignLattice.GE_ZERO && right == ExtendedSignLattice.GT_ZERO) || (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.GE_ZERO))
                 return ExtendedSignLattice.GT_ZERO;
 
             // <0 + >0 -> unknown
-            if((left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.GT_ZERO) || (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.LT_ZERO))
+            if ((left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.GT_ZERO) || (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.LT_ZERO))
                 return ExtendedSignLattice.TOP;
 
             // ≠0 + ≠0 -> unknown
-            if(left == ExtendedSignLattice.NE_ZERO && right == ExtendedSignLattice.NE_ZERO)
+            if (left == ExtendedSignLattice.NE_ZERO && right == ExtendedSignLattice.NE_ZERO)
                 return ExtendedSignLattice.TOP;
 
             return ExtendedSignLattice.TOP;
         }
-        if(expression.getOperator() instanceof SubtractionOperator) {
-            if(left == ExtendedSignLattice.ZERO) {
+        if (expression.getOperator() instanceof SubtractionOperator) {
+            if (left == ExtendedSignLattice.ZERO) {
                 // 0 - x; must negate x
-                if(right == ExtendedSignLattice.LT_ZERO)    return ExtendedSignLattice.GT_ZERO;
-                if(right == ExtendedSignLattice.GT_ZERO)    return ExtendedSignLattice.LT_ZERO;
-                if(right == ExtendedSignLattice.LE_ZERO)    return ExtendedSignLattice.GE_ZERO;
-                if(right == ExtendedSignLattice.GE_ZERO)    return ExtendedSignLattice.LE_ZERO;
-                if(right == ExtendedSignLattice.NE_ZERO)    return ExtendedSignLattice.NE_ZERO;
-                if(right == ExtendedSignLattice.ZERO)       return  ExtendedSignLattice.ZERO;
+                if (right == ExtendedSignLattice.LT_ZERO) return ExtendedSignLattice.GT_ZERO;
+                if (right == ExtendedSignLattice.GT_ZERO) return ExtendedSignLattice.LT_ZERO;
+                if (right == ExtendedSignLattice.LE_ZERO) return ExtendedSignLattice.GE_ZERO;
+                if (right == ExtendedSignLattice.GE_ZERO) return ExtendedSignLattice.LE_ZERO;
+                if (right == ExtendedSignLattice.NE_ZERO) return ExtendedSignLattice.NE_ZERO;
+                if (right == ExtendedSignLattice.ZERO) return ExtendedSignLattice.ZERO;
             }
-            if(right == ExtendedSignLattice.ZERO)   return left;
+            if (right == ExtendedSignLattice.ZERO) return left;
 
             // <0 - <0 -> <0 + >0 → unknown
             if (left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LT_ZERO)
@@ -174,7 +174,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 
             return ExtendedSignLattice.TOP;
         }
-        if(expression.getOperator() instanceof MultiplicationOperator) {
+        if (expression.getOperator() instanceof MultiplicationOperator) {
             if (left == ExtendedSignLattice.ZERO || right == ExtendedSignLattice.ZERO)
                 return ExtendedSignLattice.ZERO;
 
@@ -227,16 +227,16 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 
             return ExtendedSignLattice.TOP;
         }
-        if(expression.getOperator() instanceof DivisionOperator) {
-            if(right == ExtendedSignLattice.ZERO)       return ExtendedSignLattice.BOTTOM;
-            if(right == ExtendedSignLattice.LE_ZERO)    return ExtendedSignLattice.BOTTOM;
-            if(right == ExtendedSignLattice.GE_ZERO)    return ExtendedSignLattice.BOTTOM;
-            if(right == ExtendedSignLattice.TOP)        return ExtendedSignLattice.BOTTOM;
+        if (expression.getOperator() instanceof DivisionOperator) {
+            if (right == ExtendedSignLattice.ZERO) return ExtendedSignLattice.BOTTOM;
+            if (right == ExtendedSignLattice.LE_ZERO) return ExtendedSignLattice.BOTTOM;
+            if (right == ExtendedSignLattice.GE_ZERO) return ExtendedSignLattice.BOTTOM;
+            if (right == ExtendedSignLattice.TOP) return ExtendedSignLattice.BOTTOM;
 
-            if(left == ExtendedSignLattice.ZERO) return ExtendedSignLattice.ZERO;
+            if (left == ExtendedSignLattice.ZERO) return ExtendedSignLattice.ZERO;
 
             // <0 / <0 -> always positive; could be zero
-            if(left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LT_ZERO)
+            if (left == ExtendedSignLattice.LT_ZERO && right == ExtendedSignLattice.LT_ZERO)
                 return ExtendedSignLattice.GE_ZERO;
             if (left == ExtendedSignLattice.GT_ZERO && right == ExtendedSignLattice.GT_ZERO)
                 return ExtendedSignLattice.GT_ZERO;
@@ -269,10 +269,10 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 
             return ExtendedSignLattice.TOP;
         }
-        if(expression.getOperator() instanceof ModuloOperator) {
+        if (expression.getOperator() instanceof ModuloOperator) {
             return right;
         }
-        if(expression.getOperator() instanceof RemainderOperator) {
+        if (expression.getOperator() instanceof RemainderOperator) {
             return left;
         }
         return ExtendedSignLattice.TOP;

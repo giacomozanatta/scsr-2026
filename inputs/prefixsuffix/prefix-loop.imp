@@ -1,0 +1,35 @@
+class prefixLoop {
+
+	// Test 1: Http prefix in loop
+	loopHttp(n) {
+		def i = 0;
+		while (i < n) {
+			def url = "http://api.example.com/page" + i;
+			fetch(url);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	// Test 2: Alternating http/https in loop
+	alternatingHttp(n) {
+		def i = 0;
+		while (i < n) {
+			def url;
+			if (i % 2 == 0)
+				url = "http://example.com/page" + i;
+			else
+				url = "https://example.com/page" + i;
+			connect(url);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	// Test 3: Http prefix with concatenation
+	concatenationHttp(base, path) {
+		def url = base + path;
+		connect(url);
+		return url;
+	}
+}

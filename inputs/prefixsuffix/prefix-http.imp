@@ -1,0 +1,25 @@
+class prefixHttp {
+
+	// Test 1: Direct http:// prefix
+	directHttp() {
+		def url = "http://example.com";
+		connect(url);
+		return url;
+	}
+
+	// Test 2: Direct https:// prefix
+	directHttps() {
+		def url = "https://secure.example.com";
+		secureConnect(url);
+		return url;
+	}
+
+	// Test 3: Multiple http calls
+	multipleHttpCalls() {
+		def url1 = "http://api.example.com";
+		def url2 = "http://cdn.example.com";
+		fetch(url1);
+		fetch(url2);
+		return url1;
+	}
+}

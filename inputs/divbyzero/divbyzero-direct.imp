@@ -1,0 +1,27 @@
+class divByZeroDirect {
+
+	// Test 1: Direct division by zero
+	directDivision() {
+		def numerator = 100;
+		def denominator = 0;
+		def result = numerator / denominator;
+		return result;
+	}
+
+	// Test 2: Division by zero from variable
+	divisionFromVariable() {
+		def x = 0;
+		def y = 50;
+		def result = y / x;
+		return result;
+	}
+
+	// Test 3: Division by zero in expression
+	divisionInExpression() {
+		def a = 10;
+		def b = 0;
+		def c = 20;
+		def result = (a + c) / b;
+		return result;
+	}
+}

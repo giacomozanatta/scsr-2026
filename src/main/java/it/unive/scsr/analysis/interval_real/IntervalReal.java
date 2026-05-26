@@ -50,6 +50,15 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
     }
 
     /**
+     * Returns the zero element of the lattice, representing the interval [0, 0].
+     * 
+     * @return the zero element of the lattice.
+     */
+    public IntervalRealLattice zero() {
+        return IntervalRealLattice.ZERO;
+    }
+
+    /**
      * Helper method to compute the minimum of multiple MathNumber instances.
      * 
      * @param nums the MathNumber instances to compare
@@ -202,11 +211,10 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
         }
 
         if (operator instanceof MultiplicationOperator) {
-            // Pre-calculate boundaries while masking out 0 * infinity anomalies
-            MathNumber p1 = (l1.isInfinite() && l2.isZero()) || (l1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : l1.multiply(l2);
-            MathNumber p2 = (l1.isInfinite() && u2.isZero()) || (l1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : l1.multiply(u2);
-            MathNumber p3 = (u1.isInfinite() && l2.isZero()) || (u1.isZero() && l2.isInfinite()) ? MathNumber.ZERO : u1.multiply(l2);
-            MathNumber p4 = (u1.isInfinite() && u2.isZero()) || (u1.isZero() && u2.isInfinite()) ? MathNumber.ZERO : u1.multiply(u2);
+            MathNumber p1 = l1.multiply(l2);
+            MathNumber p2 = l1.multiply(u2);
+            MathNumber p3 = u1.multiply(l2);
+            MathNumber p4 = u1.multiply(u2);
 
             return new IntervalRealLattice(
                 min(p1, p2, p3, p4), max(p1, p2, p3, p4)
@@ -214,48 +222,14 @@ public class IntervalReal implements BaseNonRelationalValueDomain<IntervalRealLa
         }
 
         if (operator instanceof DivisionOperator) {
-            // 1. Absolute Division by Zero -> Completely invalid state
-            if (l2.isZero() && u2.isZero()) {
-                return bottom();
-            }
+            // Prevent division by zero
+			// Check IF interval of the divisor INCLUDES zero [l2 <= 0, u2 >= 0]
+            if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) {
+                // Return TOP for division by zero cases
+                // as the result can be any real number (including infinities) depending on the numerator
+				return top();
+			}
 
-            // 2. Indeterminate Infinite Division (inf / inf) -> Drops to TOP
-            if ((l1.isInfinite() || u1.isInfinite()) && (l2.isInfinite() || u2.isInfinite())) {
-                return top();
-            }
-
-            // 3. Left-Open Zero Division [0, +u2]
-            if (l2.isZero()) {
-                if (u2.isInfinite()) return top();
-                if (l1.geq(MathNumber.ZERO)) {
-                    return new IntervalRealLattice(u1.divide(u2), MathNumber.PLUS_INFINITY);
-                } else if (u1.isNegative()) {
-                    return new IntervalRealLattice(MathNumber.MINUS_INFINITY, l1.divide(u2));
-                }
-                return top();
-            }
-
-            // 4. Right-Open Zero Division [-l2, 0]
-            if (u2.isZero()) {
-                if (l2.isInfinite()) {
-                    return top();
-                }
-
-                if (l1.geq(MathNumber.ZERO)) {
-                    return new IntervalRealLattice(MathNumber.MINUS_INFINITY, u1.divide(l2));
-                } else if (u1.isNegative()) {
-                    return new IntervalRealLattice(l1.divide(l2), MathNumber.PLUS_INFINITY);
-                }
-
-                return top();
-            }
-
-            // 5. Divisor straddles across zero completely (examp;e: [-1.5, +2.0])
-            if (l2.isNegative() && u2.isPositive()) {
-                return top();
-            }
-
-            // Fallback: Standard division loop for clean numbers
             MathNumber d1 = l1.divide(l2);
             MathNumber d2 = l1.divide(u2);
             MathNumber d3 = u1.divide(l2);

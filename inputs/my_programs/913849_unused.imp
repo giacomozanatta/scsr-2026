@@ -1,0 +1,8 @@
+// Not using parameters
+//
+// 913849 -- Quinn Robertson
+class unused {
+    calculate (x,y,z) {
+        return x + y;
+    }
+}

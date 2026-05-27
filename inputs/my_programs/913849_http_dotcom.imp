@@ -1,0 +1,23 @@
+// This is a simple website URL simulator,
+// simulating user input and ensuring that it is useful
+//
+// 913849 -- Quinn Robertson
+class browser {
+    access(url) {
+        def m = url;
+        return "Success!";
+    }
+
+    user_input(u) {
+        this.ensurer(u);
+    }
+
+    ensurer(y) {
+        def x = "http://"+y+".com";
+        this.main(x);
+    }
+
+    main(u) {
+        this.user_input(u);
+    }
+}

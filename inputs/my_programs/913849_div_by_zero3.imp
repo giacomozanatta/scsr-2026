@@ -1,0 +1,38 @@
+// Calculating quadratic roots
+// If a is left up to the user,
+// this can result in a division by zero
+//
+// 913849 -- Quinn Robertson
+class quadratics {
+
+    // Implementation of sqrt
+    sqrt(x) {
+        def root = x/3;
+        def last = 0;
+        def diff = 1;
+        if (x <= 0) {
+            return 0;
+        }
+        last = root;
+        root = (root + x / root) / 2;
+        diff = root - last;
+        while (diff > 0.00001 || diff < 0.00001) {
+            last = root;
+            root = (root + x / root) / 2;
+            diff = root - last;
+        }
+        return root;
+    }
+
+    calculate_plus_root(a,b,c) {
+        def discriminant = b * b;
+        discriminant = discriminant - (4 * a * c);
+        return (-b + this.sqrt(discriminant) / (2 * a));
+    }
+
+    calculate_minus_root(a,b,c) {
+        def discriminant = b * b;
+        discriminant = discriminant - (4 * a * c);
+        return (-b - this.sqrt(discriminant) / (2 * a));
+    }
+}

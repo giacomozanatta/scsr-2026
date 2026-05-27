@@ -1,0 +1,59 @@
+class signs {
+	eloop() {
+		def c = 1;
+		def b = 0;
+   		while (b < 10)
+        	b = b + c;
+   		return b;
+    }
+
+	ebasic() {
+		def i = 2;
+		def j = -10;
+		def a = i + j;
+		def s = i - j;
+		def m = i * j;
+		def d = i / j;
+	}
+
+	ebranches() {
+	    def a = 3;
+	    def b = 5;
+		def x = 0;
+		if (a > b)
+           	x = x * 7;
+       	else
+           	x = -7;
+		def y = x / x;
+    }
+
+    ebranches2() {
+    	def a = -3;
+    	def b = 5;
+        def x = 0;
+    	if (a > b)
+           	x = x * 7;
+        else
+           	x = -7;
+    	def y = x / x;
+    }
+
+    ebranches3() {
+    	def a = 3;
+    	def b = 5;
+        def x = -1;
+    	if (a > b) {
+           	x = x * 7;
+           	if (a <= b) {
+           	    x = -x;
+           	}
+           	else {
+           	    x = 1;
+           	}
+        }
+        else {
+           	x = -7;
+        }
+    	def y = x / x;
+    }
+}

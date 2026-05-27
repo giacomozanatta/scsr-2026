@@ -242,14 +242,17 @@ public class Extended_Sign implements BaseNonRelationalValueDomain<Extended_Sign
 			if(left == Extended_SignLattice.BOTTOM || right == Extended_SignLattice.BOTTOM)
 				return Extended_SignLattice.BOTTOM;
 
+			if(left == Extended_SignLattice.ZERO && (right == Extended_SignLattice.POS || right == Extended_SignLattice.NEG))
+    			return Extended_SignLattice.TOP;
+
+			if(left == Extended_SignLattice.ZERO && (right == Extended_SignLattice.STRICT_NEG || right == Extended_SignLattice.STRICT_POS))
+				return Extended_SignLattice.ZERO;
+
 			if(right == Extended_SignLattice.ZERO)
 				return Extended_SignLattice.BOTTOM;
 
 			if(left == Extended_SignLattice.TOP || right == Extended_SignLattice.TOP)
 				return Extended_SignLattice.TOP;
-
-			if(right == Extended_SignLattice.POS || right == Extended_SignLattice.NEG)
-    			return Extended_SignLattice.TOP;
 
 			if(left == Extended_SignLattice.STRICT_POS && right == Extended_SignLattice.STRICT_POS)
 				return Extended_SignLattice.STRICT_POS;
@@ -262,9 +265,6 @@ public class Extended_Sign implements BaseNonRelationalValueDomain<Extended_Sign
 
 			if(left == Extended_SignLattice.STRICT_NEG && right == Extended_SignLattice.STRICT_NEG)
 				return Extended_SignLattice.STRICT_POS;
-
-			if(left == Extended_SignLattice.ZERO && (right == Extended_SignLattice.STRICT_NEG || right == Extended_SignLattice.STRICT_POS))
-				return Extended_SignLattice.ZERO;
 
 			if(left == Extended_SignLattice.STRICT_POS && right == Extended_SignLattice.POS)
 				return Extended_SignLattice.POS;
@@ -290,7 +290,7 @@ public class Extended_Sign implements BaseNonRelationalValueDomain<Extended_Sign
 			if(left == Extended_SignLattice.NEG && right == Extended_SignLattice.STRICT_NEG)
     			return Extended_SignLattice.POS;
 
-			if(left == Extended_SignLattice.ZERO && (right == Extended_SignLattice.POS || right == Extended_SignLattice.NEG))
+			if(right == Extended_SignLattice.POS || right == Extended_SignLattice.NEG)
     			return Extended_SignLattice.TOP;
 		} 
 		else if (expression.getOperator() instanceof ModuloOperator)

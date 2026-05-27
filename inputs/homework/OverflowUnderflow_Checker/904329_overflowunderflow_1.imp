@@ -1,0 +1,44 @@
+class ofuf
+{
+    /*
+    Base case in which we test the checker to see if it works correctly on two basic definitions,
+    only the definition of the variable progress should issue a warning since we are exceeding 
+    the maximum value of 8bit integers
+    */
+    f0()
+    {
+        def player_lvl = 127; 
+        def exp = 7;
+
+        def progress = player_lvl + exp;
+
+        if(progress >127)
+            player_lvl = 0;
+
+        def penalty_for_cheating = player_lvl - exp;
+
+        return;
+    }
+
+    /*
+    This case is pretty similar to the previous one, in this i am just testing again the checker with basic operations,
+    but this time i am considering divisions and multiplications. The checker should issue a warning for the overflows 
+    in total_revenue for the 8bits integers, a warning for the variable warehouse_cost that overflows the limits of 
+    16bits integers and a warning for the underflow in debt_after_penalty
+    */
+    f1()
+    {
+        def price_per_item = 127;
+        def num_items = 7;            
+
+        def total_revenue = price_per_item * num_items;
+        def warehouse_cost = price_per_item * price_per_item * 3;
+
+        def revenue_per_item = price_per_item / num_items;
+
+        def debt = -127;
+        def debt_after_penalty = debt - 2;
+
+        return;
+    }
+}

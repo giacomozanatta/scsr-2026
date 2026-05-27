@@ -60,16 +60,16 @@ public class ParityLattice implements BaseLattice<ParityLattice> {
 	@Override
 	public StructuredRepresentation representation() 
 	{
-		if(this == ParityLattice.BOTTOM)
+		if(this.equals(ParityLattice.BOTTOM))
 			return Lattice.bottomRepresentation();
 
-		else if(this == ParityLattice.TOP)
+		else if(this.equals(ParityLattice.TOP))
 			return Lattice.topRepresentation();
 
-		else if(this == ParityLattice.EVEN)
-			return new StringRepresentation("EVEN");
+		else if(this.equals(ParityLattice.EVEN))
+			return new StringRepresentation("Even");
 		
-		return new StringRepresentation("ODD");
+		return new StringRepresentation("Odd");
 	}
 
 	@Override

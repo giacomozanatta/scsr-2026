@@ -1,0 +1,111 @@
+class sp
+{
+    sink(p)
+    {
+        return;
+    }
+
+    /*HTTPStringChecker
+    This is a base case in which we are evaluating the correctness of the checker analysis, so we want to make sure
+    that in the first case no warning will be issued, in the second and the third definitions the checker should
+    issue a warning since http:// and https:// are contained
+
+    DotComStringChecker
+    This checker should issue a warning only in the line related to the definition of the variable z
+    */
+    f0()
+    {
+        def x = "there is a message here";
+
+        def y =  "http://there is a message here";
+
+        def y1 = "https://there is a message here";
+
+        def z = "here.com http://there is a message.com";
+
+        this.sink(x);
+        this.sink(y);
+        this.sink(y1);
+        this.sink(z);
+
+        return;
+    }
+
+    /*HTTPStringChecker
+    The definition of the variables z and t should be flagged by the checker with a warning since they start with http://
+
+    DotComStringChecker
+    This checker should issue a warning only for the definition of z
+
+    The variable x should not issue a warning, this test is used to see if the checkers work correctly even
+    in presence of parsing of strings
+    */
+    f1()
+    {
+        def x = "there is a message here";
+
+        def y = x + ".com";
+
+        def z = "http://" +  y;
+
+        def t = z + y;
+
+        this.sink(y);
+        this.sink(z);
+        this.sink(t);
+
+        return;
+    }
+
+    /*
+    In this case the HTTPStringChecker should not issue any warning since no variable contain the prefix it is looking for 
+
+    The DotComStringChecker should issue a warning even if the new definition of x in the if statement may not be reached
+    */
+    f2()
+    {
+        def x = "there is a message here";
+
+        def c = 0;
+
+        if(c == 0)
+        {
+            x = x + ".com";
+        }
+
+        this.sink(x);
+
+        return;
+    }
+
+    /*
+    In this case both the HTTPStringChecker and the DotComStringChecker should issue a warning for the variable x even
+    if the new definitions are within nested if statements, in particular on lines 95 and 102
+    */
+    f3()
+    {
+        def x = "there is a message here";
+
+        def c = 0;
+
+        while(c < 3)
+        {
+            if(c == 1)
+            {
+                x = "https://" + x;
+            }
+
+            c = c+1;
+
+            if(c == 2)
+            {
+                x = x + ".com";
+            }
+        }
+
+        this.sink(x);
+
+        return;
+    }
+
+}

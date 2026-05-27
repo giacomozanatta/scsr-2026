@@ -48,7 +48,7 @@ public class IntervalLattice
 
 	    @Override
 	    public StructuredRepresentation representation() {
-	    	if(this == BOTTOM)
+	    	if(this.i == null || this.equals(BOTTOM))
 	    		return Lattice.bottomRepresentation();
 	    	
 	    	MathNumber l = this.i.getLow();
@@ -116,7 +116,7 @@ public class IntervalLattice
 	    public boolean lessOrEqualAux(IntervalLattice other) throws SemanticException {
 			if(this.i == null || other.i == null)
 				return false;
-	    	return this.i.includes(other.i);
+	    	return other.i.includes(this.i);
 	    }
 
 		@Override

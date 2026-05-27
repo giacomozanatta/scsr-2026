@@ -1,0 +1,68 @@
+class ofuf
+{
+    /*
+    Base case in which we test the checker to see if it works correctly on two basic definitions,
+    only the definition of the variable z should issue a warning since we are exceeding the maximum value
+    that i have previously set in the test file
+    */
+    f0()
+    {
+        def x = 127;
+        def y = 7;
+
+        def z = x + y;
+
+        def t = x - y;
+
+        return;
+    }
+
+    /*
+    This case is pretty similar to the previous one, in this i am just testing again the checker with basic operations,
+    but this time i am considering divisions and multiplications.
+    */
+    f1()
+    {
+        def x = 127;
+        def y = 7;
+
+        def z = x * y;
+
+        def t = x / y;
+
+        return;
+    }
+
+    /*
+    In this case i am evaluating the overflow in a situation in which it is reached inside a while loop
+    */
+    f2()
+    {
+        def k = 125;
+
+        def b = 126;
+        def s = 3;
+
+        while(s > 2)
+        {
+            b = b - 1;
+            k = k + 1;
+            s = s-1;
+        }
+
+        return;
+    }
+
+    /*
+    in this case i am not considering the overflow scenario like in the others, but i am checking the underflow situation
+    */
+    f3()
+    {
+        def g = -128;
+
+        def x = g - 1;
+
+        return;
+    }
+
+}

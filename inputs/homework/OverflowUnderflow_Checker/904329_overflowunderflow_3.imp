@@ -1,0 +1,28 @@
+class ofuf
+{
+    /*
+    in this case i am considering the overflow and underflow scenario for integers with 8 bits so [-128, 127]
+    the checker should issue a underflow (8bits integers) warning for the variable "tomorrow_temperature" and a 
+    overflow warning for the variable "value_detected" that could be greater than the interval bounds and for 
+    "weekly_temperatures_decrements[2]" that could overflow
+    */
+    f3(t)
+    {
+        def tomorrow_temperature = -236.5;
+
+        def weekly_temperatures_decrements = new int[7];
+
+        arq[3] = -120;
+
+        def value_detected = t;
+
+        if(value_detected>200)
+            weekly_temperatures_decrements[2] = tomorrow_temperature + weekly_temperatures_decrements[3];
+
+        else
+            weekly_temperatures_decrements[2] = tomorrow_temperature + 90;
+
+        return;
+    }
+
+}

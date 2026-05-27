@@ -1,0 +1,59 @@
+class sp
+{
+    sink(p)
+    {
+        return;
+    }
+
+    /*HTTPStringChecker
+    This is a base case in which we are evaluating the correctness of the checker analysis, so we want to make sure
+    that in the first case no warning will be issued, in the second and the third definitions the checker should
+    issue a warning since http:// and https:// are contained
+
+    DotComStringChecker
+    This checker should issue a warning only in the line related to the definition of the variable web_site
+    */
+    f0()
+    {
+        def message = "there is a message here";
+
+        def private_chat =  "http://app/chats/chat1";
+
+        def chat_menu = "https://app/chats/";
+
+        def web_site = "here.com.http://thereisamessage.com";
+
+        this.sink(message);
+        this.sink(private_chat);
+        this.sink(chat_menu);
+        this.sink(web_site);
+
+        return;
+    }
+
+    /*HTTPStringChecker
+    The definition of the variables fqdm and invalid_site_name should be flagged by the checker with a warning since they start with http://
+
+    DotComStringChecker
+    This checker should issue a warning for all the sinks
+
+    The variable app should not issue a warning, this test is used to see if the checkers work correctly even
+    in presence of parsing of strings
+    */
+    f1()
+    {
+        def app = "appName";
+
+        def web_site = app + ".com";
+
+        def fqdm = "http://" +  web_site; //fqdm = fully qualified domain name
+
+        def invalid_site_name = fqdm + web_site;
+
+        this.sink(web_site);
+        this.sink(fqdm);
+        this.sink(invalid_site_name);
+
+        return;
+    }
+}

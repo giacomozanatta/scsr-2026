@@ -1,0 +1,19 @@
+class dbz
+{
+    /*
+    Base case in which we test the checker to see if it works correctly on two basic division operations
+    the variable speed should not be subject to a warning since we are dividing a number by another different than zero
+    the checker should issue a warning for the definition of the acceleration since we are trying to divide by zero
+    */
+    f0()
+    {
+        def space = 0;
+        def time = 7;
+        def speed = space/time;
+
+        time = 0;
+        def acceleration = space/(time*time);
+
+        return;
+    }
+}

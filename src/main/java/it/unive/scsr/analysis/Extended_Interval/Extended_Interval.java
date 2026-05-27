@@ -93,6 +93,9 @@ public class Extended_Interval implements BaseNonRelationalValueDomain<Extended_
 			MathNumber l1 = left.i.getLow(); //a
 			MathNumber l2 = right.i.getLow(); //c
 
+			if(l1.isInfinite() || u1.isInfinite() || l2.isInfinite() || u2.isInfinite())
+    			return Extended_IntervalLattice.TOP;
+
 			MathNumber newMin = new MathNumber(0);
 			MathNumber newMax = new MathNumber(0);
 
@@ -101,29 +104,15 @@ public class Extended_Interval implements BaseNonRelationalValueDomain<Extended_
 			Double m3 = 0.0;
 			Double m4 = 0.0;
 
-			if(u1.isInfinite() || u2.isInfinite())
-				newMax = MathNumber.PLUS_INFINITY;
-
-			if(l1.isInfinite() || l2.isInfinite())
-				newMin = MathNumber.MINUS_INFINITY;
-
-
-			if(u1.isFinite() && u2.isFinite() && l1.isFinite() && l2.isFinite())
-			{
-				m1 = l1.getNumber().doubleValue() * l2.getNumber().doubleValue();
-				m2 = l1.getNumber().doubleValue() * u2.getNumber().doubleValue();
-				m3 = u1.getNumber().doubleValue() * l2.getNumber().doubleValue();
-				m4 = u1.getNumber().doubleValue() * u2.getNumber().doubleValue();
-			}
-
-			if(u1.isFinite() && u2.isFinite())
-				newMax = new MathNumber(BigDecimal.valueOf(maximumCounter(m1, m2, m3, m4)));
-			
-			if(l1.isFinite() && l2.isFinite())
-				newMin = new MathNumber(BigDecimal.valueOf(minimumCounter(m1, m2, m3, m4)));
+			m1 = l1.getNumber().doubleValue() * l2.getNumber().doubleValue();
+			m2 = l1.getNumber().doubleValue() * u2.getNumber().doubleValue();
+			m3 = u1.getNumber().doubleValue() * l2.getNumber().doubleValue();
+			m4 = u1.getNumber().doubleValue() * u2.getNumber().doubleValue();
+		
+			newMax = new MathNumber(BigDecimal.valueOf(maximumCounter(m1, m2, m3, m4)));
+			newMin = new MathNumber(BigDecimal.valueOf(minimumCounter(m1, m2, m3, m4)));
 			
 			return new Extended_IntervalLattice(newMin, newMax);
-
 			
 		} else if (expression.getOperator() instanceof SubtractionOperator) {
 			
@@ -160,6 +149,9 @@ public class Extended_Interval implements BaseNonRelationalValueDomain<Extended_
 			MathNumber l1 = left.i.getLow(); //a
 			MathNumber l2 = right.i.getLow(); //c
 
+			if(l1.isInfinite() || u1.isInfinite() || l2.isInfinite() || u2.isInfinite())
+    			return Extended_IntervalLattice.TOP;
+
 			//[a,b] / [c,d] = [min(a/c, a/d, b/c, b/d), max(a/c, a/d, b/c, b/d)]
 
 			Double m1 = 0.0;
@@ -170,28 +162,16 @@ public class Extended_Interval implements BaseNonRelationalValueDomain<Extended_
 			MathNumber newMin = new MathNumber(0);
 			MathNumber newMax = new MathNumber(0);
 
-			if(u1.isInfinite())
-   				 newMax = MathNumber.PLUS_INFINITY;
+			if(l2.getNumber().doubleValue() <= 0 && u2.getNumber().doubleValue() >= 0)
+				return Extended_IntervalLattice.BOTTOM;
 
-			if(l1.isInfinite())
-    			newMin = MathNumber.MINUS_INFINITY;
-
-			if(u1.isFinite() && u2.isFinite() && l1.isFinite() && l2.isFinite())
-			{
-				if(l2.getNumber().doubleValue() <= 0 && u2.getNumber().doubleValue() >= 0)
-					return Extended_IntervalLattice.BOTTOM;
-
-				m1 = l1.getNumber().doubleValue() / l2.getNumber().doubleValue();
-				m2 = l1.getNumber().doubleValue() / u2.getNumber().doubleValue();
-				m3 = u1.getNumber().doubleValue() / l2.getNumber().doubleValue();
-				m4 = u1.getNumber().doubleValue() / u2.getNumber().doubleValue();
-			}
-
-			if(u1.isFinite() && u2.isFinite())
-				newMax = new MathNumber(maximumCounter(m1, m2, m3, m4));
+			m1 = l1.getNumber().doubleValue() / l2.getNumber().doubleValue();
+			m2 = l1.getNumber().doubleValue() / u2.getNumber().doubleValue();
+			m3 = u1.getNumber().doubleValue() / l2.getNumber().doubleValue();
+			m4 = u1.getNumber().doubleValue() / u2.getNumber().doubleValue();
 			
-			if(l1.isFinite() && l2.isFinite())
-				newMin = new MathNumber(minimumCounter(m1, m2, m3, m4));
+			newMax = new MathNumber(maximumCounter(m1, m2, m3, m4));
+			newMin = new MathNumber(minimumCounter(m1, m2, m3, m4));
 
 			return new Extended_IntervalLattice(newMin, newMax);
 		}

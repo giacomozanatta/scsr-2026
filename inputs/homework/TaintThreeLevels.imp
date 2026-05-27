@@ -1,0 +1,82 @@
+class ttl
+{
+    source1(){
+		return -1;
+	}
+
+	sanitizer1(v){
+		return 0;
+	}
+
+
+	sink1(v){
+	}
+
+    /*
+    In this case the variable x could be tainted so the checker should issue a warning on the line of the first sink
+    No warning should be issued on the r variable since it is the sanitized version of the x variable
+    */
+	f0() {
+		def x = this.source1();
+        def r = this.sanitizer1(x);
+
+		this.sink1(x);
+        this.sink1(r);
+	}
+
+    /*
+    In this case i am using the if/else structure to modify the variable m but with a if condition that is unknown
+    so we don't know if the code in the if it is reacheable or not, the checker should issue a warning anyway 
+    for the "this.sink1(m);" line
+    */
+	f1(b) {
+		def m = 0;
+        def b = 8;
+		if(b < 3) {
+			m = this.source1();
+		} else {
+		  m = this.sanitizer1(m);
+		}
+
+		this.sink1(m);
+	}
+
+    /*
+    in this case i am evaluating the behavior of the checker with a nested if statement in a while loop
+    so the checker should issue a warning "possibly tainted" for the "this.sink1(g);" line
+    */
+	f2() {
+		
+        def g = this.source1();
+        def i = 0;
+
+        while (i < 3)
+        {
+            i = i+1;
+
+            if(i==2)
+            {
+                g = this.sanitizer1(g);
+            }
+        }
+
+        this.sink1(g);
+	}
+
+    /*
+    In this case i am taking a possible tainted variable and i am using it to perform some elemental operations
+    The checker should issue a warning for the use of such possible tainted variable in the second sink
+    */
+    f3()
+    {
+        def u = 2;
+        def j = 3;
+
+        def u1 = this.source1();
+
+        this.sink1(u + j);
+        this.sink1(u1 + j);
+
+    }
+}
+	

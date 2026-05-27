@@ -1,0 +1,194 @@
+class hc
+{
+    source1(){
+		return -99;
+	}
+
+	sanitizer1(v){
+		return 0;
+	}
+
+	sink1(v){
+	}
+
+    /*
+    In this function i am testing the correctness of the checker, in fact it should issue two warnings, one for the 
+    if statement since a tainted variable is used in it and one for the statement inside the if statement but only if 
+    a variable that is clean is manipulated inside the tainted if statement
+    */
+    f0()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(t>3)
+            c = c + 1;
+
+        this.sink1(c);
+    }
+
+    /*
+    In this function i am testing the correctness of the checker with while loops and variable which was issued a 
+    warning for and then got clean (by a new assignemnt with a constant value). The checker should issue four warnings
+    two for the lines of the while loops with tainted conditions and two warnings for the lines in which a clean
+    variable "c" is manipulated inside a structure with tainted condition.
+    The statement "t = t + 1;" don't trigger a warning since it was already tainted, here we are looking for implicit
+    flows on clean variables.
+    */
+    f1()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        while(t<3)
+        {
+            c = c + 1;
+            t = t + 1;
+        }
+
+        c = 6;
+
+        while(t<3)
+        {
+            c = c-1;
+            t = c;
+        }
+
+        c = 8;
+
+        def d = c;
+        c = 110;
+
+        this.sink1(c);
+    }
+
+    /*
+    This test is similar to the first one but in this case the condition of the if statement is not a binary expression
+    to see if the checker still works. The checker here should issue two warnings, one for the if(t) statement
+    and one for the c = c + 1; instruction
+    */
+    f2()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(t)
+        {
+            c = c + 1;
+            t = t + 1;
+        }
+
+        this.sink1(c);
+    }
+
+    /*
+    In this function i am checking in the checker works properly in if statements even if the condition to check in 
+    the if statement is something composed by more than one condition. The checker here should issue two warnings, 
+    one for the if statement and one for the c = c + 1; instruction
+    */
+    f3()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(c==0 && t>2)
+        {
+            c = c + 1;
+            t = t + 1;
+        }
+
+        this.sink1(c);
+    }
+
+    /*
+    This function is really similar to the previous one but in this case i am translating the previous complex
+    expression in the if statement in two nested if to see if this can broke the checker. The checker here should 
+    issue two warnings, one for the if(t>2) statement and one for the c = c + 1; instruction
+    */
+    f4()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(c==0)
+        {
+            if(t>2)
+            {
+                c = c + 1;
+                t = t + 1;
+            }
+        }
+
+        this.sink1(c);
+    }
+
+    /*
+    In this case, i am testing if the checker is able to handle properly the OR logic and like the previous tests
+    i am putting the condition related to che clean variable as the first one to see if the checker just stop at 
+    the first condition to draw its conditions. The checker here should issue four warnings, two for the if statements
+    and two for the c = c + 1; instructions
+    */
+    f5()
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(c==0 || t>2)
+        {
+            c = c + 1;
+            t = t + 1;
+        }
+
+        if(c==2 || t)
+        {
+            c = c + 1;
+            t = t + 1;
+        }
+
+        this.sink1(c);
+    }
+
+    /*
+    This test is just a repetition of the previous one, but this one there are two if nested with complex conditions.
+    The checker here should issue three warnings, two for the if statements and one for the c = c + 1; instruction
+    */
+    f6()    
+    {
+        def t = this.source1();
+        def c = 0;
+
+        if(c==0 && t>2)
+        {
+            if(t>1 && c==0)
+            {
+                c = c + 1;
+                t = t + 1;
+            }
+        }
+
+        this.sink1(c);
+    }
+
+    /*
+    For the final test, i am checking if the checker is working with a statements composed by more than two conditions
+    and a variable that is set to the sanitized value of a variable that issued a warning since it was manipulated in a 
+    if statement with a tainted condition. The checker here should issue two warnings, one for the if statement
+    and one for the c = c + 1; instruction
+    */
+    f7()
+    {
+        def t = this.source1();
+        def c = 0;
+        def d = 9;
+
+        if((c==0 || t>2) && d>3)
+        {
+            c = c + 1;
+            t = t + 1;
+
+            d = this.sanitizer1(c);
+        }
+
+        this.sink1(d);
+    }
+}

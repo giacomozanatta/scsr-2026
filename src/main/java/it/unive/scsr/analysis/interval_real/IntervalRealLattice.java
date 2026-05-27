@@ -53,7 +53,7 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
     }
 
     public IntervalRealLattice(MathNumber low, MathNumber high) {
-        this(low, high, 0); // Di base parte da 0
+        this(low, high, 0);
     }
 
     public IntervalRealLattice(double low, double high) {
@@ -240,19 +240,12 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
     @Override
     public IntervalRealLattice wideningAux(IntervalRealLattice other) throws SemanticException {
-        System.out.println(
-            "Widening called with: " + this.representation() + " and " + 
-            other.representation() + " (counter: " + this.getWideningCounter() + ")"
-        );
-
         if (this.isBottom() || other.isBottom()) {
             return bottom();
         }
 
         // Increment the widening counter
         int nextCounter = this.getWideningCounter() + 1;
-
-        System.out.println("Widening counter incremented to: " + nextCounter);
 
         // Get bounds of both intervals
         MathNumber l1 = this.getLow();
@@ -267,28 +260,19 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         // Handle upper bound
         if (u2.gt(u1)) {
-            System.out.println("Upper bound increased from " + u1 + " to " + u2);
             // If we have reached 5 calls to widening
             if (nextCounter >= 5) {
-                System.out.println("Reached 5 iterations, widening upper bound to +∞");
                 // Widen to +INF
                 newUpper = MathNumber.PLUS_INFINITY;
             } else {
-                System.out.println("Within 5 iterations, checking difference for upper bound");
-
                 // If we are within the first 5 calls
                 // Calculate the difference between the upper bounds
                 MathNumber diffUpper = u2.subtract(u1);
-
-                System.out.println("Difference between upper bounds: " + diffUpper);
-
                 // If the difference is less than 1 unit
                 if (diffUpper.lt(ONE)) {
                     // We (safely) round up to the next integer
                     newUpper = u2.roundUp(); 
-                    System.out.println("Difference is less than 1, rounding up to next integer: " + newUpper);
                 } else {
-                    System.out.println("Significant increase detected, widening upper bound to +∞");
                     // We have a significant increase, so we widen immediately to +INF
                     newUpper = MathNumber.PLUS_INFINITY;
                 }
@@ -297,28 +281,19 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
 
         // Handle lower bound
         if (l2.lt(l1)) {
-            System.out.println("Lower bound decreased from " + l1 + " to " + l2);
-
             if (nextCounter >= 5) {
-                System.out.println("Reached 5 iterations, widening lower bound to -∞");
                 // If we have reached 5 iterations, we widen to -INF
                 newLower = MathNumber.MINUS_INFINITY;
             } else {
-                System.out.println("Within 5 iterations, checking difference for lower bound");
-
                 // If we are within the first 5 calls
                 // Calculate the difference between the lower bounds
                 MathNumber diffLower = l1.subtract(l2);
-
-                System.out.println("Difference between lower bounds: " + diffLower);
 
                 // If the difference is less than 1 unit
                 if (diffLower.lt(ONE)) {
                     // We (safely) round down to the previous integer
                     newLower = l2.roundDown();
-                    System.out.println("Difference is less than 1, rounding down to previous integer: " + newLower);
                 } else {
-                    System.out.println("Significant decrease detected, widening lower bound to -∞");
                     // We have a significant decrease, so we widen immediately to -INF
                     newLower = MathNumber.MINUS_INFINITY;
                 }
@@ -328,7 +303,6 @@ public class IntervalRealLattice implements BaseLattice<IntervalRealLattice>, Co
         // We reset the counter if we have reached 5 calls
         if (nextCounter >= 5) {
             nextCounter = 0;
-            System.out.println("Counter reset to 0 after reaching 5 iterations");
         }
 
         // As we keep track of iteration count, we pass it to the constructor

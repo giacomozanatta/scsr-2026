@@ -1,0 +1,29 @@
+class realIntervals {
+
+	basic() {
+		def price = 19.99;
+		def discount = 2.50;
+		def total = price - discount;
+		def tax = total * .22;
+		return total + tax;
+	}
+
+	division(b) {
+		def numerator = 10.0;
+		def denominator = 2.5;
+		if (b)
+			denominator = denominator - 2.5;
+		else
+			denominator = denominator + 1.5;
+		return numerator / denominator;
+	}
+
+	loop(b) {
+		def current = .5;
+		while (b < 4) {
+			current = current + .25;
+			b = b + 1;
+		}
+		return current;
+	}
+}

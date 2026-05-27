@@ -1,0 +1,19 @@
+class commentForm {
+
+	readRawInput() {
+		return 0;
+	}
+
+	escapeHtml(s) {
+		return 0;
+	}
+
+	renderPage(v) {
+	}
+
+	submitComment() {
+		def raw = this.readRawInput();
+		def safe = this.escapeHtml(raw);
+		this.renderPage(safe);
+	}
+}

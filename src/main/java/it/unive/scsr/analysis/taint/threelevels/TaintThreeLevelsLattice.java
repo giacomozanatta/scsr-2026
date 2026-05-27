@@ -8,12 +8,12 @@ import it.unive.scsr.analysis.parity.ParityLattice;
 
 /*
  * Lattice of  taint with three levels
- *	 Top 
+ *	 Top
  * 	/	\
- * C	 T	 
+ * C	 T
  *  \	/
  *  BOTTOM
- * 
+ *
  */
 public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintThreeLevelsLattice> {
 

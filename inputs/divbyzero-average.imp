@@ -1,0 +1,7 @@
+class statistics {
+
+	average(sum, count) {
+		def avg = sum / count;
+		return avg;
+	}
+}

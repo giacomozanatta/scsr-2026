@@ -38,16 +38,9 @@ public class Parity implements
 
     @Override
     public ParityLattice evalUnaryExpression(UnaryExpression expression, ParityLattice arg, ProgramPoint pp,
-                                                                           SemanticOracle oracle) throws SemanticException {
+                                             SemanticOracle oracle) throws SemanticException {
         if(expression.getOperator() == NumericNegation.INSTANCE) {
-            if(arg == ParityLattice.ODD)
-                return ParityLattice.ODD;
-            else if(arg == ParityLattice.EVEN)
-                return ParityLattice.EVEN;
-            else if(arg == ParityLattice.TOP)
-                return ParityLattice.TOP;
-            else if(arg == ParityLattice.BOTTOM)
-                return ParityLattice.BOTTOM;
+            return arg;
         }
         return ParityLattice.TOP;
     }
@@ -79,11 +72,10 @@ public class Parity implements
             if(left == ParityLattice.TOP || right == ParityLattice.TOP)
                 return ParityLattice.TOP;
 
-        } else if (expression.getOperator() instanceof ModuloOperator
+        } else if (expression.getOperator() instanceof DivisionOperator
+                || expression.getOperator() instanceof ModuloOperator
                 || expression.getOperator() instanceof RemainderOperator) {
-            if (right == ParityLattice.EVEN) {
-                return left;
-            }
+
             return ParityLattice.TOP;
         }
 

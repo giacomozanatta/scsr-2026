@@ -19,7 +19,6 @@ public class SignTaintLattice implements BaseLattice<SignTaintLattice> {
 
     SignTaintLattice(ExtendedSignLattice sign, TaintThreeLevelsLattice taint) {
         // TODO: consider if either component is BOTTOM, collapse both to BOTTOM so (BOTTOM, X) equals SignTaintLattice.BOTTOM.
-
         this.sign = sign;
         this.taint = taint;
     }

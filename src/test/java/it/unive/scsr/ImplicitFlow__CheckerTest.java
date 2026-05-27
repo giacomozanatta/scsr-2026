@@ -15,11 +15,11 @@ import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
-import it.unive.scsr.checkers.Homework_Checker;
+import it.unive.scsr.checkers.ImplicitFlow_Checker;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
-public class Homework_CheckerTest {
+public class ImplicitFlow__CheckerTest {
 
     String[] nameSource = {"source1", "GetRequest"};
 	String[] nameSanitizers = {"sanitizer1"};
@@ -29,13 +29,13 @@ public class Homework_CheckerTest {
     @Test
     public void testTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework_checker.imp");
+        Program program = IMPFrontend.processFile("inputs/homework/implicitflow_checker.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/homework";
+        conf.workdir = "outputs/implicitflow";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
@@ -54,7 +54,7 @@ public class Homework_CheckerTest {
         }
     
         // added checker to the analysis
-        conf.semanticChecks.add(new Homework_Checker<>());
+        conf.semanticChecks.add(new ImplicitFlow_Checker<>());
 		conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());

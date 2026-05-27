@@ -28,7 +28,7 @@ import it.unive.lisa.type.Type;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
-public class Homework_Checker <H extends HeapValue<H>, T extends TypeValue<T>> implements
+public class ImplicitFlow_Checker <H extends HeapValue<H>, T extends TypeValue<T>> implements
 SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<TaintThreeLevelsLattice>, TypeEnvironment<T>>> 
 {
 	@Override

@@ -12,7 +12,7 @@ class ofuf
 
         def weekly_temperatures_decrements = new int[7];
 
-        arq[3] = -120;
+        weekly_temperatures_decrements[3] = -120;
 
         def value_detected = t;
 

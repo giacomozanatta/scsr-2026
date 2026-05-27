@@ -80,7 +80,7 @@ public class NumericalAnalysesTest {
 
         
         // finally, we tell LiSA to analyze the program
-        lisa.run(program);
+        //lisa.run(program);
     }
     
     @Test

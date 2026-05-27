@@ -95,10 +95,10 @@ public class TaintThreeLevelsChecker<H extends HeapValue<H>, T extends TypeValue
 									(ProgramPoint) uc, oracle);
 
 							if (abstractValue.isAlwaysTainted())
-								tool.warnOn(uc, "There is a taint value in a sink: " + par.getLocation());
+								tool.warnOn(uc, "There is a definite tainted value in a sink: " + par.getLocation());
 
 							else if(abstractValue.isPossiblyTainted())
-								tool.warnOn(uc, "The value in the sink: " + par.getLocation() + " could be tainted");
+								tool.warnOn(uc, "There is a possible tainted value in a sink: " + par.getLocation());
                         
 						}
 					} catch (SemanticException e) {

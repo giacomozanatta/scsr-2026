@@ -16,6 +16,19 @@ class overflow{
         return byte;
     }
 
+    byte_def_looping_over_2(){
+        def byte = 0;
+        for(def i = 0; i < 130; i = i + 1){
+            if( (i % 2) == 0){
+                byte = i;
+            }
+            else {
+                byte = -i;
+            }
+        }
+        return byte;
+    }
+
     byte_loop_branching_overflow(){
         def max = 10;
         def byte = 125;

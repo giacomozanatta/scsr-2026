@@ -8,7 +8,13 @@ class overflow{
         integer = integer - 2147483647 - 2;
         return integer;
     }
-
+    integer_definite_looping_overflow(){
+        def integer = 0;
+        for(def i = 0; i < 2147483647 + 2 ; i = i + 1){
+            integer = integer + 1;
+        }
+        return integer;
+    }
     integer_loop_branching_overflow(){
         def max = 10;
         def integer = 2147483647 - 2;

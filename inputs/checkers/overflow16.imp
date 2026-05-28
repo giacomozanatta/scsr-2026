@@ -8,6 +8,14 @@ class overflow{
         short = short - 32769;
         return short;
     }
+    
+    short_definite_looping_overflow(){
+        def short = 0;
+        for(def i = 0; i < 32769; i = i + 1){
+            short = short + 1;
+        }
+        return short;
+    }
 
     short_loop_branching_overflow(){
         def max = 10;
@@ -35,6 +43,19 @@ class overflow{
                 short = short + 0;
             }
         }
+    }
+
+    short_def_looping_over_2(){
+        def short = 0;
+        for(def i = 0; i < 32769 ; i = i + 1){
+            if( (i % 2) == 0){
+                short = i;
+            }
+            else {
+                short = -i;
+            }
+        }
+        return short;
     }
 
     short_array_access(){

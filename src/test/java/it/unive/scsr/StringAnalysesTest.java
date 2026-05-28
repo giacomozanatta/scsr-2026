@@ -80,4 +80,63 @@ public class StringAnalysesTest {
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
+
+    @Test
+    public void testOthersStringPrefixAnalysis() throws ParsingException, AnalysisException {
+        // we parse the program to get the CFG representation of the code in it
+        Program program = IMPFrontend.processFile("inputs/others/strings/http-strings.imp");
+
+        // we build a new configuration for the analysis
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/others/strings/http-strings";
+
+        // we specify the visual format of the analysis results
+        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlResults<>(true));
+        // we specify the analysis that we want to execute
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Prefix(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        // added checker to the analysis
+        conf.semanticChecks.add(new HTTPStringChecker<>());
+
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        conf.outputs.add(new JSONReportDumper());
+
+        // we instantiate LiSA with our configuration
+        LiSA lisa = new LiSA(conf);
+
+        // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
+
+    @Test
+    public void testOthersStringSuffixAnalysis() throws ParsingException, AnalysisException {
+        // we parse the program to get the CFG representation of the code in it
+        Program program = IMPFrontend.processFile("inputs/others/strings/dotcom-strings.imp");
+
+        // we build a new configuration for the analysis
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        // we specify where we want files to be generated
+        conf.workdir = "outputs/others/strings/dotcom-strings";
+
+        // we specify the visual format of the analysis results
+        //conf.outputs.add(new HtmlInputs(true));
+        conf.outputs.add(new HtmlResults<>(true));
+        // we specify the analysis that we want to execute
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Suffix(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        // added checker to the analysis
+        conf.semanticChecks.add(new DotComStringChecker<>());
+        // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
+        conf.outputs.add(new JSONReportDumper());
+
+        // we instantiate LiSA with our configuration
+        LiSA lisa = new LiSA(conf);
+
+        // finally, we tell LiSA to analyze the program
+        lisa.run(program);
+    }
 }

@@ -1,0 +1,159 @@
+// ----------------------------------------
+// From 895227_897270 — dot_com_string_1
+// ----------------------------------------
+class CloudRouter {
+
+    routeTraffic(load) {
+        def targetServer = "";
+
+        if (load > 80) {
+            targetServer = "https://backup-server.amazon.com";
+        } else {
+            targetServer = "https://main-server.amazon.com";
+        }
+
+        this.connectTo(targetServer);
+
+        return 1;
+    }
+
+    connectTo(endpoint) {
+        return 0;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — dot_com_string_2
+// ----------------------------------------
+class EmailSystem {
+
+    sendNewsletter() {
+        def username = "mario.rossi";
+        def at = "@";
+        def companyDomain = "enterprise.com";
+
+        def fullAddress = username + at + companyDomain;
+
+        def subject = "Benvenuto";
+
+        this.dispatchEmail(subject, fullAddress);
+
+        return 1;
+    }
+
+    dispatchEmail(title, recipient) {
+        return 0;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — dot_com_string_3
+// ----------------------------------------
+class PhishingFilter {
+
+    checkRedirect() {
+        def maliciousUrl = "http://secure-login-update.com";
+        def isSafe = 0;
+
+        this.logRedirect(maliciousUrl, isSafe);
+
+        return 1;
+    }
+
+    logRedirect(url, status) {
+        return 0;
+    }
+}
+
+// ----------------------------------------
+// From 896827_895879 — suffix
+// ----------------------------------------
+class suffix {
+
+    processFile(filename) {
+    }
+
+    logAccess(target) {
+    }
+
+    dotComFile() {
+        def filename = "setup.com";
+        this.processFile(filename);
+    }
+
+    safeFile() {
+        def filename = "report.pdf";
+        this.processFile(filename);
+    }
+
+    dotComDomain() {
+        def domain = "backup.com";
+        this.logAccess(domain);
+    }
+
+    emailMalwareAttachment(is_manager) {
+        def attachment = "report.pdf";
+        if (is_manager) {
+            attachment = "invoice_2024.com";
+        } else {
+            attachment = "statement_q4.com";
+        }
+        this.processFile(attachment);
+    }
+}
+
+// ----------------------------------------
+// From 903942 — strings
+// ----------------------------------------
+class strings {
+
+    redirect(url) {
+    }
+
+    register_endpoint(path) {
+    }
+
+    redirect_dotcom() {
+        def domain = "shop.amazon.com";
+        this.redirect(domain);
+    }
+
+    redirect_other_tld() {
+        def domain = "university.it";
+        this.redirect(domain);
+    }
+
+    build_and_redirect(brand) {
+        def tld = ".com";
+        def domain = brand + tld;
+        this.redirect(domain);
+    }
+}
+
+// ----------------------------------------
+// From 876957 — strings (DnsResolver)
+// ----------------------------------------
+class DnsResolver {
+
+    resolve(domain) {
+        return domain;
+    }
+
+    testDotComDomain() {
+        def domain = "google.com";
+        def result = this.resolve(domain);
+        return result;
+    }
+
+    testSafeDomain() {
+        def safe = "university.edu";
+        def result = this.resolve(safe);
+        return result;
+    }
+
+    testOrgDomain() {
+        def org = "wikipedia.org";
+        def result = this.resolve(org);
+        return result;
+    }
+}

@@ -1,0 +1,83 @@
+class cartesian_test {
+
+    taint(a) {
+        return a;
+    }
+
+    sanitize(a) {
+        return a;
+    }
+
+    sink1(a) {
+        return a;
+    }
+
+    // Test 1: tainted positive reaches sink -> [CARTESIAN] tainted positive
+    taintedPositive() {
+        def x = this.taint(1);      // (POS, TAINTED)
+        this.sink1(x);
+        return x;
+    }
+
+    // Test 2: tainted negative reaches sink -> [CARTESIAN] tainted negative
+    taintedNegative() {
+        def x = this.taint(-1);     // (NEG, TAINTED)
+        this.sink1(x);
+        return x;
+    }
+
+    // Test 3: tainted zero reaches sink -> [CARTESIAN] tainted zero
+    taintedZero() {
+        def x = this.taint(0);      // (ZERO, TAINTED)
+        this.sink1(x);
+        return x;
+    }
+
+    // Test 4: clean positive reaches sink -> [SIGN] positive only, no taint warning
+    cleanPositive() {
+        def x = 5;              // (POS, CLEAN)
+        this.sink1(x);
+        return x;
+    }
+
+    // Test 5: sign lost at join, taint survives -> [CARTESIAN] tainted unknown sign
+    taintedJoin() {
+        def x = this.taint(1);      // (POS, TAINTED)
+        def result = 0;
+        if (x > 0) {
+            result = x;         // (POS, TAINTED)
+        } else {
+            result = -1;        // (NEG, CLEAN)
+        }
+        // join: (TOP, TAINTED)
+        this.sink1(result);
+        return result;
+    }
+
+    // Test 6: sanitized taint -> no taint warning, only sign
+    sanitized() {
+        def x = this.taint(3);      // (POS, TAINTED)
+        def y = this.sanitize(x);   // (POS, CLEAN)  -- sanitizer clears taint
+        this.sink1(y);
+        return y;
+    }
+
+    // Test 7: taint through arithmetic chain
+    taintChain() {
+        def a = this.taint(2);      // (POS, TAINTED)
+        def b = a + 1;          // (POS, TAINTED)
+        def c = b * 2;          // (POS, TAINTED)
+        def d = c - 10;         // (TOP, TAINTED)
+        this.sink1(d);
+        return d;
+    }
+
+    // Test 8: non-reduced product limitation -- taint*0 stays tainted
+    multiplyByZero() {
+        def t = this.taint(7);  // (POS, TAINTED)
+        def z = 0;              // (ZERO, CLEAN)
+        def r = t * z;          // (ZERO, TAINTED)
+        this.sink1(r);
+        return r;
+    }
+}

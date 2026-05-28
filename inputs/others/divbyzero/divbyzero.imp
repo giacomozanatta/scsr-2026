@@ -1,0 +1,176 @@
+// ----------------------------------------
+// From 895227_897270 — div_by_zero_interval_2
+// ----------------------------------------
+class PaginationSystem {
+
+    computeTotalPages() {
+        def totalItems = 250;
+        def itemsPerPage = 20;
+        def userOverride = 0;
+
+        if (userOverride == 0) {
+            itemsPerPage = 0;
+        } else {
+            itemsPerPage = userOverride;
+        }
+
+        def totalPages = totalItems / itemsPerPage;
+
+        return totalPages;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — div_by_zero_interval_3
+// ----------------------------------------
+class ThermalSensor {
+
+    processTemperature() {
+        def tempReading = 10;
+        def i = 0;
+
+        while (i < 20) {
+            tempReading = tempReading - 1;
+            i = i + 1;
+        }
+
+        def calibration = 0;
+
+        if (tempReading != 0) {
+            calibration = 500 / tempReading;
+        } else {
+            calibration = -1;
+        }
+
+        return calibration;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — div_by_zero_interval_1
+// ----------------------------------------
+class ECommerce {
+
+    applyDynamicDiscount() {
+        def cartTotal = 1000;
+        def daysToExpiration = 5;
+        def finalPrice = 0;
+
+        while (daysToExpiration > -5) {
+            def priceRatio = cartTotal / daysToExpiration;
+            finalPrice = finalPrice + priceRatio;
+            daysToExpiration = daysToExpiration - 1;
+        }
+
+        return finalPrice;
+    }
+}
+
+// ----------------------------------------
+// From 896827_895879 — divbyzero
+// ----------------------------------------
+class divbyzero {
+
+    literalZero() {
+        def x = 10;
+        def result = x / 0;
+        return result;
+    }
+
+    safeConstantDivisor() {
+        def total = 256;
+        def size = 16;
+        def idx1 = total / size;
+        def idx2 = 128 / size;
+        def idx3 = 64 / size;
+        return idx1;
+    }
+
+    safeProductDivisor() {
+        def a = 3;
+        def b = 5;
+        def divisor = a * b;
+        def result = 900 / divisor;
+        return result;
+    }
+}
+
+// ----------------------------------------
+// From 904329 — divbyzero_1
+// ----------------------------------------
+class dbz {
+
+    f0() {
+        def space = 0;
+        def time = 7;
+        def speed = space/time;
+
+        time = 0;
+        def acceleration = space/(time*time);
+
+        return;
+    }
+}
+
+// ----------------------------------------
+// From 904329 — divbyzero_2
+// ----------------------------------------
+class dbz {
+
+    f1() {
+        def time = 3;
+
+        if (time > 0) {
+            time = 0;
+        } else {
+            time = 9;
+        }
+
+        def space = 7;
+        def speed = space/time;
+
+        if(time != 0) {
+            def acceleration = 5;
+            def new_speed = 0.5*acceleration*(time*time);
+        }
+
+        return;
+    }
+}
+
+// ----------------------------------------
+// From 913849 — div_by_zero
+// ----------------------------------------
+class pressure {
+
+    calculate_volume(l,w,h) {
+        return l * w * h;
+    }
+
+    calculate_pressure(h) {
+        return (1 * 8.314462 * 100) / this.calculate_volume(10,10,h);
+    }
+}
+
+// ----------------------------------------
+// From 913849 — div_by_zero2
+// ----------------------------------------
+class prices {
+    price;
+    old_price;
+    old_price_ratio;
+
+    ~prices(){
+        this.price = 10000;
+    }
+
+    update() {
+        return this.old_price / this.price;
+    }
+
+    reduce_price(reduction){
+        this.old_price = this.price;
+        this.price = this.price - reduction;
+        this.update();
+    }
+}

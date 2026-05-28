@@ -1,0 +1,139 @@
+// ----------------------------------------
+// From 904329 — overflowunderflow_1
+// ----------------------------------------
+class ofuf {
+
+    f0() {
+        def player_lvl = 127;
+        def exp = 7;
+
+        def progress = player_lvl + exp;
+
+        if(progress > 127)
+            player_lvl = 0;
+
+        def penalty_for_cheating = player_lvl - exp;
+
+        return;
+    }
+
+    f1() {
+        def price_per_item = 127;
+        def num_items = 7;
+
+        def total_revenue = price_per_item * num_items;
+        def warehouse_cost = price_per_item * price_per_item * 3;
+
+        def revenue_per_item = price_per_item / num_items;
+
+        def debt = -127;
+        def debt_after_penalty = debt - 2;
+
+        return;
+    }
+}
+
+// ----------------------------------------
+// From 904329 — overflowunderflow_2
+// ----------------------------------------
+class ofuf {
+
+    f2() {
+        def player_one_hp = 125;
+        def cumulative_damage = 127;
+        def player_two_hp = 1;
+        def num_of_players = 3;
+
+        while(num_of_players > 2) {
+            player_one_hp = player_one_hp - 1;
+            cumulative_damage = cumulative_damage + 1;
+            player_two_hp = player_two_hp - 1;
+            num_of_players = num_of_players - 1;
+        }
+
+        return;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — overflow_interval_1
+// ----------------------------------------
+class CryptoMiner {
+
+    calculateHashRate(inputA, inputB) {
+        def nonce1 = 50000;
+        def nonce2 = 100000;
+
+        def hashResult = nonce1 * nonce2;
+
+        return hashResult;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — overflow_interval_2
+// ----------------------------------------
+class SmartContract {
+
+    mintTokens() {
+        def totalSupply = 1000000;
+        def userBalance = 0;
+        def isMinting = 1;
+
+        while (isMinting > 0) {
+            userBalance = userBalance + 500;
+            totalSupply = totalSupply + 500;
+        }
+
+        return userBalance;
+    }
+}
+
+// ----------------------------------------
+// From 895227_897270 — overflow_interval_3
+// ----------------------------------------
+class SubmarineNavigation {
+
+    calculateDepth() {
+        def currentAltitude = 0;
+        def diveRate = 15;
+        def sensorActive = 1;
+
+        while (sensorActive == 1) {
+            currentAltitude = currentAltitude - diveRate;
+        }
+
+        return currentAltitude;
+    }
+}
+
+// ----------------------------------------
+// From 881299 — overunderflow
+// ----------------------------------------
+class bank {
+
+    deposit(balance, amount) {
+        return balance + amount;
+    }
+
+    withdraw(balance, amount) {
+        return balance - amount;
+    }
+
+    apply_interest(balance, rate) {
+        return balance * rate;
+    }
+
+    main() {
+        def balance         = 2000000000;
+        def deposit_amount  = 200000000;
+        def withdraw_amount = -2000000000;
+        def rate            = 3;
+
+        def balance2 = this.deposit(balance, deposit_amount);
+        def balance3 = this.withdraw(balance2, withdraw_amount);
+        def balance4 = this.apply_interest(balance3, rate);
+
+        return balance4;
+    }
+}

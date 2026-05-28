@@ -40,4 +40,27 @@ public class DivByZeroTest {
         System.out.println("Analysis completed for " + "inputs/divbyzero/divbyzero.imp");
         System.out.println("Check outputs in: outputs/" + "divbyzero");
     }
+
+    @Test
+    public void testOthersDivByZeroDefinite() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/others/divbyzero/divbyzero.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        conf.workdir = "outputs/others/" + "divbyzero";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(
+                defaultHeapDomain(),
+                new Interval(),
+                defaultTypeDomain()
+        );
+        conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+
+        System.out.println("Analysis completed for " + "inputs/others/divbyzero/divbyzero.imp");
+        System.out.println("Check outputs in: outputs/others/" + "divbyzero");
+    }
 }

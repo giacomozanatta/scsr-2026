@@ -39,4 +39,28 @@ public class OverflowTest {
         System.out.println("Analysis completed for " + "inputs/overflow/overflow.imp");
         System.out.println("Check outputs in: outputs/" + "overflow");
     }
+
+    @Test
+    public void testOthersOverflow() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/others/overflow/overflow.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+
+        conf.workdir = "outputs/others/" + "overflow";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(
+                defaultHeapDomain(),
+                new Interval(),
+                defaultTypeDomain()
+        );
+        // MIN_VALUE = -2147483648, MAX_VALUE = 2147483647
+        conf.semanticChecks.add(new OverflowIntervalChecker<>(Integer.MIN_VALUE, Integer.MAX_VALUE));
+        conf.outputs.add(new JSONReportDumper());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+
+        System.out.println("Analysis completed for " + "inputs/others/overflow/overflow.imp");
+        System.out.println("Check outputs in: outputs/others/" + "overflow");
+    }
 }

@@ -60,10 +60,11 @@ class RealIntervalTest {
      */
     testWideningConvergence() {
         def x = 0.0;
+        def y = 0.1;
         // This loop tests if widening correctly jumps to +inf 
         // to handle the density of Reals
         while (x < 0.3) {
-            x = x + 0.1;
+            x = x + y;
         }
         return x;
     }

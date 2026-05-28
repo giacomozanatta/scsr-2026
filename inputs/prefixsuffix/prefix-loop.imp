@@ -1,35 +1,36 @@
-class prefixLoop {
+class prefixConditional {
 
-	// Test 1: Http prefix in loop
-	loopHttp(n) {
-		def i = 0;
-		while (i < n) {
-			def url = "http://api.example.com/page" + i;
-			fetch(url);
-			i = i + 1;
-		}
-		return i;
+	connect(url) { return url; }
+
+	conditionalHttp(useHttps) {
+		def url = "ftp://neutral.load/";
+		if (useHttps)
+			url = "https://secure.down.load/" + "page";
+		else
+			url = "http://down.load/" + "page";
+		this.connect(url);
+		return url;
 	}
 
-	// Test 2: Alternating http/https in loop
-	alternatingHttp(n) {
-		def i = 0;
-		while (i < n) {
-			def url;
-			if (i % 2 == 0)
-				url = "http://example.com/page" + i;
+	branchHttp(flag) {
+		def url = "ftp://up.load/" + "file";
+		if (flag)
+			url = "http://down.load/" + "file";
+		this.connect(url);
+		return url;
+	}
+
+	nestedConditional(isSecure, isPublic) {
+		def url = "ftp://neutral.load/";
+		if (isSecure) {
+			if (isPublic)
+				url = "https://public.down.load/" + "data";
 			else
-				url = "https://example.com/page" + i;
-			connect(url);
-			i = i + 1;
+				url = "https://private.down.load/" + "data";
+		} else {
+			url = "http://down.load/" + "data";
 		}
-		return i;
-	}
-
-	// Test 3: Http prefix with concatenation
-	concatenationHttp(base, path) {
-		def url = base + path;
-		connect(url);
+		this.connect(url);
 		return url;
 	}
 }

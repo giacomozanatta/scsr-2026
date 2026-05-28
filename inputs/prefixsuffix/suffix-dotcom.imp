@@ -1,25 +1,25 @@
 class suffixDotCom {
 
-	// Test 1: Direct .com suffix
+	resolve(domain) { return domain; }
+	connect(domain) { return domain; }
+
 	directDotCom() {
-		def domain = "example.com";
-		lookup(domain);
+		def domain = "api.example" + ".com";
+		this.resolve(domain);
 		return domain;
 	}
 
-	// Test 2: Multiple .com calls
 	multipleDotCom() {
-		def domain1 = "api.example.com";
-		def domain2 = "cdn.example.com";
-		resolve(domain1);
-		resolve(domain2);
+		def domain1 = "api.example" + ".com";
+		def domain2 = "cdn.example" + ".com";
+		this.resolve(domain1);
+		this.resolve(domain2);
 		return domain1;
 	}
 
-	// Test 3: Subdomain with .com
 	subdomainDotCom() {
-		def domain = "www.api.example.com";
-		connect(domain);
+		def domain = "www.api.example" + ".com";
+		this.connect(domain);
 		return domain;
 	}
 }

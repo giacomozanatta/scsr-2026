@@ -1,37 +1,37 @@
 class suffixConditional {
 
-	// Test 1: Conditional .com suffix
+	resolve(domain) { return domain; }
+	connect(domain) { return domain; }
+
 	conditionalDotCom(useCom) {
-		def domain;
+		def domain = "example" + ".net";
 		if (useCom)
-			domain = "example.com";
+			domain = "example" + ".com";
 		else
-			domain = "example.org";
-		lookup(domain);
+			domain = "example" + ".org";
+		this.resolve(domain);
 		return domain;
 	}
 
-	// Test 2: .com suffix in branch
 	branchDotCom(flag) {
-		def domain = "example.net";
+		def domain = "example" + ".net";
 		if (flag)
-			domain = "example.com";
-		resolve(domain);
+			domain = "example" + ".com";
+		this.resolve(domain);
 		return domain;
 	}
 
-	// Test 3: Nested conditional .com
 	nestedConditional(isCommercial, isSecure) {
-		def domain;
+		def domain = "example" + ".net";
 		if (isCommercial) {
 			if (isSecure)
-				domain = "secure.example.com";
+				domain = "secure.example" + ".com";
 			else
-				domain = "example.com";
+				domain = "example" + ".com";
 		} else {
-			domain = "example.org";
+			domain = "example" + ".org";
 		}
-		connect(domain);
+		this.connect(domain);
 		return domain;
 	}
 }

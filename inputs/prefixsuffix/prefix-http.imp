@@ -1,25 +1,35 @@
-class prefixHttp {
+class suffixLoop {
 
-	// Test 1: Direct http:// prefix
-	directHttp() {
-		def url = "http://example.com";
-		connect(url);
-		return url;
+	ping(domain) { return domain; }
+	resolve(domain) { return domain; }
+
+	loopDotCom(n) {
+		def i = 0;
+		while (i < n) {
+			def domain = "server" + i + ".com";
+			this.ping(domain);
+			i = i + 1;
+		}
+		return i;
 	}
 
-	// Test 2: Direct https:// prefix
-	directHttps() {
-		def url = "https://secure.example.com";
-		secureConnect(url);
-		return url;
+	alternatingTld(n) {
+		def i = 0;
+		while (i < n) {
+			def domain = "example" + ".net";
+			if (i % 2 == 0)
+				domain = "example" + i + ".com";
+			else
+				domain = "example" + i + ".org";
+			this.resolve(domain);
+			i = i + 1;
+		}
+		return i;
 	}
 
-	// Test 3: Multiple http calls
-	multipleHttpCalls() {
-		def url1 = "http://api.example.com";
-		def url2 = "http://cdn.example.com";
-		fetch(url1);
-		fetch(url2);
-		return url1;
+	concatenationDotCom(base, tld) {
+		def domain = base + tld;
+		this.resolve(domain);
+		return domain;
 	}
 }

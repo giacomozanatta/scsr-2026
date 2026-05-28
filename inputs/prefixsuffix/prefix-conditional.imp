@@ -1,37 +1,36 @@
 class prefixConditional {
 
-	// Test 1: Conditional http prefix
+	connect(url) { return url; }
+
 	conditionalHttp(useHttps) {
-		def url;
+		def url = "ftp://neutral.load/";
 		if (useHttps)
-			url = "https://secure.example.com";
+			url = "https://secure.down.load/" + "page";
 		else
-			url = "http://example.com";
-		connect(url);
+			url = "http://down.load/" + "page";
+		this.connect(url);
 		return url;
 	}
 
-	// Test 2: Http prefix in branch
 	branchHttp(flag) {
-		def url = "ftp://example.com";
+		def url = "ftp://up.load/" + "file";
 		if (flag)
-			url = "http://example.com";
-		connect(url);
+			url = "http://down.load/" + "file";
+		this.connect(url);
 		return url;
 	}
 
-	// Test 3: Nested conditional http
 	nestedConditional(isSecure, isPublic) {
-		def url;
+		def url = "ftp://neutral.load/";
 		if (isSecure) {
 			if (isPublic)
-				url = "https://public.example.com";
+				url = "https://public.down.load/" + "data";
 			else
-				url = "https://private.example.com";
+				url = "https://private.down.load/" + "data";
 		} else {
-			url = "http://example.com";
+			url = "http://down.load/" + "data";
 		}
-		connect(url);
+		this.connect(url);
 		return url;
 	}
 }

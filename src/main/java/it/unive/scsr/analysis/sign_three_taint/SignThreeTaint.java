@@ -3,6 +3,7 @@ package it.unive.scsr.analysis.sign_three_taint;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
+import it.unive.lisa.analysis.informationFlow.ThreeLevelsTaint;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
@@ -21,6 +22,8 @@ import it.unive.lisa.symbolic.value.operator.binary.ComparisonLt;
 import it.unive.lisa.symbolic.value.operator.binary.ComparisonNe;
 import it.unive.scsr.analysis.sign.Sign;
 import it.unive.scsr.analysis.sign.SignLattice;
+import it.unive.scsr.analysis.taint.Taint;
+import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 /**
@@ -38,6 +41,7 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
  */
 public class SignThreeTaint implements BaseNonRelationalValueDomain<SignThreeTaintLattice> {
     private final Sign signDomain = new Sign();
+    private final TaintThreeLevels taintDomain = new TaintThreeLevels();
 
     @Override
     public SignThreeTaintLattice top() { 
@@ -54,28 +58,55 @@ public class SignThreeTaint implements BaseNonRelationalValueDomain<SignThreeTai
         Constant constant, ProgramPoint pp, SemanticOracle oracle
     ) throws SemanticException {
         SignLattice s = signDomain.evalConstant(constant, pp, oracle);
+        // Result of a constant is always clean (not tainted)
+        TaintThreeLevelsLattice t = taintDomain.evalConstant(constant, pp, oracle);
 
-        return new SignThreeTaintLattice(s, TaintThreeLevelsLattice.CLEAN);
+        return new SignThreeTaintLattice(s, t);
     }
 
     @Override
     public SignThreeTaintLattice evalIdentifier(
         Identifier id, ValueEnvironment<SignThreeTaintLattice> env, ProgramPoint pp, SemanticOracle oracle
     ) throws SemanticException {
+        // Verify whether the identifier has a taint annotation at this program point
+        TaintThreeLevelsLattice threeTaintLevelsLatticeAnnotation = taintDomain.fixedVariable(id, pp, oracle);
 
-        // Source: anything flowing through this identifier is tainted
-        if (id.getAnnotations().contains(BaseTaint.TAINTED_MATCHER))
-            return new SignThreeTaintLattice(SignLattice.TOP, TaintThreeLevelsLattice.TAINT);
+        // If the annotation is present (not bottom)
+        if (!threeTaintLevelsLatticeAnnotation.isBottom()) {
+            // Maintain the sign information from the environment
+            // and update the taint to the annotated level
+            SignThreeTaintLattice envValue = env.getState(id);
 
-        // Sanitizer: taint is removed, sign is preserved from the environment
-        if (id.getAnnotations().contains(BaseTaint.CLEAN_MATCHER)) {
-            SignThreeTaintLattice current = env.getState(id);
-            return new SignThreeTaintLattice(current.getSign(), TaintThreeLevelsLattice.CLEAN);
+            // If the variable is uninitialized (bottom)
+            if (envValue.isBottom()) {
+                // Keep as bottom
+                return bottom();
+            }
+
+            // Update the taint level according to the annotation
+            return new SignThreeTaintLattice(envValue.getSign(), threeTaintLevelsLatticeAnnotation);
         }
 
         return env.getState(id);
     }
 
+    /**
+     * Evaluates unary expressions
+     * 
+     * @brief Sign is computed by the sign domain, taint propagates unchanged.
+     * 
+     * @note From {@link BaseTaint}, TaintThreeLevels implements evalUnaryExpression by 
+     *  returning the taint of the operand. We could just return 
+     * 
+     * @param expression the unary expression to evaluate
+     * @param arg the abstract value of the operand
+     * @param pp the program point where the expression is evaluated
+     * @param oracle the semantic oracle for queries
+     * 
+     * @return the abstract value of the expression
+     * 
+     * @throws SemanticException if evaluation fails
+     */
     @Override
     public SignThreeTaintLattice evalUnaryExpression(
         UnaryExpression expression, SignThreeTaintLattice arg, ProgramPoint pp, SemanticOracle oracle
@@ -85,9 +116,10 @@ public class SignThreeTaint implements BaseNonRelationalValueDomain<SignThreeTai
         }
 
         SignLattice s = signDomain.evalUnaryExpression(expression, arg.getSign(), pp, oracle);
-
         // Taint flows through: if operand is tainted, result is tainted
-        return new SignThreeTaintLattice(s, arg.getTaint());
+        TaintThreeLevelsLattice t = taintDomain.evalUnaryExpression(expression, arg.getTaint(), pp, oracle);
+
+        return new SignThreeTaintLattice(s, t);
     }
 
     @Override
@@ -100,9 +132,9 @@ public class SignThreeTaint implements BaseNonRelationalValueDomain<SignThreeTai
         }
 
         SignLattice s = signDomain.evalBinaryExpression(expression, left.getSign(), right.getSign(), pp, oracle);
-
+        // This is equivalent to left.getTaint().or(right.getTaint())
         // Taint propagates: if either operand is tainted, result is tainted
-        TaintThreeLevelsLattice t = left.getTaint().or(right.getTaint());
+        TaintThreeLevelsLattice t = taintDomain.evalBinaryExpression(expression, left.getTaint(), right.getTaint(), pp, oracle);
 
         return new SignThreeTaintLattice(s, t);
     }
@@ -111,12 +143,11 @@ public class SignThreeTaint implements BaseNonRelationalValueDomain<SignThreeTai
     public Satisfiability satisfiesBinaryExpression(
         BinaryExpression expression, SignThreeTaintLattice left, SignThreeTaintLattice right, ProgramPoint pp, SemanticOracle oracle
     ) {
-        // Satisfiability — uses only the sign component
+        // Satisfiability uses only the sign component
         return signDomain.satisfiesBinaryExpression(expression, left.getSign(), right.getSign(), pp, oracle);
     }
 
-    // Assumption — refines the sign component, taint is unchanged
-
+    // Assumption: refines the sign component, taint is unchanged
     @Override
     public ValueEnvironment<SignThreeTaintLattice> assumeBinaryExpression(
         ValueEnvironment<SignThreeTaintLattice> environment, BinaryExpression expression, ProgramPoint src, ProgramPoint dest, SemanticOracle oracle

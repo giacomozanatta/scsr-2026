@@ -1,0 +1,9 @@
+class scoreCalculator {
+
+	compute(score) {
+		def weight = 0;
+		def total = score * weight;
+		def avg = 100 / total;
+		return avg;
+	}
+}

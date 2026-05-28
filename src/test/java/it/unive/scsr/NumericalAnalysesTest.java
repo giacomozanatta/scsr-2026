@@ -216,4 +216,19 @@ public class NumericalAnalysesTest {
         LiSA lisa = new LiSA(conf);
         lisa.run(program);
     }
+
+    @Test
+    public void testDivByZeroZeroFactor() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/divbyzero-zeroFactor.imp");
+
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/divbyzero-zeroFactor";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
+
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
 }

@@ -15,6 +15,11 @@ class divbyzero{
         def err = 1/(denom - denom/1);
     }
 
+    basic_3_def_not(){
+        def x = 1;
+        return x/1;
+    }
+
     // Function call
     function_call_simple_compact() {
         def denom = 2/this.get_zero();

@@ -8,6 +8,14 @@ class overflow{
         return byte;
     }
 
+    byte_definite_looping_overflow(){
+        def byte = 0;
+        for(def i = 0; i < 129; i = i + 1){
+            byte = byte + 1;
+        }
+        return byte;
+    }
+
     byte_loop_branching_overflow(){
         def max = 10;
         def byte = 125;

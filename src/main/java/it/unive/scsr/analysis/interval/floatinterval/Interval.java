@@ -33,7 +33,7 @@ public class Interval implements BaseNonRelationalValueDomain<IntervalLattice>{
 	public IntervalLattice 
 	evalConstant(Constant constant, ProgramPoint pp, SemanticOracle oracle)
 			throws SemanticException {
-		
+
 		if(constant.getValue() instanceof Number n) {
 			//I need to check the integer value to 
 			// assign the right approx value

@@ -73,9 +73,9 @@ SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterv
 						
 							if(!abstractValue.isBottom()) {
 								if(abstractValue.equals(new IntInterval(0, 0)))
-									tool.warnOn(div, "This is definitly a division by zero");
+									tool.warnOn(div, "Definitely");
 								else if(abstractValue.includes(new IntInterval(0, 0)))
-									tool.warnOn(div, "This may be possible division by zero");
+									tool.warnOn(div, "Possibly");
 							}
 						}
 					} catch (SemanticException e) {

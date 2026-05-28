@@ -39,7 +39,8 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-    
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>(); // functions calling other functions
+
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
@@ -68,7 +69,8 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-    
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>(); // functions calling other functions
+
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 

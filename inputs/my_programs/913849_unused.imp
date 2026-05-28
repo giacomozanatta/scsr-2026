@@ -5,4 +5,8 @@ class unused {
     calculate (x,y,z) {
         return x + y;
     }
+
+    foo(bar) {
+        return 1;
+    }
 }

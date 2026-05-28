@@ -14,25 +14,32 @@ import it.unive.lisa.program.cfg.statement.Statement;
 import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.util.numeric.IntInterval;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
+import java.util.*;
 
 
 public class UnusedParameterChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
 		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
 
-	Set<String> unusedVariables = new HashSet<>();
+	Dictionary<Integer,Set<String>> unusedVariables = new Hashtable<>();
 	Set<Integer> processedFunctions = new HashSet<>();
+	Boolean startedProcessing = false;
 	@Override
 	public boolean visit(
 			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 		if (!processedFunctions.contains(graph.getDescriptor().hashCode())) {
+            for (Iterator<Integer> it = unusedVariables.keys().asIterator(); it.hasNext(); ) {
+                Integer x = it.next();
+				if (x == graph.getDescriptor().hashCode()) {
+					startedProcessing = false;
+				}
+            }
+			if (!startedProcessing)
+				unusedVariables.put(graph.getDescriptor().hashCode(), new HashSet<>());
+
 			for (var v : graph.getDescriptor().getVariables()) {
 				if (!v.getName().equals("this")) {
-					unusedVariables.add(graph.getDescriptor().getName() + " " + v.getName());
+					unusedVariables.get(graph.getDescriptor().hashCode()).add(v.getName());
 				}
 			}
 			processedFunctions.add(graph.getDescriptor().hashCode());
@@ -53,18 +60,17 @@ public class UnusedParameterChecker<H extends HeapValue<H>, T extends TypeValue<
 				}
 			}
 			for (var reachId : reachableIds) {
-				for (var x : unusedVariables) {
-					if ((graph.getDescriptor().getName() + " " +reachId.toString()).equals(x)) {
-						unusedVariables.remove(x);
-						break;
-					}
-				}
+                for (Iterator<Set<String>> it = unusedVariables.elements().asIterator(); it.hasNext(); ) {
+                    Set<String> set = it.next();
+                    set.remove(reachId.toString());
+                }
 			}
 			try {
 				if (postState == res.getExitState()) {
-					for (var variable : unusedVariables) {
-						tool.warnOn(graph, "There is(are) an unused variable(s): " + variable + " in " + graph.getDescriptor().getFullName());
+					if (!unusedVariables.isEmpty()) {
+						tool.warnOn(graph, "There is(are) an unused variable(s): " + unusedVariables.get(graph.getDescriptor().hashCode()) + " in " + graph.getDescriptor().getFullName());
 					}
+					unusedVariables.remove(graph.getDescriptor().getFullName());
 				}
 			} catch (SemanticException e) {
 				e.printStackTrace();

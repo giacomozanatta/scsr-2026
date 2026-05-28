@@ -1,0 +1,252 @@
+/*
+ * AI Assistance Disclaimer:
+ *   This file was developed with the support of Claude (Anthropic, claude-sonnet-4-6).
+ *   The following prompt was used to guide the generation:
+ *
+ *   "I need a meaningful IMP test program for a static analysis course project.
+ *    The program should be inspired by a real-world domain where taint analysis
+ *    is security-relevant. It should model a web application vulnerable to SQL
+ *    injection, where user input (sources) flows into database queries (sinks)
+ *    with and without sanitization. It should cover direct taint flows, sanitized
+ *    flows, branching flows, multi-step propagation, and loop-based accumulation.
+ *    Method names are fixed by the test harness: sources are source1 and GetRequest,
+ *    sanitizer is sanitizer1, sinks are sink1 and runQueryDB.
+ *    Each method should have a clear real-world motivation and inline comments
+ *    explaining the expected checker behavior."
+ *
+ *   The output was reviewed, tested, and validated against LiSA's checkers by the author.
+ */
+
+/*
+ * Test Program: WebApplication
+ *
+ * Real-world motivation:
+ *   SQL Injection (SQLi) is one of the most critical web vulnerabilities,
+ *   ranked #3 in the OWASP Top 10 (2021). It occurs when user-supplied input
+ *   reaches a database query without proper sanitization, allowing attackers
+ *   to manipulate the query logic.
+ *
+ *   This program models a simplified web application backend that handles
+ *   user authentication and data retrieval. It demonstrates how tainted
+ *   user input (from HTTP GET parameters or form fields) can flow into
+ *   database queries (runQueryDB) through various paths:
+ *     - Direct flow (no sanitization)
+ *     - Sanitized flow (safe)
+ *     - Conditional flow (possible taint)
+ *     - Multi-step propagation through intermediate variables
+ *     - Loop-based accumulation
+ *
+ * Target checker:
+ *   TaintThreeLevelsChecker
+ *     - Definite warning: value is certainly tainted at sink
+ *     - Possible warning: value may be tainted at sink (Top)
+ *
+ * Method name constraints (fixed by test harness annotations):
+ *   Sources:    source1(), GetRequest()
+ *   Sanitizer:  sanitizer1(v)
+ *   Sinks:      sink1(v), runQueryDB(v)
+ */
+class WebApplication {
+
+    /*
+     * Simulates reading a user-supplied value from an HTTP GET parameter.
+     * Annotated as SOURCE by the test harness.
+     * Real scenario: request.getParameter("id") in a Java servlet.
+     */
+    GetRequest() {
+        return 0;
+    }
+
+    /*
+     * Simulates reading a value from a secondary tainted source
+     * (e.g. a cookie value or session token supplied by the user).
+     * Annotated as SOURCE by the test harness.
+     */
+    source1() {
+        return 0;
+    }
+
+    /*
+     * Simulates SQL escaping / input validation.
+     * Real scenario: PreparedStatement or an escapeSQL() utility.
+     * Annotated as SANITIZER by the test harness.
+     */
+    sanitizer1(v) {
+        return 0;
+    }
+
+    /*
+     * Simulates a generic sensitive operation receiving user data.
+     * Annotated as SINK by the test harness.
+     */
+    sink1(v) {
+    }
+
+    /*
+     * Simulates executing a database query with the given parameter.
+     * Real scenario: stmt.executeQuery("SELECT * FROM users WHERE id = " + v)
+     * Annotated as SINK by the test harness.
+     */
+    runQueryDB(v) {
+    }
+
+    // ----------------------------------------------------------------
+    // 1. Direct flows
+    // ----------------------------------------------------------------
+
+    /*
+     * Safe query: constant value passed directly to the database.
+     * Real scenario: a hardcoded admin ID used internally.
+     *
+     * Expected: NO WARN — c is a clean constant, never tainted
+     */
+    safeConstantQuery() {
+        def c = 1;
+        this.runQueryDB(c);
+    }
+
+    /*
+     * SQL injection: raw GET parameter flows directly into query.
+     * Real scenario: "SELECT * FROM users WHERE id = " + request.getParameter("id")
+     * This is the textbook SQLi vulnerability.
+     *
+     * Expected: WARN (definite) — GetRequest() is tainted, flows directly to sink
+     */
+    unsafeDirectQuery() {
+        def userId = this.GetRequest();
+        this.runQueryDB(userId);
+    }
+
+    /*
+     * Safe query: user input is sanitized before reaching the database.
+     * Real scenario: using PreparedStatement or escaping special characters.
+     *
+     * Expected: NO WARN — sanitizer1() cleans the tainted value
+     */
+    sanitizedQuery() {
+        def userId = this.GetRequest();
+        def safeId = this.sanitizer1(userId);
+        this.runQueryDB(safeId);
+    }
+
+    // ----------------------------------------------------------------
+    // 2. Secondary source flows
+    // ----------------------------------------------------------------
+
+    /*
+     * Cookie-based injection: value from a secondary source (cookie/session)
+     * flows into a generic sink without sanitization.
+     *
+     * Expected: WARN (definite) — source1() is tainted, flows directly to sink
+     */
+    cookieInjection() {
+        def token = this.source1();
+        this.sink1(token);
+    }
+
+    /*
+     * Sanitized cookie: secondary source value is cleaned before use.
+     *
+     * Expected: NO WARN — sanitizer1() cleans the tainted cookie value
+     */
+    sanitizedCookie() {
+        def token = this.source1();
+        def safeToken = this.sanitizer1(token);
+        this.sink1(safeToken);
+    }
+
+    // ----------------------------------------------------------------
+    // 3. Conditional flows
+    // ----------------------------------------------------------------
+
+    /*
+     * Conditional query: user input is used only on one branch.
+     * Real scenario: an admin check where one path uses user input directly.
+     * After the branch join: lub(Tainted, Clean) = Top.
+     *
+     * Expected: WARN (possible) — taint depends on branch condition
+     */
+    conditionalQuery(isAdmin) {
+        def query = 0;
+        if (isAdmin) {
+            query = this.GetRequest();
+        } else {
+            query = 1;
+        }
+        this.runQueryDB(query);
+    }
+
+    /*
+     * Conditional with sanitization on the tainted branch.
+     * Real scenario: sanitize only when input comes from user.
+     *
+     * Expected: NO WARN — both branches produce clean values
+     */
+    conditionalSanitized(isAdmin) {
+        def query = 0;
+        if (isAdmin) {
+            def raw = this.GetRequest();
+            query = this.sanitizer1(raw);
+        } else {
+            query = 1;
+        }
+        this.runQueryDB(query);
+    }
+
+    // ----------------------------------------------------------------
+    // 4. Multi-step propagation
+    // ----------------------------------------------------------------
+
+    /*
+     * Multi-step injection: tainted input flows through several
+     * intermediate computations before reaching the query.
+     * Real scenario: building a complex query parameter through
+     * multiple transformations without ever sanitizing.
+     *
+     * Expected: WARN (definite) — taint propagates through entire chain
+     */
+    multiStepInjection() {
+        def raw     = this.GetRequest();
+        def step1   = raw + 1;
+        def step2   = step1 * 2;
+        def step3   = step2 - 3;
+        this.runQueryDB(step3);
+    }
+
+    /*
+     * Multi-step with mid-chain sanitization.
+     * Real scenario: input is processed and then escaped before the query.
+     *
+     * Expected: NO WARN — sanitizer1() breaks the taint chain mid-way
+     */
+    multiStepSanitized() {
+        def raw    = this.GetRequest();
+        def step1  = raw + 1;
+        def safe   = this.sanitizer1(step1);
+        def step2  = safe * 2;
+        this.runQueryDB(step2);
+    }
+
+    // ----------------------------------------------------------------
+    // 5. Loop-based accumulation
+    // ----------------------------------------------------------------
+
+    /*
+     * Loop injection: tainted input is accumulated in a loop variable.
+     * Real scenario: building a query string by iterating over
+     * user-supplied parameters without sanitization.
+     * After the loop: lub(Clean_initial, Tainted_from_source) = Top.
+     *
+     * Expected: WARN (possible) — loop body assigns tainted value,
+     *           but loop may not execute if n=0, so taint is uncertain
+     */
+    loopInjection(n) {
+        def query = 0;
+        def i     = 0;
+        while (i < n) {
+            query = this.GetRequest();
+            i     = i + 1;
+        }
+        this.runQueryDB(query);
+    }
+}

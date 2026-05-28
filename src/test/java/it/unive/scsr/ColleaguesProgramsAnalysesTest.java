@@ -3,16 +3,12 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.analysis.numeric.Interval;
 import it.unive.lisa.analysis.numeric.Pentagon;
 import it.unive.lisa.analysis.string.Prefix;
 import it.unive.lisa.analysis.string.Suffix;
-import it.unive.scsr.analysis.extended_sign.ExtendedSign;
-import it.unive.scsr.analysis.sign.NonNegativeSpeedInMoveForwardChecker;
-import it.unive.scsr.analysis.taint.Taint;
-import it.unive.scsr.analysis.taint.TaintChecker;
+import it.unive.scsr.analysis.interval_real.IntervalReal;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsChecker;
 import it.unive.scsr.checkers.DivByZeroIntervalChecker;
@@ -20,6 +16,7 @@ import it.unive.scsr.checkers.DivByZeroPentagonChecker;
 import it.unive.scsr.checkers.DotComStringChecker;
 import it.unive.scsr.checkers.HTTPStringChecker;
 import it.unive.scsr.checkers.OverflowIntervalChecker;
+import it.unive.scsr.checkers.OverflowIntervalRealChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -41,7 +38,7 @@ public class ColleaguesProgramsAnalysesTest {
 
     // Fields for sig
 
-    // Tests for 876957-div_by_zero.imp
+    // 1) Tests for 876957-div_by_zero.imp
     @Test
     public void testDivByZeroIntervalAnalysis1() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/876957-div_by_zero.imp");
@@ -69,7 +66,8 @@ public class ColleaguesProgramsAnalysesTest {
     }
 
 
-    // Tests for 876957-overflow.imp
+    // 2) Tests for 876957-overflow.imp
+    // Integer Interval Overflow Checkers
     @Test
     public void testOverflowInterval8bitsAnalysis1() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/876957-overflow.imp");
@@ -112,8 +110,36 @@ public class ColleaguesProgramsAnalysesTest {
         lisa.run(program);
     }
 
+    // RealInterval Overflow Checkers
+    @Test
+    public void testOverflowIntervalReal32bitsAnalysis1() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/colleagues/876957-overflow.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/colleagues/overflow/interval-real-32bits/876957-overflow";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new IntervalReal(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        conf.semanticChecks.add(new OverflowIntervalRealChecker<>(-Float.MAX_VALUE, Float.MAX_VALUE));
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
 
-    // Tests for 876957-strings.imp
+    @Test
+    public void testOverflowIntervalReal64bitsAnalysis1() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/colleagues/876957-overflow.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/colleagues/overflow/interval-real-64bits/876957-overflow";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.outputs.add(new JSONReportDumper());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new IntervalReal(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        conf.semanticChecks.add(new OverflowIntervalRealChecker<>(-Double.MAX_VALUE, Double.MAX_VALUE));
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    // 3) Tests for 876957-strings.imp
     @Test
     public void testStringPrefixAnalysis1() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/876957-strings.imp");
@@ -143,36 +169,62 @@ public class ColleaguesProgramsAnalysesTest {
     }
 
 
-    // Tests for 876957-taint.imp
+    // 4) Tests for 876957-taint.imp
     @Test
-    public void testTaintAnalysis1() throws ParsingException, AnalysisException {
+    public void testTaintThreeLevelsAnalysis1() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/876957-taint.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/colleagues/taint/876957-taint";
+        conf.workdir = "outputs/colleagues/taint_three_levels/876957-taint";
         conf.outputs.add(new HtmlResults<>(true));
-        conf.analysis = simpleDomain(new PointBasedHeap(), new Taint(), defaultTypeDomain());
-        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
+		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 
         for(CFG cfg : program.getAllCFGs()) {
-        	String name = cfg.getDescriptor().getName();
-        	if(isSource(name))
-        		cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
-        	else if(isSanitizer(name))
-        		cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
-        	else if(isSink(name))
-        		cfg.getDescriptor().addAnnotation(Taint.SINK_ANNOTATION);
+			String name = cfg.getDescriptor().getName();
+			if(isSource(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+			else if(isSanitizer(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+			else if(isSink(name))
+				cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
         }
-
-        conf.semanticChecks.add(new TaintChecker<>());
+    
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
         conf.outputs.add(new JSONReportDumper());
         LiSA lisa = new LiSA(conf);
         lisa.run(program);
     }
 
 
-    // Tests for 894579_896954_taintthreelevel_1-2.imp
+    // 5) Tests for 894004_taint.imp
     @Test
-    public void testTaintThreeLevelsAnalysis1() throws ParsingException, AnalysisException {
+    public void testTaintThreeLevelsAnalysis3() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/colleagues/894004_taint.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/colleagues/taint_three_levels/894004_taint";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
+		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+
+        for(CFG cfg : program.getAllCFGs()) {
+			String name = cfg.getDescriptor().getName();
+			if(isSource(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+			else if(isSanitizer(name))
+				cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+			else if(isSink(name))
+				cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+    
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        LiSA lisa = new LiSA(conf);
+        lisa.run(program);
+    }
+
+    // 6) Tests for 894579_896954_taintthreelevel_1-2.imp
+    @Test
+    public void testTaintThreeLevelsAnalysis2() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/894579_896954_taintthreelevel_1-2.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/colleagues/taint_three_levels/894579_896954_taintthreelevel_1-2";
@@ -196,7 +248,7 @@ public class ColleaguesProgramsAnalysesTest {
         lisa.run(program);
     }
 
-    // Tests for 895227_897270_dot_com_string_1.imp
+    // 7) Tests for 895227_897270_dot_com_string_1.imp
     @Test
     public void testStringPrefixAnalysis2() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/895227_897270_dot_com_string_1.imp");
@@ -226,7 +278,7 @@ public class ColleaguesProgramsAnalysesTest {
     }
 
 
-    // Tests for 895227_897270_overflow_interval_1.imp
+    // 8) Tests for 895227_897270_overflow_interval_1.imp
     @Test
     public void testOverflowInterval8bitsAnalysis2() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/895227_897270_overflow_interval_1.imp");
@@ -270,22 +322,7 @@ public class ColleaguesProgramsAnalysesTest {
     }
 
 
-    // Tests for 903942_extendedsign_taint.imp
-    @Test
-    public void testExtendedSignAnalysis1() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/colleagues/903942_extendedsign_taint.imp");
-        LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/colleagues/extended_sign/903942_extendedsign_taint";
-        conf.outputs.add(new HtmlResults<>(true));
-        conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
-        conf.semanticChecks.add(new NonNegativeSpeedInMoveForwardChecker<>());
-        conf.outputs.add(new JSONReportDumper());
-        LiSA lisa = new LiSA(conf);
-        lisa.run(program);
-    }
-
-
-    // Tests for 903942_overflow.imp
+    // 9) Tests for 903942_overflow.imp
     @Test
     public void testOverflowInterval8bitsAnalysis3() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/903942_overflow.imp");
@@ -329,7 +366,7 @@ public class ColleaguesProgramsAnalysesTest {
     }
 
 
-    // Tests for 903942_strings.imp
+    // 10) Tests for 903942_strings.imp
     @Test
     public void testStringPrefixAnalysis3() throws ParsingException, AnalysisException {
         Program program = IMPFrontend.processFile("inputs/colleagues/903942_strings.imp");

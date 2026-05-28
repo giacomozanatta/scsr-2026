@@ -1,0 +1,229 @@
+// ================================================================
+// CALCULATOR SCENARIO
+//
+// Context:
+// Fixed-width integer arithmetic inside a calculator.
+// Multiplication and loop accumulation are the primary overflow vectors:
+// products of moderate operands exceed 8-bit and 16-bit ranges, while loop
+// accumulators grow without bound after interval widening.
+// ================================================================
+
+class Calculator {
+
+    // -----------------------------------------------------------------------
+    // Multiply two small operands to compute a squared value.
+    // The product 400 fits in 16-bit and 32-bit registers but overflows
+    // the 8-bit accumulator.
+    //
+    // p = 20 * 20 = 400
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW on p (400 > 127)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    productSmall() {
+        def a = 20;
+        def b = 20;
+        def p = a * b;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute a mid-range product. The result overflows both
+    // 8-bit and 16-bit accumulators but fits in a 32-bit register.
+    //
+    // p = 1000 * 100 = 100000
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW
+    // [16-bit] OVERFLOW on p (100000 > 32767)
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    productMid() {
+        def a = 1000;
+        def b = 100;
+        def p = a * b;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute a large product.
+    // The result exceeds even the 32-bit signed maximum.
+    //
+    // p = 100000 * 100000 = 10000000000
+    //
+    // EXPECT :
+    // [8-bit]  OVERFLOW
+    // [16-bit] OVERFLOW
+    // [32-bit] OVERFLOW on p (10^10 > INT_MAX)
+    // -----------------------------------------------------------------------
+    productHuge() {
+        def a = 100000;
+        def b = 100000;
+        def p = a * b;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Multiply a negative value by a positive value to produce
+    // a negative result that falls below the 8-bit signed minimum.
+    //
+    // p = -100 * 50 = -5000
+    //
+    // EXPECT :
+    // [8-bit] UNDERFLOW on p (-5000 < -128)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    signedProductSmall() {
+        def neg = -100;
+        def pos = 50;
+        def p = neg * pos;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute a larger negative product.
+    // Underflows 8-bit and 16-bit ranges.
+    //
+    // p = -1000 * 100 = -100000
+    //
+    // EXPECT :
+    // [8-bit] UNDERFLOW
+    // [16-bit] UNDERFLOW on p (-100000 < -32768)
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    signedProductMid() {
+        def neg = -1000;
+        def pos = 100;
+        def p = neg * pos;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute a very large negative product.
+    // Underflows all integer widths.
+    //
+    // p = -100000 * 100000 = -10000000000
+    //
+    // EXPECT :
+    // [8-bit] UNDERFLOW
+    // [16-bit] UNDERFLOW
+    // [32-bit] UNDERFLOW on p (-10^10 < -2147483648)
+    // -----------------------------------------------------------------------
+    signedProductBig() {
+        def neg = -100000;
+        def pos = 100000;
+        def p = neg * pos;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Square a value with mode controlling whether the value is positive
+    // or negative. After the branch, `x` has interval [-100, 100];
+    // abstract multiplication yields [-10000, 10000], which breaches
+    // both 8-bit signed bounds.
+    //
+    // p = x * x, x in [-100, 100] -> p in [-10000, 10000]
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW/UNDERFLOW on p (bounds exit [-128, 127])
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    squareInterval(mode) {
+        def x = 0;
+        if (mode > 0) {
+            x = 100;
+        }
+        else {
+            x = -100;
+        }
+        def p = x * x;
+        return p;
+    }
+
+    // -----------------------------------------------------------------------
+    // Compute the average by dividing a sum by 4.
+    //
+    // q = 100 / 4 = 25
+    //
+    // EXPECT :
+    // [8-bit] NONE
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    average() {
+        def num = 100;
+        def den = 4;
+        def q = num / den;
+        return q;
+    }
+
+    // -----------------------------------------------------------------------
+    // Accumulate loop iterations adding a fixed step of 10.
+    // acc = [10, +inf] after widening
+    // EXPECT :
+    // [8-bit] OVERFLOW on acc (inside loop, after widening),
+    //         OVER/UNDERFLOW on i because it gets evaluated to TOP because of (i<n)
+    // [16-bit] OVERFLOW on acc, same for i
+    // [32-bit] OVERFLOW on acc, same for i
+    // -----------------------------------------------------------------------
+    accumulate(n) {
+        def acc = 0;
+        def i = 0;
+        while (i < n) {
+            acc = acc + 10;
+            i = i + 1;
+        }
+        return acc;
+    }
+
+    // -----------------------------------------------------------------------
+    // Count iterations up to a fixed limit of 100.
+    // The loop condition refines i to [0, 99] in the body;
+    // the increment produces [1, 100], well within all signed ranges.
+    //
+    // EXPECT :
+    // [8-bit] NONE on i = i + 1
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    countToHundred() {
+        def i = 0;
+        def total = 0;
+        while (i < 100) {
+            total = total + 1;
+            i = i + 1;
+        }
+        return total;
+    }
+
+    // -----------------------------------------------------------------------
+    // Apply a multi-stage arithmetic chain:
+    // sum two values, double the result, then subtract a constant.
+    // Each intermediate result is tracked separately so the checker
+    // fires on every out-of-range expression in the 8-bit case.
+    //
+    // inner = 100 + 100 = 200 (8-bit OVERFLOW)
+    // outer = 200 * 2 = 400 (8-bit OVERFLOW)
+    // final = 400 - 50 = 350 (8-bit OVERFLOW)
+    //
+    // EXPECT :
+    // [8-bit]  OVERFLOW on inner = a + b
+    //          OVERFLOW on outer = inner * 2
+    //          OVERFLOW on final_val = outer - 50
+    // [16-bit] NONE on all three
+    // [32-bit] NONE on all three
+    // -----------------------------------------------------------------------
+    nestedChain() {
+        def a = 100;
+        def b = 100;
+        def inner = a + b;
+        def outer = inner * 2;
+        def final_val = outer - 50;
+        return final_val;
+    }
+
+}

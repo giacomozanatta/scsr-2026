@@ -30,7 +30,7 @@ class http{
         arr[7] = "/";
         def protocol = "";
         for(def i = 0; i < 8; i = i + 1){
-            protocol = protocol + strcat(protocol, arr[i]);
+            protocol = strcat(protocol, arr[i]);
         }
         this.func(protocol);
     }

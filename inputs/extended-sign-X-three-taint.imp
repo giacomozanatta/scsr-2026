@@ -1,106 +1,324 @@
 /**
  * Test file for ExtendedSign x ThreeTaint Cartesian product.
  *
- * Sources:    GetRequest  -> Return literals are forced to (TOP, Tainted) by custom analysis context
- * Sanitizers: sanitizer1  -> Return expressions are stripped of taint to (sign_of_arg, Clean)
- * Sinks:      runQueryDB, setSpeed -> Tainted or Top argument triggers a checker warning
+ * Extended sign lattice (7 non-bottom values):
+ *            TOP
+ *          /  |  \
+ *       LEQ0 NEQ0 GEQ0
+ *       /  \ /  \ /  \
+ *      LT0  EQ0  GT0
+ *          \ | /
+ *           BOT
  *
- * Pair notation: (sign, taint) where taint in { Clean, Tainted, Top (possibly tainted) }
- * Standard integer literals outside sources evaluate to (concrete_sign, Clean).
+ * Taint domain (diamond): Clean and Tainted are incomparable atoms;
+ *   Top = lub(Tainted, Clean)  [possibly tainted — arises from control-flow joins]
+ *   Expression evaluation propagates taint via .or(): Clean.or(Tainted) = Tainted
+ *   Control-flow join uses lub: lub(Tainted, Clean) = Top
+ *
+ * Pair notation: (sign, taint)
+ *
+ * !! IMPLEMENTATION NOTE — evalConstant !!
+ *   Integer literal  > 0  ->  GT0
+ *   Integer literal  = 0  ->  EQ0   (EQ0 is the additive identity; 0 + x = x)
+ *   Integer literal  < 0  ->  LT0
+ *
+ *   GEQ0 and LEQ0 are therefore UNREACHABLE from constant expressions alone.
+ *   They only arise from control-flow joins, e.g.:
+ *     if (flag) x = GT0 else x = EQ0  ->  lub(GT0, EQ0) = GEQ0
+ *     if (flag) x = LT0 else x = EQ0  ->  lub(LT0, EQ0) = LEQ0
+ *
+ * !! IMPLEMENTATION NOTE — RemainderOperator returns LEFT (dividend sign) !!
+ *   a % b  ->  sign(a)   (over-approximation: actual range is tighter)
+ *
+ * Sources:    GetRequest  -> (TOP, Tainted)
+ * Sanitizers: sanitizer1  -> (sign(arg), Clean)  [taint stripped, sign preserved]
+ * Sinks:
+ *   runQueryDB(q)    — warns if taint ∈ {Tainted, Top}
+ *   setSpeed(n)      — warns if taint ∈ {Tainted, Top}  OR  sign ∈ {LT0, LEQ0, TOP}
+ *   setArrayIndex(i) — warns if taint ∈ {Tainted, Top}  OR  sign ≠ GT0
  */
 class sign_x_taint {
 
-    // SOURCE - intercepted by custom evalContext rules.
-    // Return value is forced to (TOP, Tainted) during domain constant/unary processing.
+    // SOURCE — return value forced to (TOP, Tainted) by custom analysis context.
     GetRequest() {
         def result = 0;
         return result;
     }
 
-    // SANITIZER - intercepted by custom evalContext rules.
-    // Strips taint from the processed return value: (sign_of_x, Clean).
+    // SANITIZER — taint stripped, sign preserved: (sign(x), Clean).
     sanitizer1(x) {
         def out = x;
         return out;
     }
 
-    // SINK - annotated SINK_ANNOTATION.
-    // Any Tainted or Top argument here represents an analytical dataflow warning.
+    // SINK — tainted or possibly-tainted argument triggers a dataflow warning.
     runQueryDB(query) {
         def exec = query;
     }
 
-    // SINK - a tainted or negative speed value is considered a threat path.
-    // Simple body: 0 + n = n in sign analysis (EQ0 is the additive identity).
+    // SINK — negative or unknown-sign speed is a threat.
+    //   currentSpeed = 0      -> evalConstant(0) = (EQ0, Clean)
+    //   currentSpeed + n      -> add(EQ0, sign(n)) = sign(n)  [EQ0 is identity]
     setSpeed(n) {
         def currentSpeed = 0;            // (EQ0, Clean)
         currentSpeed = currentSpeed + n; // EQ0 ADD sign(n) = sign(n) -> (sign(n), taint(n))
     }
 
+    // SINK — array index must be strictly GT0 and Clean.
+    //   base = 0  -> (EQ0, Clean);  base + i -> add(EQ0, sign(i)) = sign(i)
+    setArrayIndex(i) {
+        def base = 0;      // (EQ0, Clean)
+        base = base + i;   // EQ0 ADD sign(i) = sign(i)
+    }
+
     // -------------------------------------------------------------------------
-    // 1. Fully clean path - no taint ever introduced, both sinks are safe.
+    // 1. Fully clean path — simple sign arithmetic, no taint, all sinks safe.
     // -------------------------------------------------------------------------
     cleanPath() {
-        def a = 5;         // (GT0, Clean)
-        def b = -2;        // (LT0, Clean)
-        def c = a * b;     // sign: GT0 MUL LT0 = LT0 | taint: Clean op Clean = Clean -> (LT0, Clean)
-        this.runQueryDB(c);   // safe: taint is Clean
-        this.setSpeed(a);     // safe: (GT0, Clean) -> positive and clean
+        def a = 5;             // (GT0,  Clean)
+        def b = -3;            // (LT0,  Clean)
+        def c = a * b;         // GT0 MUL LT0  = LT0  | Clean -> (LT0,  Clean)
+        def d = c * b;         // LT0 MUL LT0  = GT0  | Clean -> (GT0,  Clean)  sign flips!
+        def e = d + a;         // GT0 ADD GT0  = GT0  | Clean -> (GT0,  Clean)
+        this.setSpeed(e);          // safe: (GT0, Clean)
+        this.setArrayIndex(e);     // safe: (GT0, Clean)
     }
 
     // -------------------------------------------------------------------------
-    // 2. Unsafe path - tainted user input flows directly into a sink.
+    // 2. Sign collapses through addition — no taint, but sign becomes TOP.
+    //    GT0 ADD LT0 = TOP even though both operands are concrete non-zero values.
+    // -------------------------------------------------------------------------
+    signCollapseAdd() {
+        def a =  4;            // (GT0, Clean)
+        def b = -9;            // (LT0, Clean)
+        def c = a + b;         // GT0 ADD LT0  = TOP  | Clean -> (TOP, Clean)
+        this.setArrayIndex(c); // WARNING: sign is TOP
+        this.setSpeed(c);      // WARNING: sign is TOP
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. GEQ0 / LEQ0 — only reachable via control-flow joins (not from constants).
+    //    Demonstrates their arithmetic properties and how they interact.
+    // -------------------------------------------------------------------------
+    geqLeqArithmetic(flag) {
+        def pos  = 3;           // (GT0, Clean)
+        def zero = 0;           // (EQ0, Clean)
+        def neg  = -3;          // (LT0, Clean)
+
+        // Produce GEQ0: true branch GT0, false branch EQ0
+        def x = pos;
+        if (!flag) x = zero;
+        // join: GT0 ⊔ EQ0 = GEQ0 | Clean -> (GEQ0, Clean)
+
+        // Produce LEQ0: true branch LT0, false branch EQ0
+        def y = neg;
+        if (!flag) y = zero;
+        // join: LT0 ⊔ EQ0 = LEQ0 | Clean -> (LEQ0, Clean)
+
+        // GEQ0 + GT0 = GT0  (positive bias promotes GEQ0 to GT0)
+        def p = x + pos;        // GEQ0 ADD GT0  = GT0  | Clean -> (GT0,  Clean)
+        this.setArrayIndex(p);  // safe: (GT0, Clean)
+
+        // LEQ0 + LT0 = LT0  (subtracting makes it strictly negative)
+        def q = y + neg;        // LEQ0 ADD LT0  = LT0  | Clean -> (LT0,  Clean)
+        this.setSpeed(q);       // WARNING: sign is LT0
+
+        // GEQ0 + LEQ0 = TOP  (mixed signs collapse)
+        def r = x + y;          // GEQ0 ADD LEQ0 = TOP  | Clean -> (TOP,  Clean)
+        this.setSpeed(r);       // WARNING: sign is TOP
+        this.setArrayIndex(r);  // WARNING: sign is TOP
+
+        // GEQ0 * GEQ0 = GEQ0  (zero still possible — not safe for setArrayIndex)
+        def s = x * x;          // GEQ0 MUL GEQ0 = GEQ0 | Clean -> (GEQ0, Clean)
+        this.setArrayIndex(s);  // WARNING: sign is GEQ0 (zero possible)
+        this.setSpeed(s);       // safe: GEQ0 is non-negative and Clean
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. NEQ0 and squaring — the non-relational domain cannot recover GT0 from
+    //    NEQ0 * NEQ0; it stays NEQ0. Contrast with LT0 * LT0 = GT0 (concrete).
+    // -------------------------------------------------------------------------
+    nonZeroSquaring() {
+        // Concrete negatives squared: LT0 * LT0 = GT0 (directly in mul table)
+        def a = -7;            // (LT0,  Clean)
+        def b = a * a;         // LT0 MUL LT0  = GT0  | Clean -> (GT0,  Clean)
+        this.setArrayIndex(b); // safe: LT0 squared is GT0
+
+        // EQ0 is the absorbing element of multiplication: GT0 * EQ0 = EQ0
+        def c = 3;             // (GT0,  Clean)
+        def d = 0;             // evalConstant(0) = (EQ0, Clean)
+        def e = c + d;         // GT0  ADD EQ0  = GT0  | Clean -> (GT0,  Clean)  [identity]
+        def f = e * d;         // GT0  MUL EQ0  = EQ0  | Clean -> (EQ0,  Clean)
+        this.setArrayIndex(f); // WARNING: sign is EQ0 (zero — not strictly positive)
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. Positive-bias promotion — adding GT0 to EQ0 yields GT0 (identity law),
+    //    but adding GT0 to TOP still yields TOP (sign information already lost).
+    // -------------------------------------------------------------------------
+    positiveBiasPromotion() {
+        // sanitizer1 strips taint but sign stays TOP: bias cannot recover sign
+        def raw    = this.GetRequest();          // (TOP, Tainted)
+        def clean  = this.sanitizer1(raw);       // (TOP, Clean)
+        def biased = clean + 1;                  // TOP ADD GT0 = TOP | Clean -> (TOP, Clean)
+        this.setArrayIndex(biased);              // WARNING: sign is still TOP
+
+        // By contrast: EQ0 + GT0 = GT0 (EQ0 is the additive identity)
+        def z   = 0;                             // evalConstant(0) = (EQ0, Clean)
+        def idx = z + 1;                         // EQ0 ADD GT0 = GT0 | Clean -> (GT0, Clean)
+        this.setArrayIndex(idx);                 // safe: (GT0, Clean)
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. Division — sign follows the real-number sign rule.
+    //    Divisors containing zero (GEQ0, LEQ0) over-approximate to TOP.
+    // -------------------------------------------------------------------------
+    divisionSigns() {
+        def a = -8;            // (LT0, Clean)
+        def b = -2;            // (LT0, Clean)
+        def q = a / b;         // LT0 DIV LT0  = GT0 | Clean -> (GT0, Clean)
+        this.setArrayIndex(q); // safe: (GT0, Clean)
+
+        def c =  6;            // (GT0, Clean)
+        def r = c / b;         // GT0 DIV LT0  = LT0 | Clean -> (LT0, Clean)
+        this.setSpeed(r);      // WARNING: sign is LT0 (negative speed)
+
+        // Divisor is EQ0: returns TOP (definite division-by-zero path)
+        def z  = 0;            // (EQ0, Clean)
+        def s  = c / z;        // GT0 DIV EQ0  = TOP | Clean -> (TOP, Clean)
+        this.setArrayIndex(s); // WARNING: sign is TOP
+
+        def raw = this.GetRequest();   // (TOP, Tainted)
+        def t   = raw / b;             // TOP DIV LT0   = TOP | Tainted -> (TOP, Tainted)
+        this.setArrayIndex(t);         // WARNING: sign=TOP AND taint=Tainted
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. Remainder — RemainderOperator returns LEFT (dividend sign).
+    //    Over-approximation: GT0 % GT0 = GT0 (actual result is in [0, b-1],
+    //    so GEQ0 would be tighter, but the domain just returns the dividend sign).
+    // -------------------------------------------------------------------------
+    remainderSigns() {
+        def a = 10;            // (GT0, Clean)
+        def b =  3;            // (GT0, Clean)
+        def r = a % b;         // RemainderOp -> left = GT0 | Clean -> (GT0, Clean)
+        this.setArrayIndex(r); // safe: (GT0, Clean) — zero case is NOT detected
+
+        def c = -10;           // (LT0, Clean)
+        def s = c % b;         // RemainderOp -> left = LT0 | Clean -> (LT0, Clean)
+        this.setSpeed(s);      // WARNING: sign is LT0 (negative remainder possible)
+
+        def raw = this.GetRequest();  // (TOP, Tainted)
+        def t   = raw % b;            // RemainderOp -> left = TOP | Tainted -> (TOP, Tainted)
+        this.setArrayIndex(t);        // WARNING: sign=TOP AND taint=Tainted
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. Unsafe path — tainted input flows directly into a sink.
     // -------------------------------------------------------------------------
     unsafePath() {
-        def userInput = this.GetRequest(); // (TOP, Tainted)
-        this.runQueryDB(userInput);        // WARNING: Tainted reaches sink (direct taint flow)
+        def userInput = this.GetRequest();   // (TOP, Tainted)
+        this.runQueryDB(userInput);          // WARNING: Tainted reaches sink
     }
 
     // -------------------------------------------------------------------------
-    // 3. Sanitized path - taint removed before the sink, no warning expected.
-    //    Sign stays TOP: the sanitizer cleans taint but does not constrain values.
-    // -------------------------------------------------------------------------
-    sanitizedPath() {
-        def userInput  = this.GetRequest();           // (TOP, Tainted)
-        def cleanInput = this.sanitizer1(userInput);  // (TOP, Clean) -> taint stripped
-        this.runQueryDB(cleanInput);                  // safe: taint is Clean
-    }
-
-    // -------------------------------------------------------------------------
-    // 4. Tainted speed - sign unknown AND tainted: both dimensions flag the call.
+    // 9. Tainted speed — sign unknown AND tainted: both dimensions flag the call.
     // -------------------------------------------------------------------------
     unsafeSpeed() {
         def speed = this.GetRequest(); // (TOP, Tainted)
-        this.setSpeed(speed);          // WARNING: sign=TOP (may be negative) AND taint=Tainted
+        this.setSpeed(speed);          // WARNING: sign=TOP AND taint=Tainted
     }
 
     // -------------------------------------------------------------------------
-    // 5. Conditional taint join - one branch introduces taint.
-    //    Clean ⊔ Tainted = Top (possibly tainted): the join loses taint certainty.
+    // 10. Sanitized but sign-unsafe — taint removed, sign stays TOP.
+    //     sanitizer1 does NOT constrain sign; strict sinks still warn.
+    // -------------------------------------------------------------------------
+    sanitizedButUnsafeSign() {
+        def raw   = this.GetRequest();           // (TOP, Tainted)
+        def clean = this.sanitizer1(raw);        // (TOP, Clean)
+        this.runQueryDB(clean);                  // safe:    taint is Clean
+        this.setSpeed(clean);                    // WARNING: sign is TOP
+        this.setArrayIndex(clean);               // WARNING: sign is TOP
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. Three-way sign join — branches produce GT0, LT0, EQ0; join is TOP.
+    //     GT0 ⊔ LT0 = NEQ0, then NEQ0 ⊔ EQ0 = TOP.
+    // -------------------------------------------------------------------------
+    threeWaySignJoin(flag1, flag2) {
+        def x = 3;             // (GT0, Clean)
+        if (flag1)
+            x = -x;            // NEG(GT0) = LT0  | Clean -> (LT0, Clean)
+        else if (flag2)
+            x = 0;             // evalConstant(0) = (EQ0, Clean)
+        // join step 1: GT0 ⊔ LT0  = NEQ0
+        // join step 2: NEQ0 ⊔ EQ0 = TOP   [lubAux(2,5) -> TOP]
+        // x = (TOP, Clean)
+        this.setArrayIndex(x); // WARNING: sign collapsed to TOP
+        this.setSpeed(x);      // WARNING: sign is TOP (LT0 branch is unsafe)
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. NEQ0 squaring — the NON-RELATIONAL domain cannot recover GT0.
+    //     mul(NEQ0, NEQ0) = NEQ0: the domain treats both operands as independent
+    //     values, so it cannot detect that x * x is always positive.
+    //     This is a KNOWN PRECISION LOSS of non-relational sign analysis.
+    // -------------------------------------------------------------------------
+    joinNEQ0(flag) {
+        def x = 5;             // (GT0, Clean)
+        if (flag)
+            x = -3;            // (LT0, Clean)
+        // join: GT0 ⊔ LT0 = NEQ0 | Clean -> (NEQ0, Clean)
+        def y = x * x;         // NEQ0 MUL NEQ0 = NEQ0 | Clean -> (NEQ0, Clean)
+                               // ^^^ NOT GT0: domain cannot track that both sides are x²
+        this.setArrayIndex(y); // WARNING: sign is NEQ0 (precision loss — should be GT0)
+        this.setArrayIndex(x); // WARNING: sign is NEQ0 (LT0 branch still possible)
+    }
+
+    // -------------------------------------------------------------------------
+    // 13. Conditional taint join — one branch introduces taint.
+    //     Control-flow join: lub(Tainted, Clean) = Top  [possibly tainted].
     // -------------------------------------------------------------------------
     conditionalTaint(flag) {
-        def x = -1;                     // (LT0, Clean)
+        def x = -1;                  // (LT0, Clean)
         if (flag)
-            x = this.GetRequest();      // true  branch: (TOP, Tainted)
-        // false branch: x stays        // false branch: (LT0, Clean)
-        // join sign:  TOP ⊔ LT0 = TOP
-        // join taint: Tainted ⊔ Clean = Top (possibly tainted)
+            x = this.GetRequest();   // (TOP, Tainted)
+        // join sign:  LT0 ⊔ TOP  = TOP
+        //      taint: lub(Clean, Tainted) = Top  [control-flow join uses lub]
         // x = (TOP, Top)
-        this.runQueryDB(x);             // WARNING: taint is Top
+        this.runQueryDB(x);          // WARNING: taint is Top
     }
 
     // -------------------------------------------------------------------------
-    // 6. Partial sanitization - only one branch sanitizes; join is still Top.
-    //    Demonstrates that ALL paths to a sink must sanitize.
+    // 14. Partial sanitization — only one branch sanitizes; taint join is Top.
+    //     All paths to a sink must be sanitized for the taint to be Clean.
     // -------------------------------------------------------------------------
     partialSanitize(flag) {
-        def raw = this.GetRequest();             // (TOP, Tainted)
-        def x   = raw;                           // (TOP, Tainted)
+        def raw = this.GetRequest();          // (TOP, Tainted)
+        def x   = raw;                        // (TOP, Tainted)
         if (flag)
-            x = this.sanitizer1(raw);           // true  branch: (TOP, Clean) -> sanitized
-        // false branch: x stays (TOP, Tainted)  not sanitized
-        // join sign:  TOP ⊔ TOP = TOP
-        // join taint: Clean ⊔ Tainted = Top     still possibly tainted!
-        this.runQueryDB(x);                      // WARNING: partial sanitization is insufficient
+            x = this.sanitizer1(raw);        // true branch: (TOP, Clean)
+        // false branch: x stays (TOP, Tainted)
+        // join sign:  TOP ⊔ TOP  = TOP
+        //      taint: lub(Clean, Tainted) = Top
+        this.runQueryDB(x);                   // WARNING: partial sanitization insufficient
+    }
+
+    // -------------------------------------------------------------------------
+    // 15. Negation chain — sign flips propagate correctly; tainted addend
+    //     contaminates the result via expression-level .or() propagation.
+    //     Note: expression .or() (Clean.or(Tainted) = Tainted) differs from
+    //     control-flow lub (lub(Clean, Tainted) = Top).
+    // -------------------------------------------------------------------------
+    negationChain() {
+        def a  =  4;           // (GT0,  Clean)
+        def na = -a;           // NEG(GT0)    = LT0  | Clean -> (LT0,  Clean)
+        def b  = na * na;      // LT0 MUL LT0 = GT0  | Clean -> (GT0,  Clean)
+        def c  = this.GetRequest();    // (TOP, Tainted)
+        def nc = -c;           // NEG(TOP)    = TOP  | Tainted -> (TOP,  Tainted)
+        def d  = b + nc;       // GT0 ADD TOP = TOP  | Clean.or(Tainted) = Tainted
+                               //                    -> (TOP, Tainted)
+        this.setArrayIndex(d); // WARNING: sign=TOP AND taint=Tainted
+        this.setArrayIndex(b); // safe: (GT0, Clean)
     }
 }

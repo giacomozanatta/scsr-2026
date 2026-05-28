@@ -40,7 +40,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
         if (v instanceof Integer) {
             int n = (Integer) v;
             if(n >= 0){
-                if (n == 0) return ExtendedSignLattice.GEQ0;
+                if (n == 0) return ExtendedSignLattice.EQ0;
                 return ExtendedSignLattice.GT0;
             }
             return ExtendedSignLattice.LT0;
@@ -185,7 +185,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
      */
     private ExtendedSignLattice div(ExtendedSignLattice l, ExtendedSignLattice r) {
         if (l == ExtendedSignLattice.BOTTOM || r == ExtendedSignLattice.BOTTOM) return ExtendedSignLattice.BOTTOM;
-        if (r == ExtendedSignLattice.EQ0)  return ExtendedSignLattice.BOTTOM;   // definite division by zero
+        if (r == ExtendedSignLattice.EQ0)  return ExtendedSignLattice.TOP;   // definite division by zero
         if (l == ExtendedSignLattice.EQ0)  return ExtendedSignLattice.EQ0;    // 0 / nonzero = 0
         if (l == ExtendedSignLattice.TOP || r == ExtendedSignLattice.TOP) return ExtendedSignLattice.TOP;
 
@@ -212,6 +212,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
     // Satisfiability
     // -------------------------------------------------------------------------
 
+    /*
     @Override
     public Satisfiability satisfiesBinaryExpression(BinaryExpression expression,
                                                     ExtendedSignLattice left, ExtendedSignLattice right,
@@ -307,4 +308,6 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
         if (update.isBottom())       return environment.bottom();
         return environment.putState(id, update);
     }
+
+     */
 }

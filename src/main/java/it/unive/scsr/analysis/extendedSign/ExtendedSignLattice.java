@@ -129,12 +129,10 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         // Middle layer elements are incomparable with each other
         return false;
     }
-
     // -------------------------------------------------------------------------
     // Satisfiability helpers (used by ExtendedSign's assume/satisfies methods)
     // -------------------------------------------------------------------------
 
-    /** Returns satisfiability of {@code this == other}. */
     public Satisfiability eq(ExtendedSignLattice other) {
         if (this.isBottom() || other.isBottom()) return Satisfiability.BOTTOM;
         if (this.isTop()    || other.isTop())    return Satisfiability.UNKNOWN;
@@ -153,7 +151,6 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         return Satisfiability.UNKNOWN;
     }
 
-    /** Returns satisfiability of {@code this > other}. */
     public Satisfiability gt(ExtendedSignLattice other) {
         if (this.isBottom() || other.isBottom()) return Satisfiability.BOTTOM;
         if (this.isTop()    || other.isTop())    return Satisfiability.UNKNOWN;
@@ -171,6 +168,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
 
         return Satisfiability.UNKNOWN;
     }
+
 
     // -------------------------------------------------------------------------
     // Standard overrides

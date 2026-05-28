@@ -61,7 +61,7 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
         TaintThreeLevelsLattice taint = left.getTaint().or(right.getTaint());
         return new ExtendedSignXTaintLattice(sign, taint);
     }
-
+/*
     @Override
     public Satisfiability satisfiesBinaryExpression(BinaryExpression expression,
                                                     ExtendedSignXTaintLattice left, ExtendedSignXTaintLattice right,
@@ -69,6 +69,8 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
         return signDomain.satisfiesBinaryExpression(
                 expression, left.getSign(), right.getSign(), pp, oracle);
     }
+
+ */
 
     @Override
     public ValueEnvironment<ExtendedSignXTaintLattice> assumeBinaryExpression(
@@ -117,13 +119,15 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
                 try {
                     ExtendedSignLattice candidate = currentSign.glb(atom);
                     refinedSign = (refinedSign == null) ? candidate : refinedSign.lub(candidate);
-                } catch (SemanticException e) { /* skip */ }
+                } catch (SemanticException e) { }
             }
         }
 
         if (refinedSign == null || refinedSign.isBottom()) return environment.bottom();
         return environment.putState(id, new ExtendedSignXTaintLattice(refinedSign, currentTaint));
     }
+
+
 
     /** Checks whether (atom op evalSign) or (evalSign op atom) is satisfiable,
      *  depending on which side the identifier was found. */
@@ -193,5 +197,6 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
         // No annotation: just look up the environment (normal behaviour)
         return environment.getState(id);
     }
+
 
 }

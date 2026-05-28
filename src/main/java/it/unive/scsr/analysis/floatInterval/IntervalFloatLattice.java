@@ -119,23 +119,9 @@ public class IntervalFloatLattice
     // precise than the bare integer widening.
     // ------------------------------------------------------------------
 
+
     @Override
     public IntervalFloatLattice wideningAux(IntervalFloatLattice other) throws SemanticException {
-        /*
-        double lResult = this.low;
-        double uResult = this.high;
-
-        // Lower bound decreased → snap down to largest threshold ≤ new low
-        if (other.low < this.low)
-            lResult = lowerThreshold(other.low);
-
-        // Upper bound increased → snap up to smallest threshold ≥ new high
-        if (other.high > this.high)
-            uResult = upperThreshold(other.high);
-
-        return new IntervalFloatLattice(lResult, uResult);
-
-         */
             if (this.isBottom()) return other;
             if (other.isBottom()) return this;
             if (this.isTop() || other.isTop()) return TOP;

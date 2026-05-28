@@ -1,31 +1,40 @@
 class floatIntervals {
 
-    // 1. Verifies evalConstant, evalUnaryExpression, and basic binary operations
-    // Expected checks: preservation of decimals (2.5, -10.25) and precise multiplication/subtraction bounds.
+    // -----------------------------------------------------------------------
+    // 1. Verifies evalConstant, evalUnaryExpression, and basic binary ops.
+    //    Expected: preservation of decimal values and precise bounds.
+    //      a = [2.5,2.5] + [-10.25,-10.25] = [-7.75, -7.75]
+    //      s = [2.5,2.5] - [-10.25,-10.25] = [12.75, 12.75]
+    //      m = [2.5,2.5] * [-10.25,-10.25] = [-25.625, -25.625]
+    //      l = -[2.5,2.5] = [-2.5, -2.5]
+    // -----------------------------------------------------------------------
     basicArithmetic() {
         def i = 2.5;
         def j = -10.25;
-
-        def a = i + j;   // Addition: [2.5, 2.5] + [-10.25, -10.25]
-        def s = i - j;   // Subtraction: [a, b] - [c, d] = [a-d, b-c]
-        def m = i * j;   // Multiplication: validates your min/max logic
-        def l = -i;      // Unary negation: [-2.5, -2.5]
+        def a = i + j;
+        def s = i - j;
+        def m = i * j;
+        def l = -i;
     }
 
-    // 2. Verifies the complex division cases implemented in your div() method
+    // -----------------------------------------------------------------------
+    // 2. Verifies the complex division cases in the div() method.
+    //    Expected:
+    //      divByZero = [5.0,5.0] / [0.0,0.0] = TOP  (division by zero)
+    //      basicDiv  = [5.0,5.0] / [2.0,2.0] = [2.5, 2.5]
+    // -----------------------------------------------------------------------
     divisionCases() {
-        def pos = 5.0;
-        def neg = -5.0;
-        def zero = 0.0;
-
-        // Case A: Strict division by zero -> Should yield TOP
+        def pos     = 5.0;
+        def neg     = -5.0;
+        def zero    = 0.0;
         def divByZero = pos / zero;
-
-        // Case B: Simple division (0 not in divisor)
-        def basicDiv = pos / 2.0;
+        def basicDiv  = pos / 2.0;
     }
 
-    // 3. Verifies Least Upper Bound (LUB) join logic through branching
+    // -----------------------------------------------------------------------
+    // 3. Verifies Least Upper Bound (LUB) join logic through branching.
+    //    Expected: x = lub([1.5,1.5], [10.5,10.5]) = [1.5, 10.5]
+    // -----------------------------------------------------------------------
     branches(b) {
         def x = 0.0;
         if (b) {
@@ -33,41 +42,125 @@ class floatIntervals {
         } else {
             x = 10.5;
         }
-        // At this point, x should cleanly be [1.5, 10.5]
         return x;
     }
 
-    // 4. CRITICAL: Verifies your custom threshold-based wideningAux logic
-    // Instead of jumping straight to +infinity, the upper bound should step
-    // through your THRESHOLDS array: 0.0 -> 0.5 -> 1.0 -> 1e1 (10.0) -> 1e2 (100.0)
-    wideningLoop() {
-       def b = 0.0;
-       while (b <= 60.0) {  // 8.0 is safely under your 10.0 (1e1) threshold
-           b = b + 1.78;
-       }
-       return b;
-        // At the loop head, widening will trigger.
-        // If it works correctly, the upper bound will snap to 1e2 (100.0) instead of +infinity.
+    // -----------------------------------------------------------------------
+    // 4a. Widening: variable directly bounded by loop condition.
+    //
+    //     while (b <= 60.0), step = +1.78
+    //
+    //     assumeBinaryExpression constrains b <= 60.0 at loop head.
+    //     Widening snaps upper bound through thresholds:
+    //       0.0 -> 0.5 -> 1.0 -> 2.2 -> 4.0 -> 8.0 -> 10.0 -> 50.0 -> 100.0
+    //     Fixpoint reached when upper bound stabilizes.
+    //
+    //     Expected at return:
+    //       b = [60.0, 100.0]
+    //       (lower = 60.0 from exit condition b > 60.0,
+    //        upper = 100.0 = next threshold above 60.0 + 1.78 = 61.78)
+    // -----------------------------------------------------------------------
+    wideningLoopDirect() {
+        def b = 0.0;
+        while (b <= 60.0) {
+            b = b + 1.78;
+        }
+        return b;
     }
 
-    // 5. Verifies the division sub-cases where 0 is a bound or strictly inside an interval
-    zeroIntervalDivision(b) {
-        def dividend = 10.0;
-        def divisor = 0.0;
+    // -----------------------------------------------------------------------
+    // 4b. Widening: variable NOT bounded by loop condition.
+    //
+    //     while (i < 10), b accumulated but not constrained by condition.
+    //
+    //     assumeBinaryExpression refines i but NOT b.
+    //     Widening on b snaps through all thresholds to +inf
+    //     because no condition cuts the upper bound back.
+    //
+    //     Expected at return:
+    //       b = [0.0, +inf]   (sound over-approximation, non-relational domain)
+    //       i = [10.0, 50.0]  (widened to next threshold above 10, exit refines lower)
+    // -----------------------------------------------------------------------
+    wideningLoopIndirect() {
+        def b = 0.0;
+        def i = 0;
+        while (i < 10) {
+            b = b + 1.78;
+            i = i + 1;
+        }
+        return b;
+    }
 
-        // Construct an interval where 0 is the lower bound: [0.0, 2.0]
+    // -----------------------------------------------------------------------
+    // 4c. Widening: both variables directly bounded by compound condition.
+    //
+    //     while (i < 10 && b < 9.0), both variables constrained.
+    //
+    //     LiSA splits && into two sequential assume calls.
+    //     assumeBinaryExpression refines both i and b independently.
+    //     Both variables stabilize because both are directly bounded.
+    //
+    //     Expected at return (exit state):
+    //       b = [1.78, 10.78]  (one step past 9.0, lower offset by one iteration)
+    //       i = [1.0, 11.0]    (one step past 10, lower offset by one iteration)
+    // -----------------------------------------------------------------------
+    wideningLoopBoth() {
+        def b = 0.0;
+        def i = 0;
+        while (i < 10 && b < 9.0) {
+            b = b + 1.78;
+            i = i + 1;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // 4d. Widening: small step size, variable directly bounded.
+    //
+    //     while (b <= 60.0), step = +0.0008
+    //
+    //     The fixpoint stabilizes in very few iterations because
+    //     assumeBinaryExpression always cuts upper bound back to 60.0.
+    //     Widening threshold is not reached before the fixpoint is found.
+    //
+    //     Expected at return:
+    //       b = [60.0, 60.0008]
+    //       (upper = 60.0 + 0.0008, lower = 60.0 from exit condition)
+    // -----------------------------------------------------------------------
+    wideningLoopSmallStep() {
+        def b = 0.0;
+        while (b <= 60.0) {
+            b = b + 0.0008;
+        }
+        return b;
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. Verifies division sub-cases where 0 is a bound or strictly inside.
+    //
+    //    divZeroLower:
+    //      divisor = lub([0.0,0.0], [2.0,2.0]) = [0.0, 2.0]  (0 is lower bound)
+    //      dividend / [0.0, 2.0] triggers l2==0.0 case -> upper bound = +inf
+    //      Expected: [5.0, +inf]
+    //
+    //    divZeroInside:
+    //      splitDivisor = lub([-2.0,-2.0], [2.0,2.0]) = [-2.0, 2.0]  (0 strictly inside)
+    //      dividend / [-2.0, 2.0] triggers hull of two sub-cases
+    //      Expected: [-inf, +inf] = TOP
+    // -----------------------------------------------------------------------
+    zeroIntervalDivision(b) {
+        def dividend   = 10.0;
+        def divisor    = 0.0;
         if (b) {
             divisor = 2.0;
         }
-        def divZeroLower = dividend / divisor; // Triggers: l2 == 0.0 -> upper bound becomes +INF
+        def divZeroLower = dividend / divisor;
 
-        // Construct an interval where 0 is strictly inside: [-2.0, 2.0]
         def splitDivisor = 0.0;
         if (b) {
             splitDivisor = -2.0;
         } else {
             splitDivisor = 2.0;
         }
-        def divZeroInside = dividend / splitDivisor; // Triggers: Hull of lower & higher cases
+        def divZeroInside = dividend / splitDivisor;
     }
 }

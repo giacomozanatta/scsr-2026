@@ -1,0 +1,78 @@
+class ExtendedSignTest {
+
+    // -------------------------------------------------------------------------
+    // CHECK 1 — Negative array index
+    // -------------------------------------------------------------------------
+
+    negativeIndexDefinite() {
+        def arr = new int[5];
+        def i = -3;          // LT0: always negative
+        def x = arr[i];      // WARN: index is always negative
+    }
+
+    negativeIndexPossible(flag) {
+        def arr = new int[5];
+        def i = 2;           // GT0
+        if (flag)
+            i = -1;          // LT0 in true branch
+                             // join: GT0 lub LT0 = NEQ0 -> may be negative
+        def x = arr[i];      // WARN: index sign is !=0 (includes negative values)
+    }
+
+    safeIndex() {
+        def arr = new int[5];
+        def i = 2;           // GT0: always positive, no warning
+        def x = arr[i];      // SAFE
+    }
+
+    // -------------------------------------------------------------------------
+    // CHECK 2 — Sign-flip in multiplication
+    // -------------------------------------------------------------------------
+
+    mulDefiniteNegative() {
+        def speed = 10;      // GT0
+        def dir = -1;        // LT0
+        def v = speed * dir; // WARN: result is always negative (GT0 * LT0 = LT0)
+    }
+
+    mulPossibleNegative(flag) {
+        def a = 5;           // GT0
+        def b = 3;           // GT0
+        if (flag)
+            b = -3;          // LT0 in true branch
+                             // join: GT0 lub LT0 = NEQ0
+        def c = a * b;       // WARN: result may be negative (GT0 * NEQ0 = NEQ0)
+    }
+
+    mulSafe() {
+        def a = 4;           // GT0
+        def b = 2;           // GT0
+        def c = a * b;       // SAFE: GT0 * GT0 = GT0, no warning
+    }
+
+    // -------------------------------------------------------------------------
+    // CHECK 3 — Negative argument passed to a method call
+    // -------------------------------------------------------------------------
+
+    applySpeed(n) {
+        def z = n * 1;       // just uses n
+    }
+
+    callWithNegativeDefinite() {
+        def speed = -5;      // LT0: always negative
+        this.applySpeed(speed); // WARN: argument 1 is always negative
+    }
+
+    callWithNegativePossible(flag) {
+        def n = -1;          // LT0
+        if (flag)
+            n = 1;           // GT0 in true branch
+                             // join: LT0 lub GT0 = NEQ0 -> may be negative
+        this.applySpeed(n);  // WARN: argument 1 may be negative (sign is !=0)
+    }
+
+    callSafe() {
+        def speed = 10;      // GT0: always positive
+        this.applySpeed(speed); // SAFE: no warning
+    }
+}

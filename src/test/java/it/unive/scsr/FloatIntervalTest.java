@@ -11,6 +11,8 @@ import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.outputs.JSONResults;
 import it.unive.lisa.program.Program;
+import it.unive.lisa.program.cfg.fixpoints.backward.BackwardDescendingNarrowingFixpoint;
+import it.unive.lisa.program.cfg.fixpoints.forward.ForwardDescendingNarrowingFixpoint;
 import it.unive.scsr.analysis.floatInterval.IntervalFloat;
 import org.junit.Test;
 
@@ -24,6 +26,7 @@ public class FloatIntervalTest {
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
+
 
         // we specify where we want files to be generated
         conf.workdir = "outputs/float-interval";

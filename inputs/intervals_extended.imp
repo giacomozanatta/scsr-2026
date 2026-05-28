@@ -1,0 +1,27 @@
+class intervals_extended {
+	branches(b,x,y) {
+        def a = 3;
+        def c = 6;
+        if (b == 0) {
+            a = 0.00001;
+        }
+
+		if (a < c) {
+            c = c / a;
+		}
+
+		if (x == 0) {
+		    def d = c / a;
+		    def e = a * 100000;
+		    if (true) {
+		        def f = e / 10000000;
+		        def g = e / f;
+		        a = g;
+		    }
+		    else {
+		        a = 2;
+		    }
+		}
+		return a;
+    }
+}

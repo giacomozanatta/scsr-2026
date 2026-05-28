@@ -154,7 +154,8 @@ public class ExtendedIntervalLattice
         if (getClass() != obj.getClass())
             return false;
         ExtendedIntervalLattice other = (ExtendedIntervalLattice) obj;
-        return this.l.equals(other.l) && this.u.equals(other.u);
+
+        return Objects.equals(this.l, other.l) && Objects.equals(this.u,other.u);
     }
 
     @Override

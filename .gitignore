@@ -224,6 +224,10 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+# macOS system files
+.DS_Store
+**/.DS_Store
+
 # End of https://www.toptal.com/developers/gitignore/api/java,gradle,eclipse,intellij
 
 /outputs/

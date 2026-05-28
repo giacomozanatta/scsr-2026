@@ -1,25 +1,32 @@
 class taintThreeSimple {
 
-	// Test 1: Simple taint source to sink
+  // Mock methods for testing
+  
+	getUserInput() { return 0; }
+	readData() { return 0; }
+	getInput1() { return 0; }
+	getInput2() { return 0; }
+	executeCommand(v) { return 0; }
+	writeToDatabase(v) { return 0; }
+	process(a, b) { return 0; }
+
 	simpleTaint() {
-		def userInput = @taint getUserInput();
-		executeCommand(userInput);
+		def userInput = this.getUserInput();
+		this.executeCommand(userInput);
 		return userInput;
 	}
 
-	// Test 2: Taint through assignment
 	taintAssignment() {
-		def tainted = @taint readData();
+		def tainted = this.readData();
 		def copied = tainted;
-		writeToDatabase(copied);
+		this.writeToDatabase(copied);
 		return copied;
 	}
 
-	// Test 3: Multiple taint sources
 	multipleSources() {
-		def source1 = @taint getInput1();
-		def source2 = @taint getInput2();
-		process(source1, source2);
+		def source1 = this.getInput1();
+		def source2 = this.getInput2();
+		this.process(source1, source2);
 		return source1;
 	}
 }

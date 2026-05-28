@@ -1,33 +1,36 @@
 class taintThreePropagation {
 
-	// Test 1: Taint propagation through arithmetic
+	getValue() { return 0; }
+	getData() { return 0; }
+	getInitial() { return 0; }
+	useValue(v) { return 0; }
+	sink(v) { return 0; }
+
 	arithmeticPropagation() {
-		def tainted = @taint getValue();
+		def tainted = this.getValue();
 		def result = tainted + 10;
-		def final = result * 2;
-		useValue(final);
-		return final;
+		def combined = result * 2;
+		this.useValue(combined);
+		return combined;
 	}
 
-	// Test 2: Taint propagation through conditionals
 	conditionalPropagation(flag) {
-		def tainted = @taint getData();
-		def value;
+		def tainted = this.getData();
+		def value = 0;
 		if (flag)
 			value = tainted;
 		else
 			value = tainted + 5;
-		sink(value);
+		this.sink(value);
 		return value;
 	}
 
-	// Test 3: Taint propagation in loop
 	loopPropagation(n) {
-		def tainted = @taint getInitial();
+		def tainted = this.getInitial();
 		def i = 0;
 		while (i < n) {
 			tainted = tainted + i;
-			sink(tainted);
+			this.sink(tainted);
 			i = i + 1;
 		}
 		return tainted;

@@ -1,0 +1,38 @@
+// A sanitization of broken values from another program
+// This assumes some function of ours will return a bad value,
+// But we loop based on the number of times we should sanitize based on
+// user input, which can lead to tainting
+//
+// 913849 - Quinn Robertson
+class threetaint3 {
+	source1(){
+		return -1;
+	}
+
+	sanitizer1(v){
+	    if (v < 0) {
+	        return (-v);
+	    }
+		return v;
+	}
+
+
+	sink1(v){
+	    return "Value is sunk";
+	}
+
+
+    main (x) {
+        def y = this.source1();
+        def z = 0;
+        while (x < 100) {
+            z = z + 1;
+        }
+        if (z > 3) {
+            y = this.sanitizer1(y);
+        }
+        this.sink1(y);
+    }
+
+
+}

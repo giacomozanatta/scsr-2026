@@ -1,0 +1,35 @@
+// A database emulation
+// Intended to show something similar to SQL injection which is solved with
+// sanitization of inputs
+//
+// 913849 - Quinn Robertson
+class threetaint {
+	user_input(){
+		return -99;
+	}
+
+	sanitized_value(v){
+	    if (v < 0) {
+	        return (-v);
+	    }
+		return v;
+	}
+
+	evaluate(v){
+	    return "Value is sunk into database";
+	}
+
+
+    main (x) {
+        def y = this.user_input();
+        if (x) {
+            this.evaluate(y);
+        }
+        else {
+            def z = this.sanitized_value(y);
+            this.evaluate(z);
+        }
+    }
+
+
+}

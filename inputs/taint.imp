@@ -5,7 +5,10 @@ class taint {
 	}
 
 	sanitizer1(v){
-		return 0;
+	    if (v < -100) {
+	        return 0;
+	    }
+		return 100;
 	}
 
 
@@ -13,9 +16,11 @@ class taint {
 	}
 
 
-	basic1() {
-		def c = 0;
-
+	basic1(x) {
+		def c = 100;
+		if (x) {
+		    c = -100;
+		}
 		this.sink1(c);  // the value is clean
 	}
 

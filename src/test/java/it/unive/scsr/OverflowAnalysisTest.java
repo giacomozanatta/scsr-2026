@@ -4,7 +4,7 @@ import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
-import it.unive.lisa.analysis.numeric.Interval;
+import it.unive.lisa.analysis.numeric.Pentagon;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -12,7 +12,7 @@ import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
-import it.unive.scsr.checkers.OverflowIntervalChecker;
+import it.unive.scsr.checkers.OverflowPentagonChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.defaultTypeDomain;
@@ -35,11 +35,11 @@ public class OverflowAnalysisTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(new PointBasedHeap(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(new PointBasedHeap(), new Pentagon(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
     
         // added checker to the analysis
-        conf.semanticChecks.add(new OverflowIntervalChecker<>(0,10000000));
+        conf.semanticChecks.add(new OverflowPentagonChecker<>(5,10000));
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
         

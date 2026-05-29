@@ -125,22 +125,7 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 			ProgramPoint pp, SemanticOracle oracle) throws SemanticException {
 
 		if (expression.getOperator() == NumericNegation.INSTANCE) {
-			if (arg == ExtendedSignLattice.NEG)
-				return ExtendedSignLattice.POS;
-			else if (arg == ExtendedSignLattice.NEGZERO)
-				return ExtendedSignLattice.POSZERO;
-			else if (arg == ExtendedSignLattice.POS)
-				return ExtendedSignLattice.NEG;
-			else if (arg == ExtendedSignLattice.POSZERO)
-				return ExtendedSignLattice.NEGZERO;
-			else if (arg == ExtendedSignLattice.ZERO)
-				return ExtendedSignLattice.ZERO;
-			else if (arg == ExtendedSignLattice.NONZERO)
-				return ExtendedSignLattice.NONZERO;
-			else if (arg == ExtendedSignLattice.TOP)
-				return ExtendedSignLattice.TOP;
-			else if (arg == ExtendedSignLattice.BOTTOM)
-				return ExtendedSignLattice.BOTTOM;
+			return negateSign(arg);
 		}
 
 		if (expression.getOperator() == NumericAbs.INSTANCE) {
@@ -148,18 +133,8 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 				return ExtendedSignLattice.POS;
 			else if (arg == ExtendedSignLattice.NEGZERO)
 				return ExtendedSignLattice.POSZERO;
-			else if (arg == ExtendedSignLattice.POS)
-				return ExtendedSignLattice.POS;
-			else if (arg == ExtendedSignLattice.POSZERO)
-				return ExtendedSignLattice.POSZERO;
-			else if (arg == ExtendedSignLattice.ZERO)
-				return ExtendedSignLattice.ZERO;
-			else if (arg == ExtendedSignLattice.NONZERO)
-				return ExtendedSignLattice.NONZERO;
-			else if (arg == ExtendedSignLattice.TOP)
-				return ExtendedSignLattice.TOP;
-			else if (arg == ExtendedSignLattice.BOTTOM)
-				return ExtendedSignLattice.BOTTOM;
+			else
+				return arg;
 		}
 
 		return ExtendedSignLattice.TOP;
@@ -179,8 +154,8 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
 				return ExtendedSignLattice.ZERO;
 
 			if (
-					left.isTop() && !ExtendedSignLattice.ZERO.lessOrEqualAux(right)
-							|| !ExtendedSignLattice.ZERO.lessOrEqualAux(left) && right.isTop()
+					left.isTop() && right != ExtendedSignLattice.ZERO
+							|| left != ExtendedSignLattice.ZERO && right.isTop()
 			)
 				return ExtendedSignLattice.TOP;
 

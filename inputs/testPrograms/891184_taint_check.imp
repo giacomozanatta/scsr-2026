@@ -1,0 +1,97 @@
+
+/* This program simulates the behavior of a web server
+ * There are 3 available paths: deleteUser, uploadPicture and getUserInfo
+ * We assume that all data coming from the request is tainted
+ * The function Request.source should be flagged as tainted
+ * The function WebServer.dbQuery and WebServer.storeAsFile should be flagged as sinks
+ * The function WebServer.sanitizer should be flagged as sanitizer
+ */
+
+
+class User {
+	id;
+	name;
+	email;
+}
+
+class File {
+	filename;
+	content;
+}
+
+class Request {
+	userId;
+	body;
+
+	// SOURCE
+	source() {
+		return -999;
+	}
+
+	getUserId() {
+		return this.source();
+	}
+
+	getBody() {
+		return this.source();
+	}
+}
+
+class WebServer {
+
+	// SANITIZER
+	sanitizer(x) {
+		x = x + 3;
+		return x;
+	}
+
+	// SINK
+	dbQuery(x) {
+		return true;
+	}
+
+	// SINK
+	storeAsFile(file) {
+		return true;
+	}
+
+	endsWithImageExtension(filename) {
+		return true;
+	}
+
+	getUserData(userId) {
+		// userId might be tainted
+		def query = strcat("SELECT * FROM Users WHERE id=", userId);
+		return this.dbQuery(query); // WARNING
+	}
+
+	deleteUser(userId, name) {
+		// userId might be tainted
+		def query = strcat("DELETE Users WHERE id=", userId);
+		return this.dbQuery(query); // OK
+	}
+
+	storePicture(file) {
+		// file might be tainted
+		if (this.endsWithImageExtension(file.filename)) {
+			this.storeAsFile(file);
+		}
+	}
+
+	// PUBLIC METHODS
+
+	request_deleteUser(request) {
+		this.deleteUser(request.getUserId());
+	}
+
+	request_uploadPicture(request) {
+		this.storePicture(request.getBody());
+	}
+
+	request_getUserInfo(request) {
+		def userId = request.getUserId();
+		userId = this.sanitizer(userId);
+		return this.getUserData(userId);
+	}
+
+}

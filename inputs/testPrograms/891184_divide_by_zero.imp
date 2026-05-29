@@ -1,0 +1,36 @@
+
+/* This is just a set of test to see how the checker handles different cases
+ * Note that Pentagon Analysis fails if there are divisions by zero
+ * To use Pentagon Analysis, comment out the marked lines
+ */
+
+class DivByZero {
+
+	test1(n) {
+		def a = n / 4;
+		def b = 4 / n;
+		def c = n / 0; // Pentagon Analysis fails here
+		def d = b / c; // Pentagon Analysis fails here
+	}
+
+	test2(n) {
+		def a = 8 / 2;
+		if (n != 0) {
+			a = a / n;
+		} else {
+			a = a / n; // Pentagon Analysis fails here
+		}
+	}
+
+	test3(n) {
+		def acc = 0;
+		if (n > 6) {
+			// Note: if you put i = 0 the Pentagon Analysis fails
+			for (def i = 1; i < n; i = i + 1) {
+				def y = i % 5;
+				acc = acc + (n / y); // Pentagon Analysis fails here if i starts at 0
+			}
+		}
+	}
+
+}

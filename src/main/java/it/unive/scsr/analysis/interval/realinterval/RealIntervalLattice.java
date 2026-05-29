@@ -13,7 +13,7 @@ import java.util.Objects;
 
 /* The implementation is really similar to the integer Interval, the main differences are
  * - manual interval management via two MathNumber variables (since there is no DoubleInterval like IntInterval)
- * - slightly change in the widening operator to allow for small increments instead o jumping immediately to infinite
+ * - slightly change in the widening operator to allow for small increments instead of jumping immediately to infinite
  */
 
 public class RealIntervalLattice

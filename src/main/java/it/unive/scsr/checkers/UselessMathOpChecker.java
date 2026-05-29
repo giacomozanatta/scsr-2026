@@ -110,12 +110,12 @@ public class UselessMathOpChecker<H extends HeapValue<H>, T extends TypeValue<T>
 					// Union of left and right IDs
 					reachableIdsAll.addAll(reachableIdsLeft);
 					reachableIdsAll.addAll(reachableIdsRight);
-					// Intercept left and right IDs
+					// Intersect left and right IDs
 					reachableIdsComm.addAll(reachableIdsLeft);
 					reachableIdsComm.retainAll(reachableIdsRight);
-					// Intercept left and common IDs
+					// Intersect left and common IDs
 					reachableIdsLeft.removeAll(reachableIdsComm);
-					// Intercept right and common IDs
+					// Intersect right and common IDs
 					reachableIdsRight.removeAll(reachableIdsComm);
 
 					// Iterate over all IDs

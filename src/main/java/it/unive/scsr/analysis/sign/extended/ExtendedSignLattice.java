@@ -78,111 +78,95 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
 
 	@Override
 	public ExtendedSignLattice lubAux(ExtendedSignLattice other) throws SemanticException {
-		ExtendedSignLattice a, b;
-		a = this;
-		b = other;
-		int secondTake = 1;
-		do {
-			if (a == POSZERO) {
-				if (Set.of(ZERO, POS).contains(b))
-					return POSZERO;
-				else
-					return TOP;
-			}
-			if (a == NONZERO) {
-				if (Set.of(POS, NEG).contains(b))
-					return NONZERO;
-				else
-					return TOP;
-			}
-			if (a == NEGZERO) {
-				if (Set.of(ZERO, NEG).contains(b))
-					return NEGZERO;
-				else
-					return TOP;
-			}
-			if (a == POS) {
-				if (Set.of(ZERO, POSZERO).contains(b))
-					return POSZERO;
-				else if (Set.of(NEG, NONZERO).contains(b))
-					return NONZERO;
-				else
-					return TOP;
-			}
-			if (a == ZERO) {
-				if (Set.of(POS, POSZERO).contains(b))
-					return POSZERO;
-				else if (Set.of(NEG, NEGZERO).contains(b))
-					return NEGZERO;
-				else
-					return TOP;
-			}
-			if (a == NEG) {
-				if (Set.of(ZERO, NEGZERO).contains(b))
-					return NEGZERO;
-				else if (Set.of(POS, NONZERO).contains(b))
-					return NONZERO;
-				else
-					return TOP;
-			}
-			a = other;
-			b = this;
-		} while (secondTake-- > 0);
+		if (this == POSZERO) {
+			if (Set.of(ZERO, POS).contains(other))
+				return POSZERO;
+			else
+				return TOP;
+		}
+		if (this == NONZERO) {
+			if (Set.of(POS, NEG).contains(other))
+				return NONZERO;
+			else
+				return TOP;
+		}
+		if (this == NEGZERO) {
+			if (Set.of(ZERO, NEG).contains(other))
+				return NEGZERO;
+			else
+				return TOP;
+		}
+		if (this == POS) {
+			if (Set.of(ZERO, POSZERO).contains(other))
+				return POSZERO;
+			else if (Set.of(NEG, NONZERO).contains(other))
+				return NONZERO;
+			else
+				return TOP;
+		}
+		if (this == ZERO) {
+			if (Set.of(POS, POSZERO).contains(other))
+				return POSZERO;
+			else if (Set.of(NEG, NEGZERO).contains(other))
+				return NEGZERO;
+			else
+				return TOP;
+		}
+		if (this == NEG) {
+			if (Set.of(ZERO, NEGZERO).contains(other))
+				return NEGZERO;
+			else if (Set.of(POS, NONZERO).contains(other))
+				return NONZERO;
+			else
+				return TOP;
+		}
 		return TOP;
 	}
 
 	@Override
 	public ExtendedSignLattice glbAux(ExtendedSignLattice other) throws SemanticException {
-		ExtendedSignLattice a, b;
-		a = this;
-		b = other;
-		int secondTake = 1;
-		do {
-			if (a == POS) {
-				if (Set.of(NONZERO, POSZERO).contains(b))
-					return POS;
-				else
-					return BOTTOM;
-			}
-			if (a == ZERO) {
-				if (Set.of(POSZERO, NEGZERO).contains(b))
-					return ZERO;
-				else
-					return BOTTOM;
-			}
-			if (a == NEG) {
-				if (Set.of(NONZERO, NEGZERO).contains(b))
-					return NEG;
-				else
-					return BOTTOM;
-			}
-			if (a == POSZERO) {
-				if (Set.of(NONZERO, POS).contains(b))
-					return POS;
-				else if (Set.of(NEGZERO, ZERO).contains(b))
-					return ZERO;
-				else
-					return BOTTOM;
-			}
-			if (a == NONZERO) {
-				if (Set.of(POS, POSZERO).contains(b))
-					return POS;
-				else if (Set.of(NEG, NEGZERO).contains(b))
-					return NEG;
-				else
-					return BOTTOM;
-			}
-			if (a == NEGZERO) {
-				if (Set.of(NONZERO, NEG).contains(b))
-					return NEG;
-				else if (Set.of(POSZERO, ZERO).contains(b))
-					return ZERO;
-				else
-					return BOTTOM;
-			}
-			a = other;
-			b = this;
-		} while (secondTake-- > 0);
+		if (this == POS) {
+			if (Set.of(NONZERO, POSZERO).contains(other))
+				return POS;
+			else
+				return BOTTOM;
+		}
+		if (this == ZERO) {
+			if (Set.of(POSZERO, NEGZERO).contains(other))
+				return ZERO;
+			else
+				return BOTTOM;
+		}
+		if (this == NEG) {
+			if (Set.of(NONZERO, NEGZERO).contains(other))
+				return NEG;
+			else
+				return BOTTOM;
+		}
+		if (this == POSZERO) {
+			if (Set.of(NONZERO, POS).contains(other))
+				return POS;
+			else if (Set.of(NEGZERO, ZERO).contains(other))
+				return ZERO;
+			else
+				return BOTTOM;
+		}
+		if (this == NONZERO) {
+			if (Set.of(POS, POSZERO).contains(other))
+				return POS;
+			else if (Set.of(NEG, NEGZERO).contains(other))
+				return NEG;
+			else
+				return BOTTOM;
+		}
+		if (this == NEGZERO) {
+			if (Set.of(NONZERO, NEG).contains(other))
+				return NEG;
+			else if (Set.of(POSZERO, ZERO).contains(other))
+				return ZERO;
+			else
+				return BOTTOM;
+		}
 		return BOTTOM;
 	}
 

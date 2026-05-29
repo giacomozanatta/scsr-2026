@@ -71,7 +71,7 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
     }
 
  */
-
+/*
     @Override
     public ValueEnvironment<ExtendedSignXTaintLattice> assumeBinaryExpression(
             ValueEnvironment<ExtendedSignXTaintLattice> environment,
@@ -127,10 +127,13 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
         return environment.putState(id, new ExtendedSignXTaintLattice(refinedSign, currentTaint));
     }
 
+ */
+
 
 
     /** Checks whether (atom op evalSign) or (evalSign op atom) is satisfiable,
      *  depending on which side the identifier was found. */
+    /*
     private Satisfiability checkAtom(BinaryOperator op,
                                      ExtendedSignLattice atom,
                                      ExtendedSignLattice eval,
@@ -147,12 +150,16 @@ public class ExtendedSignXTaint implements BaseNonRelationalValueDomain<Extended
         return Satisfiability.UNKNOWN;
     }
 
+     */
+/*
     @Override
     public ExtendedSignXTaintLattice evalPushAny(
             PushAny pushAny, ProgramPoint pp, SemanticOracle oracle)
             throws SemanticException {
         return top(); // (Sign.TOP, TaintThreeLevelsLattice.Top) — correctly "unknown"
     }
+
+ */
 
     @Override
     public ExtendedSignXTaintLattice fixedVariable(

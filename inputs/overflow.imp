@@ -28,13 +28,6 @@
  *     - 16-bit overflow/underflow (intermediate convolution buffers)
  *     - 32-bit overflow           (full-image histogram accumulation)
  *     - Division by zero          (region averaging with empty region)
- *
- * Target checkers:
- *   OverflowIntervalChecker(-128, 127)         -> 8-bit signed
- *   OverflowIntervalChecker(-32768, 32767)     -> 16-bit signed
- *   OverflowIntervalChecker(-2147483648, 2147483647) -> 32-bit signed
- *   DivByZeroIntervalChecker
- *   DivByZeroPentagonChecker
  */
 class ImageProcessor {
 

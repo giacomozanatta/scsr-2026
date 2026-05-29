@@ -100,8 +100,6 @@ public class ThreeTaintEvaluation {
 
  */
 	}
-	
-
 
 	private boolean isSource(String name) {
 		for(String src : nameSource)
@@ -123,6 +121,4 @@ public class ThreeTaintEvaluation {
 				return true;
 		return false;
 	}
-	
-	
 }

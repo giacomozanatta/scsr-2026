@@ -16,20 +16,20 @@ import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
-import it.unive.scsr.checkers.ArrayLowerBoundPentagonChecker;
+import it.unive.scsr.checkers.ArrayBoundsPentagonChecker;
 
-public class ArrayLowerBoundPentagonTest {
+public class ArrayBoundsPentagonTest {
 
     @Test
-    public void testArrayLowerBound() throws ParsingException, AnalysisException {
-        Program program = IMPFrontend.processFile("inputs/array-lowerbound.imp");
+    public void testArrayBounds() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/array-bounds.imp");
 
         LiSAConfiguration conf = new DefaultConfiguration();
-        conf.workdir = "outputs/array-lowerbound-pentagon";
+        conf.workdir = "outputs/array-bounds-pentagon";
         conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new JSONReportDumper());
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-        conf.semanticChecks.add(new ArrayLowerBoundPentagonChecker<>());
+        conf.semanticChecks.add(new ArrayBoundsPentagonChecker<>());
 
         LiSA lisa = new LiSA(conf);
         lisa.run(program);

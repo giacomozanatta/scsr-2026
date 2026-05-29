@@ -1,0 +1,25 @@
+/*
+ * Error reporter example that will create pretty
+ * strings for the passed messages
+ */
+class FancyReporter {
+    logFancy(msg) {
+        return msg;
+    }
+
+    testFancyReporter() {
+        def proto = "https://";
+        def host  = "vps.com";
+
+        def msg = "Refused to load the script '"
+                + proto + host + "/"
+                + "/js/video.js' because it violates the following Content Security Policy directive: script-src 'unsafe-eval' 'unsafe-inline'";
+        this.logFancy(msg);
+
+        msg = "404: Not found \nCouldn't find the requested URL at " + proto + host;
+        this.logFancy(msg);
+
+        msg = proto + " is an unsupported protocol for " + host;
+        this.logFancy(msg);
+    }
+}

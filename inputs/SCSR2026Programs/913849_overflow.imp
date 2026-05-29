@@ -1,0 +1,23 @@
+// This is a simple banking app
+// It pretends that a malicious user attempts to add too much money too many times
+// This should result in an Overflow by the checker
+//
+// 913849 -- Quinn Robertson
+class banking {
+    owned;
+
+    ~banking(){
+        this.owned = 10000;
+    }
+
+    add(money) {
+        this.owned = this.owned + money;
+    }
+
+    main() {
+        def x = 100000;
+        while(x > 0) {
+            this.add(1000000);
+        }
+    }
+}

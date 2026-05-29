@@ -1,0 +1,53 @@
+class safeAccess {
+
+	read() {
+		def arr = new int[10];
+		def i = 3;
+		def x = arr[i];
+		return x;
+	}
+}
+
+class definiteUnderflow {
+
+	read() {
+		def arr = new int[10];
+		def i = 0 - 1;
+		def x = arr[i];
+		return x;
+	}
+}
+
+class definiteOverflow {
+
+	read() {
+		def arr = new int[10];
+		def i = 15;
+		def x = arr[i];
+		return x;
+	}
+}
+
+class possibleBounds {
+
+	read(input) {
+		def arr = new int[10];
+		def x = arr[input];
+		return x;
+	}
+}
+
+class guardedAccess {
+
+	read(input) {
+		def arr = new int[10];
+		def i = input;
+		if (i >= 0) {
+			if (i < 10) {
+				def x = arr[i];
+				return x;
+			}
+		}
+		return 0;
+	}
+}

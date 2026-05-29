@@ -1,0 +1,25 @@
+class test {
+
+    f(val) {
+        return 67;
+    }
+
+    main() {
+        def x = 5; // initialized, no warn
+        this.f(x);
+
+        // Assign a specific placeholder literal that we interpret as UNINITIALIZED
+        def z = -1;
+        this.f(z);  // not initialized, warn
+
+        def cond = 1;
+        def a = -1; // Acts as our uninitialized declaration placeholder
+        if (cond == 1) {
+            a = 42;
+        } else {
+            this.f(cond);
+        }
+
+        this.f(a); // possibly initialized, TOP
+    }
+}

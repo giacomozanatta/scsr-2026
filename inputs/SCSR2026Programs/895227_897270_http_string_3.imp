@@ -1,0 +1,18 @@
+class WebhookNotifier {
+
+    sendNotification() {
+        
+        def webhookUrl = "https://hooks.slack.com/services/T000/B000/XXX";
+        def payload = "System is up";
+
+        
+        this.postData(webhookUrl, payload);
+
+        return 1;
+    }
+
+    postData(url, data) {
+        
+        return 0;
+    }
+}

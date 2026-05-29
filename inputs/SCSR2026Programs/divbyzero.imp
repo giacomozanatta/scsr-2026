@@ -1,0 +1,94 @@
+class divbyzero{
+    // Funky util to test if IntInterval correctly abstracts constants returned by a function (it doesn't, apparently)
+    get_zero(){
+        return 0;
+    }
+
+    // Basic types
+    basic_1() {
+        def denom = 0/2;
+        def err = denom/(denom + 0);
+    }
+
+    basic_2() {
+        def denom = 2;
+        def err = 1/(denom - denom/1);
+    }
+
+    // Function call
+    function_call_simple_compact() {
+        def denom = 2/this.get_zero();
+    }
+    function_call_simple_expanded() {
+        def retval = this.get_zero();
+        def denom = 2/retval;
+    }
+
+    function_call_branching(){
+        def i = this.get_zero();
+        def x = 4;
+        if(i > 0){
+            x = 1;
+        }
+        else{
+            x = 0;
+        }
+
+        def err = 1/x;
+    }
+
+    // Array access
+    array_access(){
+        def arr = new int[1];
+        arr[0] = 0;
+
+        def err = 1/arr[0];
+    }
+
+    //Looping
+    looping(){
+        def err = 0;
+        for (def i = 0; i < 20; i = i + 1){
+            err = 1/(i - i);
+        }
+    }
+    looping_indefinite(p){
+        def err = 0;
+        for(def i = 0; i < p; i = i+ 1){
+            if(i == p-1){
+                err = 1/(i - (p-1));
+            }
+        }
+    }
+    looping_indefinite_def_not_divbyzero(p){
+            def err = 0;
+            for(def i = 0; i < p; i = i+ 1){
+                if(i == p-1){
+                    err = 1/(i - (p-1));
+                }
+            }
+        }
+
+    looping_array_def_not_zero(){
+        def err = 0;
+        def arr = new int[1];
+        for (def i = 5; i >= 0; i = i - 1){
+            arr[0] = 5;
+        }
+        def denom = arr[0];
+        err = 10/denom;
+    }
+    looping_array(){
+        def err = 0;
+        def arr = new int[1];
+        arr[0] = 0;
+        for (def i = 5; i >= 0; i = i - 1){
+            arr[0] = i;
+        }
+        def denom = arr[0];
+        err = 1/denom;
+    }
+
+
+
+}

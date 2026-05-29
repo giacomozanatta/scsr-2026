@@ -1,0 +1,26 @@
+class signtaint {
+
+	getUserInput() {
+		return 0;
+	}
+
+	process(steps) {
+		def raw = this.getUserInput();
+		def acc = 1;
+		def i = 0;
+		while (i < steps) {
+			if (raw > 0) {
+				acc = acc + raw;
+			} else {
+				acc = 0 - acc;
+			}
+			i = i + 1;
+		}
+		return acc;
+	}
+
+	main() {
+		def out = this.process(5);
+		return out;
+	}
+}

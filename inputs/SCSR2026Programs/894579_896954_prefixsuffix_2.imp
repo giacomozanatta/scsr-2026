@@ -1,0 +1,32 @@
+/*
+ * Simulates a simple protocol stripper program that removes the
+ * protocol from the provided URL. This could be use to make the
+ * links "better looking"
+ */
+class ProtocolStripper {
+    useLink(l) {
+        return l;
+    }
+
+    protocolStrip(input) {
+        return input.replace("*://", "");
+    }
+
+    urlTest1() {
+        def url = "https://gentoo.com";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+
+    urlTest2() {
+        def url = "gentoo.com";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+
+    urlTest3() {
+        def url = "gentoo.org";
+        def cleaned = this.protocolStrip(url);
+        return this.useLink(cleaned);
+    }
+}

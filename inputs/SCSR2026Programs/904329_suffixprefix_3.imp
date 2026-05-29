@@ -1,0 +1,37 @@
+class sp
+{
+    sink(p)
+    {
+        return;
+    }
+
+    /*
+    In this case both the HTTPStringChecker and the DotComStringChecker should issue a warning for the sink of the 
+    sitename variable evene if the new assignments to it are inside nested if statements
+    */
+    f3()
+    {
+        def sitename = "thereisamessagehere";
+
+        def secrecy_level = 0;
+
+        while(secrecy_level < 3)
+        {
+            if(secrecy_level == 1)
+            {
+                 sitename = "https://" +  sitename + "topsecret";
+            }
+
+            secrecy_level = secrecy_level+1;
+
+            if(secrecy_level == 2)
+            {
+                 sitename =  sitename + ".com";
+            }
+        }
+
+        this.sink(sitename);
+
+        return;
+    }
+}

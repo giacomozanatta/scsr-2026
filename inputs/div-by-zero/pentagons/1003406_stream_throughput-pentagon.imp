@@ -113,7 +113,13 @@ class ThroughputMonitor {
     // Time-delta computed BEFORE the guard on current > last.
     // current and last are TOP, so delta is TOP too.
     // EXPECT:
-    // [INTERVAL & PENTAGON] POSSIBLE warning
+    // [INTERVAL & PENTAGON] POSSIBLE warning even though at division time,
+    // delta should never concretely be 0 (current > last),
+    // since both current and last (and delta as a result) are TOP ([-INf, +INF])
+    // so delta contains 0 abstractly.
+    // Pentagon can't refine delta to know that it is > 0, because the subtraction
+    // of current - last happens BEFORE the branch where Pentagon retrieves the
+    // information that last < current.
     // -----------------------------------------------------------------------
     throughputDeltaBeforeGuard(bytes, current, last) {
         def delta = current - last;
@@ -128,7 +134,9 @@ class ThroughputMonitor {
     // Time-delta computed INSIDE the guard on current > last.
     //
     // current and last are still TOP, so delta = current - last is also TOP.
-    // Interval domain can't refine better than that, but Pentagon can.
+    // Interval domain can't refine better than that, but Pentagon can this time :
+    // Delta may be TOP (contains 0), but upper bounds set knows thanks to the branch
+    // that last < current => current-last > 0 => delta > 0.
     //
     // EXPECT:
     // [INTERVAL]  POSSIBLE warning on rate = bytes / delta (delta = TOP)

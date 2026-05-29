@@ -76,14 +76,16 @@ public class ThreeTaintAnalysisTest {
 			"sanitizer1"
 	};
 
+
 	private final String INPUT_PATH_LOG4SHELL = "/taint/three-taint/1003406_log4shell_log_injection.imp";
 	private final String INPUT_PATH_PATH_TRAVERSAL = "/taint/three-taint/1003406_path_traversal.imp";
 	private final String INPUT_PATH_CMD_INJECTION = "/taint/three-taint/1003406_command_injection.imp";
+	private final String INPUT_PATH = "/taint/three-taint/894004_taint.imp"; // put program to test here or equal to another input path listed above
 
 	@Test
 	public void testThreeLevelsTaintAnalysis() throws ParsingException, AnalysisException {
 		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH_PATH_TRAVERSAL);
+		Program program = IMPFrontend.processFile("inputs/" + INPUT_PATH);
 
 		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();

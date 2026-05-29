@@ -1,0 +1,46 @@
+class ttl
+{
+    source1(){
+		return -1;
+	}
+
+	sanitizer1(v){
+		return 0;
+	}
+
+
+	sink1(v){
+	}
+
+    /*
+    In this case the variable untrusted_source could be tainted so the checker should issue a warning 
+    on the line of the first sink. No warning should be issued on the firewall variable since it is the sanitized 
+    version of the untrusted_source variable
+    */
+	f0() {
+		def untrusted_source = this.source1();
+        def firewall = this.sanitizer1(untrusted_source);
+
+		this.sink1(untrusted_source);
+        this.sink1(firewall);
+	}
+
+    /*
+    In this case i am taking a possible tainted variable and i am using it to perform some elemental operations
+    The checker should issue a warning for the use of such possible tainted variable in the second sink
+    */
+    f3()
+    {
+        def costs = 2;
+        def revenue = 3;
+
+        def fake_revenue = this.source1();
+
+        def diff_safe = costs - revenue;
+        def diff_unsafe = costs - fake_revenue;
+
+        this.sink1(diff_safe);
+        this.sink1(diff_unsafe);
+
+    }
+}

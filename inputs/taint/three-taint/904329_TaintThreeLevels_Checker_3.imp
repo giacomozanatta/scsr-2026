@@ -1,0 +1,36 @@
+class ttl
+{
+    source1(){
+		return -1;
+	}
+
+	sanitizer1(v){
+		return 0;
+	}
+
+
+	sink1(v){
+	}
+
+    /*
+    in this case i am evaluating the behavior of the checker with a nested if statement in a while loop
+    so the checker should issue a warning "possibly tainted" for the "this.sink1(untrusted_source);" line
+    */
+	f2() {
+		
+        def untrusted_source = this.source1();
+        def number_of_sanitizations = 0;
+
+        while (number_of_sanitizations < 3)
+        {
+            number_of_sanitizations = number_of_sanitizations+1;
+
+            if(number_of_sanitizations==2) //after two cycles of sanitization, the variable can be trusted
+            {
+                untrusted_source = this.sanitizer1(untrusted_source);
+            }
+        }
+
+        this.sink1(untrusted_source);
+	}
+}

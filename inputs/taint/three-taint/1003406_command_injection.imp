@@ -92,9 +92,9 @@ class CommandInjectionScenario {
     //  EXPECT: no warning
     // -------------------------------------------------------
     runReportSafe() {
-        def raw  = this.getExternalRequest();
+        def raw = this.getExternalRequest();
         def safe = this.sanitizeParam(raw);
-        def cmd  = "convert " + safe;
+        def cmd = "convert " + safe;
         this.executeSystemCommand(cmd);
     }
 

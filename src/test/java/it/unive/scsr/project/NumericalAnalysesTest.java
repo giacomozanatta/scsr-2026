@@ -3,13 +3,8 @@ package it.unive.scsr.project;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.lisa.analysis.heap.pointbased.FieldSensitivePointBasedHeap;
-import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.numeric.Interval;
 import it.unive.lisa.analysis.numeric.Pentagon;
-import it.unive.scsr.checkers.DivByZeroIntervalChecker;
-import it.unive.scsr.checkers.DivByZeroPentagonChecker;
-import it.unive.scsr.checkers.OverflowIntervalChecker;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
@@ -17,33 +12,37 @@ import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
-
-import it.unive.scsr.checkers.project.ArrayBoundsChecker;
+import it.unive.scsr.checkers.DivByZeroIntervalChecker;
+import it.unive.scsr.checkers.DivByZeroPentagonChecker;
+import it.unive.scsr.checkers.MODIFIED_DivByZeroIntervalChecker;
+import it.unive.scsr.checkers.OverflowIntervalChecker;
 import org.junit.Test;
 
 import static it.unive.lisa.DefaultConfiguration.*;
 
-public class ArrayBoundsTest {
+public class NumericalAnalysesTest {
+
+
     @Test
-    public void testArrayBoundsChecker() throws ParsingException, AnalysisException {
+    public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/project/arraybounds.imp");
+        Program program = IMPFrontend.processFile("inputs/checkers/divbyzero.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/project/arraybounds";
+        conf.workdir = "outputs/checkers/MODIFIED_divbyzero";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        // we could a field point heap
-        conf.analysis = simpleDomain(new FieldSensitivePointBasedHeap(), new Pentagon(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>(); // functions calling other functions
 
         // added checker to the analysis
-        conf.semanticChecks.add(new ArrayBoundsChecker<>());
+        conf.semanticChecks.add(new MODIFIED_DivByZeroIntervalChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
         conf.outputs.add(new JSONReportDumper());
 
@@ -53,4 +52,5 @@ public class ArrayBoundsTest {
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
     }
-}
+
+  }

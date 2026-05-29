@@ -38,6 +38,11 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
         SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> {
 
     HashMap<String, IntInterval> arrays = new HashMap<>(16);
+    byte NEGPOSEXCPOS = (byte) 1 + (byte) 8;
+    byte NEGPOS = (byte) 1;
+    byte EXCPOS = (byte) 8;
+    byte NEGDEF = (byte) 2;
+    byte EXCDEF = (byte) 4;
 
     @Override
     public boolean visit(
@@ -76,16 +81,40 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
             return;
         }
 
+        byte access_type = 0;
+        boolean flag_definite_neg;
         if(index_interval.getLow().lt(MathNumber.ZERO)){
-            String access_confidence = index_interval.getHigh().lt(MathNumber.ZERO) ? "Definite" : "Possible"; // possibly negative
-
-            tool.warnOn(access, var.getVariable() + ": " + access_confidence + " negative index");
+            flag_definite_neg = index_interval.getHigh().lt(MathNumber.ZERO);
+            access_type |= flag_definite_neg ? NEGDEF : NEGPOS ;
         }
 
-        // TODO Check if index is above size. Use pentagon
+        MathNumber size_high = arrays.get(var.getName()).getHigh();
+        System.out.println("Checking interval " + index_interval + " against size high " + size_high);
+        boolean flag_definite_exc;
+        // TODO Use pentagon to make the analysis more precise
+        if(index_interval.getHigh().geq(size_high)){
+            flag_definite_exc = index_interval.getLow().geq(size_high);
+            access_type |= flag_definite_exc ? EXCDEF : EXCPOS;
+        }
 
+        if(access_type == 0){
+            return;
+        }
+        String msg = "Index is definitely exceeding size";
+        if(access_type == NEGPOSEXCPOS){
+            msg = "Index might be negative or exceeding size";
+        }
+        else if(access_type == NEGPOS){
+            msg = "Index might be negative";
+        }
+        else if(access_type == EXCPOS){
+            msg = "Index might be exceeding size";
+        }
+        else if(access_type == NEGDEF){
+            msg = "Index is definitely negative";
+        }
 
-
+        tool.warnOn(access, msg);
     }
 
     private IntInterval get_interval(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,

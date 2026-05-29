@@ -39,7 +39,8 @@ public class ArrayBoundsTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        // we could a field point heap
+        // Field sensitive heap --> each memory cell has its own abstraction rather than being part of
+        // the same abstraction shared among all cells as would happen with a simple point based heap
         conf.analysis = simpleDomain(new FieldSensitivePointBasedHeap(), new Pentagon(), defaultTypeDomain());
 
         // added checker to the analysis

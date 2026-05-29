@@ -13,4 +13,24 @@ class arraybounds{
         arr0[neg] = 9999; // Definitely Out of bounds
         arr1[any_index] = 9999; // Possibly Out of bounds
     }
+
+    index_from_heap(){
+        def arr = new int[1];
+        arr[0] = 5;
+        def i = arr[0];
+        return arr[i];
+    }
+
+    branch_def_exceed(b){
+        def a = new int[3];
+        def foo = 0;
+        if(b == 0){
+            foo = a[0];
+        }
+        else{
+            foo = a[3];
+        }
+
+        return foo;
+    }
 }

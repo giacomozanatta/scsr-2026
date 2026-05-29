@@ -1,0 +1,33 @@
+class productBranchTaint {
+
+	GetRequest() {
+		return 99;
+	}
+
+	auditSink(v) {
+	}
+
+	transfer(amount) {
+	}
+
+	branchingFlow(flag) {
+		def amount = 15;
+		if (flag)
+			amount = this.GetRequest();
+		else
+			amount = 5;
+
+		this.auditSink(amount);
+		this.transfer(amount);
+	}
+
+	maybeNegative(flag) {
+		def amount = 20;
+		if (flag)
+			amount = amount - 50;
+		else
+			amount = amount + 10;
+
+		this.transfer(amount);
+	}
+}

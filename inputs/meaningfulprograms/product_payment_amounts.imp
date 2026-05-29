@@ -1,0 +1,29 @@
+class productPaymentAmounts {
+
+	withdraw(amount) {
+	}
+
+	refund(amount) {
+	}
+
+	definiteNegativeRefund() {
+		def original = 5;
+		def refund = original - 20;
+		this.refund(refund);
+	}
+
+	possibleNegativeWithdraw(flag) {
+		def amount = 30;
+		if (flag)
+			amount = amount - 40;
+		else
+			amount = amount + 20;
+
+		this.withdraw(amount);
+	}
+
+	safeWithdraw() {
+		def amount = 12;
+		this.withdraw(amount);
+	}
+}

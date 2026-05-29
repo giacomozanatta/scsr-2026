@@ -1,0 +1,35 @@
+class productTaintPayments {
+
+	sourceAmount() {
+		return -50;
+	}
+
+	sanitizeAmount(v) {
+		return 10;
+	}
+
+	runQueryDB(v) {
+	}
+
+	pay(amount) {
+	}
+
+	cleanPayment() {
+		def amount = 25;
+		this.pay(amount);
+		this.runQueryDB(amount);
+	}
+
+	taintedNegativePayment() {
+		def amount = this.sourceAmount();
+		this.pay(amount);
+		this.runQueryDB(amount);
+	}
+
+	sanitizedPayment() {
+		def amount = this.sourceAmount();
+		def safe = this.sanitizeAmount(amount);
+		this.pay(safe);
+		this.runQueryDB(safe);
+	}
+}

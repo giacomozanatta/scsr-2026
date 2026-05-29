@@ -1,0 +1,23 @@
+class PacketCounter {
+
+    safeIncrement(count) {
+        def result = count + 1;
+        return result;
+    }
+
+    accumulateBytes(packetSize) {
+        def total = 0;
+        def i = 0;
+        while (i < 100) {
+            total = total + packetSize;
+            i = i + 1;
+        }
+        return total;
+    }
+
+    computeChecksum(a, b, c) {
+        def sum = a + b;
+        def result = sum * c;
+        return result;
+    }
+}

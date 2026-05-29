@@ -1,0 +1,51 @@
+class PrefixSuffixDemo {
+
+	assertPrefix(s) {
+		return;
+	}
+
+	assertSuffix(s) {
+		return;
+	}
+
+	cleanPrefix() {
+		def s = 42;
+		this.assertPrefix(s);
+		return s;
+	}
+
+	taintedPrefix(s) {
+		this.assertPrefix(s);
+		return s;
+	}
+
+	mixedPrefix(flag, s) {
+		def v = 0;
+		if (flag)
+			v = s;
+		else
+			v = 1;
+		this.assertPrefix(v);
+		return v;
+	}
+
+	cleanSuffix() {
+		def x = 10;
+		def y = 20;
+		def r = x + y;
+		this.assertSuffix(r);
+		return r;
+	}
+
+	taintedSuffix(s) {
+		this.assertSuffix(s);
+		return s;
+	}
+
+	derivedTaint(t) {
+		def c = 5;
+		def r = t + c;
+		this.assertSuffix(r);
+		return r;
+	}
+}

@@ -1,0 +1,12 @@
+class CleanTaintTest {
+
+    writeToDatabase(query) {
+        return 0;
+    }
+
+    testCleanSafe() {
+        def safeQuery = "SELECT * FROM public_data";
+        this.writeToDatabase(safeQuery);
+        return 1;
+    }
+}

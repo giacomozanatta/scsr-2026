@@ -1,0 +1,42 @@
+class float_intervals {
+
+	exactDiv() {
+		def a = 5;
+		def b = 2;
+		def r = a / b;
+		return r;
+	}
+
+	negation() {
+		def x = 3;
+		def y = -7;
+		def r = x + y;
+		def neg = -r;
+		return neg;
+	}
+
+	mixedMul() {
+		def lo = -2;
+		def hi = 3;
+		def scale = 4;
+		def r = hi * scale;
+		return r;
+	}
+
+	negativeDiv() {
+		def a = -6;
+		def b = -2;
+		def c = 3;
+		def r = a / c;
+		return r;
+	}
+
+	branch(flag) {
+		def x = 0;
+		if (flag)
+			x = 10;
+		else
+			x = -10;
+		return x;
+	}
+}

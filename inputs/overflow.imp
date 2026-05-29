@@ -1,0 +1,40 @@
+class BankAccount {
+
+    smallDeposit() {
+        def balance = 1000;
+        def amount = 500;
+        def result = balance + amount;
+        return result;
+    }
+
+    largeDeposit() {
+        def balance = 2000000000;
+        def amount = 2000000000;
+        def result = balance + amount;
+        return result;
+    }
+
+    interestLoop() {
+        def balance = 1000000000;
+        def i = 0;
+        while (i < 10) {
+            balance = balance + 200000000;
+            i = i + 1;
+        }
+        return balance;
+    }
+
+    massWithdraw() {
+        def balance = -2000000000;
+        def amount = 500000000;
+        def result = balance - amount;
+        return result;
+    }
+
+    safeTransfer() {
+        def a = 100;
+        def b = 200;
+        def total = a + b;
+        return total;
+    }
+}

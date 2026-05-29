@@ -1,0 +1,24 @@
+class GameScore {
+
+    addPoints(score, points) {
+        def result = score + points;
+        return result;
+    }
+
+    applyMultiplier(score, multiplier) {
+        def result = score * multiplier;
+        return result;
+    }
+
+    accumulateCombo() {
+        def score = 0;
+        def combo = 1000000;
+        def i = 0;
+        while (i < 10) {
+            score = score + combo;
+            combo = combo * 2;
+            i = i + 1;
+        }
+        return score;
+    }
+}

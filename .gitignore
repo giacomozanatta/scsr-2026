@@ -233,3 +233,10 @@ gradle-app.setting
 
 # Metals Scala Language Server
 .metals/
+
+# Project plan, docs, Claude Code config
+PLAN.md
+CLAUDE.md
+docs/
+.claude/
+students/

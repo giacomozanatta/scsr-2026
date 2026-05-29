@@ -73,18 +73,110 @@ public class TaintAnalysisTest {
 				return true;
 		return false;
 	}
-	
+
 	private boolean isSanitizer(String name) {
 		for(String sanit : nameSanitizers)
 			if(sanit.equals(name))
 				return true;
 		return false;
 	}
-	
+
 	private boolean isSink(String name) {
 		for(String sink : nameSinks)
 			if(sink.equals(name))
 				return true;
 		return false;
 	}
+
+    @Test
+    public void testTaintWebHandler() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/taint-2.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/taint-2";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        for (CFG cfg : program.getAllCFGs()) {
+            String name = cfg.getDescriptor().getName();
+            if ("getUserInput".equals(name)) cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+            else if ("sanitizeInput".equals(name)) cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+            else if ("renderHtml".equals(name)) cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        new LiSA(conf).run(program);
+    }
+
+    @Test
+    public void testTaintSessionManager() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/taint-3.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/taint-3";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        for (CFG cfg : program.getAllCFGs()) {
+            String name = cfg.getDescriptor().getName();
+            if ("getRequest".equals(name)) cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+            else if ("sanitize".equals(name)) cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+            else if ("runQueryDB".equals(name)) cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        new LiSA(conf).run(program);
+    }
+
+    @Test
+    public void testTaintClean() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/other/895227_897270_taint_three_level_1.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/other/taint-clean";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        for (CFG cfg : program.getAllCFGs()) {
+            if ("writeToDatabase".equals(cfg.getDescriptor().getName()))
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        new LiSA(conf).run(program);
+    }
+
+    @Test
+    public void testTaintDefinite() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/other/895227_897270_taint_three_level_2.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/other/taint-definite";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        for (CFG cfg : program.getAllCFGs()) {
+            String name = cfg.getDescriptor().getName();
+            if ("readSecretFile".equals(name))
+                cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+            else if ("sendToExternalServer".equals(name))
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        new LiSA(conf).run(program);
+    }
+
+    @Test
+    public void testTaintPossible() throws ParsingException, AnalysisException {
+        Program program = IMPFrontend.processFile("inputs/other/895227_897270_taint_three_level_3.imp");
+        LiSAConfiguration conf = new DefaultConfiguration();
+        conf.workdir = "outputs/other/taint-possible";
+        conf.outputs.add(new HtmlResults<>(true));
+        conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        for (CFG cfg : program.getAllCFGs()) {
+            if ("executeSystemCommand".equals(cfg.getDescriptor().getName()))
+                cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        }
+        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.outputs.add(new JSONReportDumper());
+        new LiSA(conf).run(program);
+    }
 }

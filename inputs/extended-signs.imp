@@ -1,0 +1,47 @@
+class extended_signs {
+
+	nonNegativeCounter() {
+		def i = 0;
+		def step = 1;
+		i = i + step;
+		i = i + step;
+		return i;
+	}
+
+	nonPositiveCounter() {
+		def i = 0;
+		def step = -1;
+		i = i + step;
+		i = i + step;
+		return i;
+	}
+
+	nonZeroResult(flag) {
+		def x = 1;
+		if (flag)
+			x = -1;
+		return x;
+	}
+
+	loopCounter() {
+		def i = 0;
+		def bound = 10;
+		while (i < bound)
+			i = i + 1;
+		return i;
+	}
+
+	signPreservingMul(a, b) {
+		def pos = 2;
+		def neg = -3;
+		def r = pos * neg;
+		return r;
+	}
+
+	divPrecision() {
+		def a = 5;
+		def b = 10;
+		def r = a / b;
+		return r;
+	}
+}

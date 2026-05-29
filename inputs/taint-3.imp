@@ -1,0 +1,25 @@
+class SessionManager {
+
+    getRequest() { return 0; }
+    sanitize(x) { return 0; }
+    runQueryDB(x) { }
+
+    loginUnsafe() {
+        def user = this.getRequest();
+        this.runQueryDB(user);
+    }
+
+    loginSafe() {
+        def user = this.getRequest();
+        def clean = this.sanitize(user);
+        this.runQueryDB(clean);
+    }
+
+    loginWithFallback(trusted) {
+        def query = "default";
+        if (trusted) {
+            query = this.getRequest();
+        }
+        this.runQueryDB(query);
+    }
+}

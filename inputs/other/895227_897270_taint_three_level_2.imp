@@ -1,0 +1,16 @@
+class DefiniteTaintTest {
+
+    readSecretFile() {
+        return 0;
+    }
+
+    sendToExternalServer(data) {
+        return 0;
+    }
+
+    testDefinite() {
+        def x = this.readSecretFile();
+        this.sendToExternalServer(x);
+        return 1;
+    }
+}

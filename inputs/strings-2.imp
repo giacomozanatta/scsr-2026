@@ -1,0 +1,48 @@
+class UrlRouter {
+
+    dispatch(path) { }
+    forward(url) { }
+
+    routeInternal() {
+        def base = "https://internal.company.com";
+        def path = "/api/v2/data";
+        def full = base + path;
+        this.dispatch(full);
+    }
+
+    routeExternal() {
+        def url = "http://legacy.partner.org/feed";
+        this.forward(url);
+    }
+
+    routeDynamic(useSecure) {
+        def url = "http://default.example.com";
+        if (useSecure) {
+            url = "https://secure.example.com";
+        }
+        this.dispatch(url);
+    }
+}
+
+class DomainChecker {
+
+    ping(host) { }
+
+    pingCommercial() {
+        def host = "shop.store.com";
+        this.ping(host);
+    }
+
+    pingOrg() {
+        def host = "nonprofit.org";
+        this.ping(host);
+    }
+
+    pingDynamic(useCom) {
+        def host = "fallback.net";
+        if (useCom) {
+            host = "primary.com";
+        }
+        this.ping(host);
+    }
+}

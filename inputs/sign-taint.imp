@@ -1,0 +1,54 @@
+class SignTaintDemo {
+
+	sink(x) {
+		return;
+	}
+
+	cleanPositive() {
+		def x = 5;
+		def y = 3;
+		def z = x + y;
+		this.sink(z);
+		return z;
+	}
+
+	withInput(t) {
+		this.sink(t);
+		def c = 2;
+		def r = t + c;
+		this.sink(r);
+		return r;
+	}
+
+	twoParams(a, b) {
+		def r = a + b;
+		this.sink(r);
+		return r;
+	}
+
+	cleanMul() {
+		def a = 4;
+		def b = -3;
+		def r = a * b;
+		this.sink(r);
+		return r;
+	}
+
+	divResult() {
+		def a = 6;
+		def b = 2;
+		def r = a / b;
+		this.sink(r);
+		return r;
+	}
+
+	branchMix(flag, t) {
+		def x = 0;
+		if (flag)
+			x = t;
+		else
+			x = 10;
+		this.sink(x);
+		return x;
+	}
+}

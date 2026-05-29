@@ -1,0 +1,18 @@
+class LoanCalculator {
+
+    monthlyPayment(principal, months) {
+        def payment = principal / months;
+        return payment;
+    }
+
+    totalInterest(principal, rate, months) {
+        def total = principal * rate;
+        def perMonth = total / months;
+        return perMonth;
+    }
+
+    splitAmongBorrowers(amount, borrowers) {
+        def share = amount / borrowers;
+        return share;
+    }
+}

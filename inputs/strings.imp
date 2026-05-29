@@ -1,0 +1,55 @@
+class HttpDemo {
+
+    fetch(url) { }
+    store(path) { }
+
+    insecureRequest() {
+        def url = "http://api.example.com/data";
+        this.fetch(url);
+    }
+
+    secureRequest() {
+        def url = "https://api.example.com/data";
+        this.fetch(url);
+    }
+
+    relativePath() {
+        def path = "/api/data";
+        this.fetch(path);
+    }
+
+    mixedPath(flag) {
+        def url = "http://fallback.example.com";
+        if (flag) {
+            url = "https://primary.example.com";
+        }
+        this.fetch(url);
+    }
+}
+
+class DotComDemo {
+
+    connect(host) { }
+
+    dotComHost() {
+        def host = "example.com";
+        this.connect(host);
+    }
+
+    orgHost() {
+        def host = "example.org";
+        this.connect(host);
+    }
+
+    httpsDotCom() {
+        def url = "https://myapp.com";
+        this.connect(url);
+    }
+
+    concatenated() {
+        def base = "https://api.";
+        def tld = "example.com";
+        def url = base + tld;
+        this.connect(url);
+    }
+}

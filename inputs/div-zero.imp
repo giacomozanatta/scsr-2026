@@ -1,0 +1,37 @@
+class PhysicsEngine {
+
+    computeAcceleration() {
+        def force = 100;
+        def mass = 1;
+        def acc = force / mass;
+        return acc;
+    }
+
+    computeVelocity(time) {
+        def distance = 50;
+        def velocity = distance / time;
+        return velocity;
+    }
+
+    computeAverageRetryTime(total_ms, max_retries) {
+        def retries = max_retries;
+        while (retries > 0) {
+            retries = retries - 1;
+        }
+        def avg = total_ms / retries;
+        return avg;
+    }
+
+    computeRate(work, workers) {
+        def rate = 0;
+        if (workers > 0) {
+            rate = work / workers;
+        }
+        return rate;
+    }
+
+    computeShare(total, parts) {
+        def share = total / parts;
+        return share;
+    }
+}

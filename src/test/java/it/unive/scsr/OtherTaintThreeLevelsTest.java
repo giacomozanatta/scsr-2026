@@ -20,7 +20,7 @@ import org.junit.Test;
 import static it.unive.lisa.DefaultConfiguration.defaultTypeDomain;
 import static it.unive.lisa.DefaultConfiguration.simpleDomain;
 
-public class TaintThreeLevelsShellTest {
+public class OtherTaintThreeLevelsTest {
 
     String[] nameSource = {
             "source1",      // From 904329_TaintThreeLevels_Checker, 913849_threetaint3

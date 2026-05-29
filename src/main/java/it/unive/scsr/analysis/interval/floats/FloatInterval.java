@@ -103,6 +103,7 @@ public class FloatInterval implements BaseNonRelationalValueDomain<FloatInterval
             MathNumber l1 = left.i.getLow();
             MathNumber l2 = right.i.getLow();
 
+            if (l2.equals(MathNumber.ZERO) && u2.equals(MathNumber.ZERO)) return FloatIntervalLattice.BOTTOM;
             if (l2.leq(MathNumber.ZERO) && u2.geq(MathNumber.ZERO)) return FloatIntervalLattice.TOP;
 
             return new FloatIntervalLattice(min(l1.divide(l2), l1.divide(u2), u1.divide(l2), u1.divide(u2)),

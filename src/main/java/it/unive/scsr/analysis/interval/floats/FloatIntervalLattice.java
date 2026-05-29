@@ -134,6 +134,9 @@ public class FloatIntervalLattice
         else
             uResult = u2;
 
+        if (lResult.gt(uResult))
+            return BOTTOM;
+
         return new FloatIntervalLattice(lResult, uResult);
     }
 

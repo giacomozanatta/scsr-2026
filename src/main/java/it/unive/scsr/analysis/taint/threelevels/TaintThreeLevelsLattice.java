@@ -83,7 +83,7 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public boolean isPossiblyTainted() {
-        return this.level == TAINT.level || this.level == TOP.level;
+        return this.level == TOP.level;
 	}
 
     @Override

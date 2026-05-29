@@ -1,0 +1,98 @@
+class Calc {
+
+    /* Babylonian method - 10 iterations for precision with floats,
+       avoids static analysis divergences */
+    sqrt(x) {
+        if (x == 0) return 0.0;
+        def curr = x / 2.0; 
+
+
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+        curr = (curr + x / curr) / 2.0;
+
+        return curr;
+    }
+
+    // Case 1: Large positive float and its negation
+    largeFloat() {
+        def ex = 6343.56456456;
+        def exf = -ex;
+        def aa = this.sqrt(ex);
+        def aaa = this.sqrt(exf);
+        return aa;
+    }
+
+    // Case 2: Simple positive float
+    simplePositiveFloat() {
+        def a_float = 6.25;
+        def r_float1 = this.sqrt(a_float);
+        return r_float1;
+    }
+
+    // Case 3: Negative float (should trigger warning)
+    negativeFloat() {
+        def b_float = -5.43;
+        def r_float2 = this.sqrt(b_float);
+        return r_float2;
+    }
+
+    // Case 4: Sum of positive and negative float (result may be negative)
+    sumFloat() {
+        def a_float = 6.25;
+        def b_float = -5.43;
+        def c_float = a_float + b_float;
+        def r_float3 = this.sqrt(c_float);
+        return r_float3;
+    }
+
+    // Case 5: Sign-uncertain value (static analysis cannot determine sign)
+    uncertainSign() {
+        def alfaf = -5.453;
+        def gammaf = 8;
+        if (gammaf > 4) {
+            alfaf = alfaf * -1;
+        }
+        def betaf = this.sqrt(alfaf);
+        return betaf;
+    }
+
+    // Case 6: Small floats (precision limits of FloatIntervalLattice)
+    smallFloats() {
+        def e_float = 0.25;
+        def r_float4 = this.sqrt(e_float);
+
+        def g_float = 0.0001;
+        def r_float5 = this.sqrt(g_float);
+        return r_float4;
+    }
+
+    // Case 7: Large float (overapproximation grows)
+    largeExact() {
+        def h_float = 1000000.0;
+        def r_float6 = this.sqrt(h_float);
+        return r_float6;
+    }
+
+    // Case 8: Expression as argument (composed overapproximation)
+    composedExpression() {
+        def i_float = 1.5;
+        def l_float = 2.5;
+        def m_float = (i_float * l_float) + 0.25;
+        def r_float7 = this.sqrt(m_float);
+        return r_float7;
+    }
+
+    //case 9 : Zero
+    zero() {
+        def z = 0;
+        def zs = this.sqrt(z);
+    }
+}

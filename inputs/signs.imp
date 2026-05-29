@@ -50,4 +50,13 @@ class signs {
 		
 		this.setSpeed(n); // we may have a problem here! n may be negative depending on b that is statically unknow
     }
+
+	looped() {
+		def x = -1; 
+		def y = 10;
+		while (y>0) {
+		x= x*(-1);
+		}
+		return x; 
+	}
 }

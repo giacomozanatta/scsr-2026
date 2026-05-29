@@ -1,0 +1,10 @@
+class signs {
+
+    testModulo() {
+    def a = -5; // LT_ZERO
+    def b = 3;  // GT_ZERO
+    def r = 0;
+
+    r = a % b;
+}
+}

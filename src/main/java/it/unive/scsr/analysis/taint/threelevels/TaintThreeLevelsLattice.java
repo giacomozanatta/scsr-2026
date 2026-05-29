@@ -24,10 +24,10 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	int element;
 
-	static public TaintThreeLevelsLattice Top = new TaintThreeLevelsLattice(3);
-	static public TaintThreeLevelsLattice Taint = new TaintThreeLevelsLattice(2);
-	static public TaintThreeLevelsLattice Clean = new TaintThreeLevelsLattice(1);
-	static public TaintThreeLevelsLattice Bottom = new TaintThreeLevelsLattice(0);
+	static public TaintThreeLevelsLattice TOP = new TaintThreeLevelsLattice(3);
+	static public TaintThreeLevelsLattice TAINT = new TaintThreeLevelsLattice(2);
+	static public TaintThreeLevelsLattice CLEAN = new TaintThreeLevelsLattice(1);
+	static public TaintThreeLevelsLattice BOTTOM = new TaintThreeLevelsLattice(0);
 
 	public TaintThreeLevelsLattice() {this(3);}
 
@@ -35,57 +35,57 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
 	@Override
 	public TaintThreeLevelsLattice lubAux(TaintThreeLevelsLattice other) throws SemanticException {
-		return TaintThreeLevelsLattice.Top;
+		return TaintThreeLevelsLattice.TOP;
 	}
 
 	@Override
 	public boolean lessOrEqualAux(TaintThreeLevelsLattice other) throws SemanticException {
 		if (this == other) return true;
-		if (this == Bottom) return true;
-		if (other == Top) return true;
+		if (this == BOTTOM) return true;
+		if (other == TOP) return true;
 		return false;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice top() {
-		return TaintThreeLevelsLattice.Top;
+		return TaintThreeLevelsLattice.TOP;
 	}
 
 	@Override
 	public TaintThreeLevelsLattice bottom() {
-		return TaintThreeLevelsLattice.Bottom;
+		return TaintThreeLevelsLattice.BOTTOM;
 	}
 
 	@Override
 	public StructuredRepresentation representation() {
-		if (this == Bottom) return Lattice.bottomRepresentation();
-		if (this == Top) return Lattice.topRepresentation();
-		if (this == Taint) return new StringRepresentation("T");
+		if (this == BOTTOM) return Lattice.bottomRepresentation();
+		if (this == TOP) return Lattice.topRepresentation();
+		if (this == TAINT) return new StringRepresentation("T");
 		return new StringRepresentation("C");
 	}
 
 	@Override
-	public TaintThreeLevelsLattice tainted() {return TaintThreeLevelsLattice.Taint;}
+	public TaintThreeLevelsLattice tainted() {return TaintThreeLevelsLattice.TAINT;}
 
 	@Override
-	public TaintThreeLevelsLattice clean() {return TaintThreeLevelsLattice.Clean;}
+	public TaintThreeLevelsLattice clean() {return TaintThreeLevelsLattice.CLEAN;}
 
 	@Override
 	public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
-		if (this == TaintThreeLevelsLattice.Taint || other == TaintThreeLevelsLattice.Taint)
-			return TaintThreeLevelsLattice.Taint;
-		if (this == TaintThreeLevelsLattice.Bottom && other == TaintThreeLevelsLattice.Bottom)
-			return TaintThreeLevelsLattice.Bottom;
-		if (this == TaintThreeLevelsLattice.Top && other == TaintThreeLevelsLattice.Top)
-			return TaintThreeLevelsLattice.Top;
-		return TaintThreeLevelsLattice.Clean;
+		if (this == TaintThreeLevelsLattice.TAINT || other == TaintThreeLevelsLattice.TAINT)
+			return TaintThreeLevelsLattice.TAINT;
+		if (this == TaintThreeLevelsLattice.BOTTOM && other == TaintThreeLevelsLattice.BOTTOM)
+			return TaintThreeLevelsLattice.BOTTOM;
+		if (this == TaintThreeLevelsLattice.TOP && other == TaintThreeLevelsLattice.TOP)
+			return TaintThreeLevelsLattice.TOP;
+		return TaintThreeLevelsLattice.CLEAN;
 	}
 
 	@Override
-	public boolean isAlwaysTainted() {return this == TaintThreeLevelsLattice.Taint;}
+	public boolean isAlwaysTainted() {return this == TaintThreeLevelsLattice.TAINT;}
 
 	@Override
-	public boolean isPossiblyTainted() {return (this == TaintThreeLevelsLattice.Top) || (this == TaintThreeLevelsLattice.Taint);}
+	public boolean isPossiblyTainted() {return (this == TaintThreeLevelsLattice.TOP);}
 
 
 	@Override

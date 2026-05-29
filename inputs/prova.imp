@@ -1,0 +1,25 @@
+class WideningTest {
+
+    // Simulates widening: two possible values between 0 and 1
+    // With integer thresholds {0, 1}, the widening jumps to [0,1] immediately
+    wideningBetweenZeroOne() {
+        def x = 0.0;
+        if (x > 0.0) {
+            x = 0.1;  // first "iteration"
+        } else {
+            x = 0.9;  // second "iteration"
+        }
+        return x;  // expected: [0.1, 0.9] but widening may give [0, 1]
+    }
+
+    // With very small values, threshold jumps to 0 losing all precision
+    wideningVerySmall() {
+        def x = 0.0;
+        if (x > 0.0) {
+            x = 0.001;
+        } else {
+            x = 0.009;
+        }
+        return x;  // expected: [0.001, 0.009] but widening may give [0, 1]
+    }
+}

@@ -16,6 +16,8 @@ import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
 import it.unive.scsr.analysis.taint.threelevels.*;
+import it.unive.scsr.analysis.signthreetaint.SignThreeTaint;
+import it.unive.scsr.analysis.signthreetaint.SignThreeTaintChecker;
 
 import org.junit.Test;
 
@@ -23,28 +25,28 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class TaintAnalysisTest {
 
-	String[] nameSource = {"source1", "GetRequest"};
-	String[] nameSanitizers = {"sanitizer1"};
-	String[] nameSinks = {"sink1", "runQueryDB"};
+	String[] nameSource = {"source1", "GetRequest", "getUserInput"};
+	String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml","strip1","strip2"};
+	String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "system"};
 	
 	
     @Test
     public void testTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/taint.imp");
+        Program program = IMPFrontend.processFile("inputs/otherprograms/taintthreelevels/880119-890558-taint-three-levels-2.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/taintedtaint";
+        conf.workdir = "outputs/definitive_taint3levels/";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
+		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // we specify the analysis that we want to execute
-<<<<<<< HEAD
-        conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new SignThreeTaint(), defaultTypeDomain());
 
 =======
         conf.analysis = simpleDomain(new PointBasedHeap(), new Taint(), defaultTypeDomain());
@@ -57,11 +59,11 @@ public class TaintAnalysisTest {
         	else if(isSanitizer(name))
         		cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
         	else if(isSink(name))
-        		cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+        		cfg.getDescriptor().addAnnotation(SignThreeTaint.SINK_ANNOTATION);
         }
     
         // added checker to the analysis
-        conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+        conf.semanticChecks.add(new SignThreeTaintChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
         conf.outputs.add(new JSONReportDumper());
         

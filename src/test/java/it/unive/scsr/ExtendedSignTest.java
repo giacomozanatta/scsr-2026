@@ -3,34 +3,36 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.lisa.analysis.numeric.Parity;
-import it.unive.scsr.analysis.interval.Interval;
+import it.unive.scsr.analysis.parity.Parity;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.program.Program;
+import it.unive.scsr.analysis.extendedsign.*;
 import org.junit.Test;
 
 
 import static it.unive.lisa.DefaultConfiguration.*;
-public class IntervalTest {
+
+public class ExtendedSignTest {
+
     @Test
-    public void testParityAnalysis() throws ParsingException, AnalysisException {
+    public void testExtendedSignAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/signs.imp");
+        Program program = IMPFrontend.processFile("inputs/extsign.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/zzzzzz";
+        conf.workdir = "outputs/extendedsign";
 
         // we specify the visual format of the analysis results
         conf.outputs.add(new HtmlResults<>(true));
 
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
 
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);

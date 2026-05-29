@@ -1,0 +1,76 @@
+class floatTests {
+
+    // Test 1: costanti float precise - bounds esatti
+    constants() {
+        def a = 3.0;      // [3.0, 3.0]
+        def b = -5.0;     // [-5.0, -5.0]
+        def c = a + b;    // [-2.0, -2.0]
+        def d = a * b;    // [-15.0, -15.0]
+        return d;
+    }
+
+    // Test 2: loop con float - widening verso +Inf
+    loopFloat() {
+        def c = 1.5;
+        def b = 0.0;
+        while (b < 10.0)
+            b = b + c;
+        return b;  // expected: [0.0, +Inf]
+    }
+
+    // Test 3: branch join con float
+    // ramo then: x = 0.0 * 7.0 = 0.0  → [0.0, 0.0]
+    // ramo else: x = -7.5             → [-7.5, -7.5]
+    // join:                           → [-7.5, 0.0]
+    branchJoin() {
+        def a = 3.0;
+        def b = 5.0;
+        def x = 0.0;
+        if (a > b)
+            x = x * 7.0;
+        else
+            x = -7.5;
+        return x;  // expected: [-7.5, 0.0]
+    }
+
+    // Test 4: loop decremento float - widening verso -Inf
+    loopDecrement() {
+        def y = 10.0;
+        while (y > 0.0)
+            y = y - 0.5;
+        return y;  // expected: [-Inf, 0.0]
+    }
+
+    // Test 5: oscillazione float
+    // x alterna -1.0 e 1.0 → [-1.0, 1.0]
+    loopOscillating() {
+        def x = -1.0;
+        def y = 10.0;
+        while (y > 0.0)
+            x = x * (-1.0);
+        return x;  // expected: [-1.0, 1.0]
+    }
+
+    // Test 6: divisione float con zero nel range
+    // x ∈ [-7.5, 0.0] → denominatore può essere 0 → TOP o warning
+    divisionWithZero() {
+        def a = 3.0;
+        def b = 5.0;
+        def x = 0.0;
+        if (a > b)
+            x = x * 7.0;
+        else
+            x = -7.5;
+        def y = x / x;  // expected: TOP o warning divisione per zero
+        return y;
+    }
+
+    // Test 7: input sconosciuto con float
+    // n * 0.0 dovrebbe dare [0.0, 0.0] anche con n = TOP
+    withUnknownInput(n) {
+        def a = n + 1.0;   // TOP
+        def b = n * 0.0;   // [0.0, 0.0] se preciso, altrimenti TOP
+        def c = n - n;     // TOP (non sa che sono la stessa variabile)
+        return b;
+    }
+}

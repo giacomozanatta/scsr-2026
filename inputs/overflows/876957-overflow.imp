@@ -40,7 +40,7 @@ class overflow {
     }
 
     // ---------------------------------------------------------
-    // Integer overflow/underflow: 32-bit signed [-2147483647, 2147483647]
+    // Integer overflow/underflow: 32-bit signed [-2147483648, 2147483647]
     // ---------------------------------------------------------
 
     test32BitOverflow() {
@@ -50,7 +50,7 @@ class overflow {
     }
 
     test32BitUnderflow() {
-        def minInt = -2147483647;
+        def minInt = -2147483648;
         def result = minInt - 1; // UNDERFLOW: result beyond 32-bit lower bound
         return result;
     }

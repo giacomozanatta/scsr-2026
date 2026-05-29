@@ -1,0 +1,288 @@
+class ttl
+{
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_1
+    // ----------------------------------------
+    source1(){
+		return -1;
+	}
+
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_1
+    // ----------------------------------------
+	sanitizer1(v){
+		return 0;
+	}
+
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_1
+    // ----------------------------------------
+	sink1(v){
+	}
+
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_2
+    // ----------------------------------------
+	f1(b) {
+		def database_query = "";
+        def security_code = b;
+		if(security_code < 3) {
+			database_query = this.source1();
+		} else {
+		  database_query = this.sanitizer1(database_query);
+		}
+
+		this.sink1(database_query);
+	}
+
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_3
+    // ----------------------------------------
+	f2() {
+
+        def untrusted_source = this.source1();
+        def number_of_sanitizations = 0;
+
+        while (number_of_sanitizations < 3)
+        {
+            number_of_sanitizations = number_of_sanitizations+1;
+
+            if(number_of_sanitizations==2) //after two cycles of sanitization, the variable can be trusted
+            {
+                untrusted_source = this.sanitizer1(untrusted_source);
+            }
+        }
+
+        this.sink1(untrusted_source);
+	}
+
+    // ----------------------------------------
+    // From 904329 — 904329_TaintThreeLevels_Checker_1
+    // ----------------------------------------
+    f3()
+    {
+        def costs = 2;
+        def revenue = 3;
+
+        def fake_revenue = this.source1();
+
+        def r = costs - revenue;
+        def rr = costs - fake_revenue;
+
+        this.sink1(r);
+        this.sink1(rr);
+        //this.sink1(costs - revenue);
+        //this.sink1(costs - fake_revenue);
+
+    }
+}
+
+class threetaint {
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint
+    // ----------------------------------------
+	user_input(){
+		return -99;
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint
+    // ----------------------------------------
+	sanitized_value(v){
+	    if (v < 0) {
+	        return (-v);
+	    }
+		return v;
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint
+    // ----------------------------------------
+	evaluate(v){
+	    return "Value is sunk into database";
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint
+    // ----------------------------------------
+    main (x) { // I changed y to x just for clarity in the report
+        def y = this.user_input();
+        if (x) {
+            this.evaluate(y);
+        }
+        else {
+            def z = this.sanitized_value(y);
+            this.evaluate(z);
+        }
+    }
+}
+
+class threetaint3 {
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint3
+    // ----------------------------------------
+	source1(){
+		return -1;
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint3
+    // ----------------------------------------
+	sanitizer1(v){
+	    if (v < 0) {
+	        return (-v);
+	    }
+		return v;
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint3
+    // ----------------------------------------
+	sink1(v){
+	    return "Value is sunk";
+	}
+
+    // ----------------------------------------
+    // From 913849 — 913849_threetaint3
+    // ----------------------------------------
+    main (x2) { // changed x to x2
+        def y = this.source1();
+        def z = 0;
+        while (x2 < 100) {
+            z = z + 1;
+        }
+        if (z > 3) {
+            y = this.sanitizer1(y);
+        }
+        this.sink1(y);
+    }
+}
+
+class SqlInjection {
+    // ----------------------------------------
+    // From 876957 — 876957-taint
+    // ----------------------------------------
+    GetRequest() {
+        return "malicious'; DROP TABLE users; --";
+    }
+
+    // ----------------------------------------
+    // From 876957 — 876957-taint
+    // ----------------------------------------
+    sanitizeInput(input) {
+        return "safe_input";
+    }
+
+    // ----------------------------------------
+    // From 876957 — 876957-taint
+    // ----------------------------------------
+    runQueryDB(query) {
+    }
+
+    // ----------------------------------------
+    // From 876957 — 876957-taint
+    // ----------------------------------------
+    testDirectInjection() {
+        def userInput = this.GetRequest();
+        def query = userInput;
+        this.runQueryDB(query);
+    }
+
+    // ----------------------------------------
+    // From 876957 — 876957-taint
+    // ----------------------------------------
+    testMixedQuery(isAdmin) {
+        def userInput = this.GetRequest();
+        def query = 0;
+        if (isAdmin) {
+            query = this.sanitizeInput(userInput);
+        } else {
+            query = userInput;
+        }
+        this.runQueryDB(query);
+    }
+}
+
+class webapi {
+    // ----------------------------------------
+    // From 881299 — 881299_taint
+    // ----------------------------------------
+    GetRequest() {
+        return 42;
+    }
+
+    // ----------------------------------------
+    // From 881299 — 881299_taint
+    // ----------------------------------------
+    runQueryDB(v) {
+    }
+
+    // ----------------------------------------
+    // From 881299 — 881299_taint
+    // ----------------------------------------
+    test5() {
+        def a = this.GetRequest();
+        def b = this.GetRequest();
+        def combined = a + b;
+        this.runQueryDB(combined);
+    }
+}
+
+class WebApplication {
+    // ----------------------------------------
+    // From 894004 — 894004_taint
+    // ----------------------------------------
+    GetRequest() {
+        return 0;
+    }
+
+    // ----------------------------------------
+    // From 894004 — 894004_taint
+    // ----------------------------------------
+    runQueryDB(v) {
+    }
+
+    // ----------------------------------------
+    // From 894004 — 894004_taint
+    // ----------------------------------------
+    unsafeDirectQuery() {
+        def userId = this.GetRequest();
+        this.runQueryDB(userId);
+    }
+}
+
+class MedicalPortal {
+    // ----------------------------------------
+    // From 894069 — 894069_taint
+    // ----------------------------------------
+    getUserInput() {
+        return "patient_data";
+    }
+
+    // ----------------------------------------
+    // From 894069 — 894069_taint
+    // ----------------------------------------
+    sanitizeInput(input) {
+        return "sanitized";
+    }
+
+    // ----------------------------------------
+    // From 894069 — 894069_taint
+    // ----------------------------------------
+    sendEmail(body) {
+    }
+
+    // ----------------------------------------
+    // From 894069 — 894069_taint
+    // ----------------------------------------
+    sendReport(isAdmin) {
+        def data = this.getUserInput();
+        def body = 0;
+        if (isAdmin) {
+            body = data;
+        } else {
+            body = this.sanitizeInput(data);
+        }
+        this.sendEmail(body);
+    }
+}

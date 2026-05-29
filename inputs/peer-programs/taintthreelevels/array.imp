@@ -1,0 +1,65 @@
+class ArrayBoundsTest {
+
+    // 1. SECURE static Case
+    safeAccess() {
+        def a = new int[10];
+        def i = 5;
+        a[i] = 42;
+        return a;
+    }
+
+    // 2. DEFINED Error: Underflow
+    definiteUnderflow() {
+        def a = new int[10];
+        def i = -2;
+        a[i] = 42;
+        return a;
+    }
+
+    // 3. POSSIBLE Error: Underflow
+    possibleUnderflow(param) {
+        def a = new int[10];
+        if (param < 5) {
+            a[param] = 42;
+        }
+        return a;
+    }
+
+    // 4. DEFINED Error: Out-of-bounds
+    definiteOutOfBounds() {
+        def a = new int[10];
+        def i = 10;
+        a[i] = 42;
+        return a;
+    }
+
+    // 5. POSSIBLE Error: Out-of-bounds
+    possibleOutOfBounds(param) {
+        def a = new int[10];
+        if (param >= 0) {
+            a[param] = 42;
+        }
+        return a;
+    }
+
+    // 6. Test for Pentagon
+    pentagonSafeLoop() {
+        def a = new int[10];
+        def i = 0;
+
+        while (i < a.len) {
+            a[i] = 42;
+            i = i + 1;
+        }
+        return a;
+    }
+
+    main() {
+        this.safeAccess();
+        this.definiteUnderflow();
+        this.possibleUnderflow(3);
+        this.definiteOutOfBounds();
+        this.possibleOutOfBounds(5);
+        this.pentagonSafeLoop();
+    }
+}

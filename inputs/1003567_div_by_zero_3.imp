@@ -1,0 +1,14 @@
+class LoopDivision {
+
+    testLoop() {
+
+        def counter = 5;
+
+        while(counter > 0)
+            counter = counter - 1;
+
+        def result = 100 / counter;
+
+        return result;
+    }
+}

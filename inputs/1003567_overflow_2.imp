@@ -1,0 +1,12 @@
+class OverflowBudget {
+
+    computeBudget() {
+
+        def projects = 500000;
+        def averageCost = 700000;
+
+        def totalBudget = projects * averageCost;
+
+        return totalBudget;
+    }
+}

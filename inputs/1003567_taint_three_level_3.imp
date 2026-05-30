@@ -1,0 +1,26 @@
+class PaymentSystem {
+
+    // @lisa.taint.Source
+    getCardNumber() {
+        return "1234";
+    }
+
+    // @lisa.taint.Sink
+    sendToServer(data) {
+        return 0;
+    }
+
+    processPayment() {
+
+        def card = this.getCardNumber();
+
+        def masked = "****";
+
+        if(card == "1234")
+            masked = card;
+
+        this.sendToServer(masked);
+
+        return 1;
+    }
+}

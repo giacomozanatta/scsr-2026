@@ -1,0 +1,17 @@
+class BankingSystem {
+
+    processTransaction() {
+
+        def accountBalance = 2147483640;
+        def incomingTransfer = 100;
+
+        def newBalance = accountBalance + incomingTransfer;
+
+        def minDebt = -2147483640;
+        def penalty = 100;
+
+        def newDebt = minDebt - penalty;
+
+        return 1;
+    }
+}

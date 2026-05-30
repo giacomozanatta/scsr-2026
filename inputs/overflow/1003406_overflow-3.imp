@@ -1,0 +1,140 @@
+// ================================================================
+// FINANCIAL LEDGER SCENARIO
+//
+// Context:
+// Fixed-width integer ledgers storing account balances in cents.
+// Such ledgers exhibit both overflow (large credits) and underflow
+// (large debits or short-sells) when the integer width is too narrow
+// for the balance range.
+// Tests cover both signed bounds being breached simultaneously,
+// chained operations where intermediate results overflow, and
+// width-discriminating edge cases.
+// ================================================================
+
+class FinancialLedger {
+
+    // -----------------------------------------------------------------------
+    // Process a swing trade that credits or debits a large fixed amount
+    // depending on market direction. After the branch, the balance interval
+    // is [-200, 200], whose bounds breach the 8-bit signed range on both
+    // sides simultaneously. Adding 0 forces the checker to visit the
+    // arithmetic node without changing the value.
+    //
+    // signed_amount in [-200, 200]
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW/UNDERFLOW on signed_amount (-200 < -128 AND 200 > 127)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    swingTrade(direction) {
+        def amount = 0;
+        if (direction > 0) {
+            amount = 200;
+        }
+        else {
+            amount = -200;
+        }
+        def signed_amount = amount + 0;
+        return signed_amount;
+    }
+
+    // -----------------------------------------------------------------------
+    // Accumulate two credit entries and apply a partial refund; a three-step
+    // chain common in settlement pipelines. The first addition already
+    // overflows the 8-bit accumulator; the subsequent subtraction does not
+    // recover it since the interval stays out of range throughout.
+    //
+    // step1 = 100 + 100 = 200,  step2 = 200 - 50 = 150
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW on step1 (200 > 127) + OVERFLOW on step2 (150 > 127)
+    // [16-bit] NONE on both
+    // [32-bit] NONE on both
+    // -----------------------------------------------------------------------
+    accumulate() {
+        def a = 100;
+        def b = 100;
+        def c = 50;
+        def step1 = a + b;
+        def step2 = step1 - c;
+        return step2;
+    }
+
+    // -----------------------------------------------------------------------
+    // Post a credit that momentarily overflows the 8-bit ledger register,
+    // then partially reverses the entry (chargeback), bringing the final
+    // balance back into range.
+    //
+    // step1 = 100 + 50 = 150 (out of 8-bit range)
+    // step2 = 150 - 50 = 100 (back in range)
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW on step1 (150 > 127) but NONE on step2 (100 in range)
+    // [16-bit] NONE on both
+    // [32-bit] NONE on both
+    // -----------------------------------------------------------------------
+    overshootAndRecover() {
+        def step1 = 100 + 50;
+        def step2 = step1 - 50;
+        return step2;
+    }
+
+    // -----------------------------------------------------------------------
+    // Record a short-sell position where a large loss is subtracted from an
+    // already-negative account balance. Models a margin call scenario where
+    // the resulting deficit exceeds the 16-bit signed minimum.
+    //
+    // diff = -30000 - 5000 = -35000
+    //
+    // EXPECT :
+    // [8-bit] UNDERFLOW
+    // [16-bit] UNDERFLOW on diff (-35000 < -32768)
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    shortSell() {
+        def position = -30000;
+        def loss = 5000;
+        def diff = position - loss;
+        return diff;
+    }
+
+    // -----------------------------------------------------------------------
+    // Process a catastrophic drawdown event (e.g. a forced liquidation at
+    // year-end close). The combined loss exceeds the 32-bit signed minimum,
+    // corrupting the balance register on any fixed-width integer platform.
+    //
+    // diff = -2000000000 - 200000000 = -2200000000
+    //
+    // EXPECT :
+    // [8-bit] UNDERFLOW
+    // [16-bit] UNDERFLOW
+    // [32-bit] UNDERFLOW on diff (-2200000000 < -2147483648)
+    // -----------------------------------------------------------------------
+    massiveDrawdown() {
+        def position = -2000000000;
+        def loss = 200000000;
+        def diff = position - loss;
+        return diff;
+    }
+
+    // -----------------------------------------------------------------------
+    // Post a routine, small-value ledger entry (credit minus service fee).
+    // All values are well within every integer range; this is the baseline
+    // safe case against which all other warnings are contrasted.
+    //
+    // net = 20 - 5 = 15
+    //
+    // EXPECT :
+    // [8-bit] NONE
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    safeEntry() {
+        def credit = 20;
+        def debit = 5;
+        def net = credit - debit;
+        return net;
+    }
+
+}

@@ -18,18 +18,12 @@ public class SignXThreeTaint implements BaseNonRelationalValueDomain<SignXThreeT
 
     @Override
     public SignXThreeTaintLattice top() {
-        return new SignXThreeTaintLattice(
-                ExtendedSignLattice.TOP,
-                TaintThreeLevelsLattice.TOP
-        );
+        return SignXThreeTaintLattice.TOP;
     }
 
     @Override
     public SignXThreeTaintLattice bottom() {
-        return new SignXThreeTaintLattice(
-                ExtendedSignLattice.BOTTOM,
-                TaintThreeLevelsLattice.BOTTOM
-        );
+        return SignXThreeTaintLattice.BOTTOM;
     }
 
     @Override

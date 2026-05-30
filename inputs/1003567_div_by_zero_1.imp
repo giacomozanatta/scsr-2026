@@ -1,0 +1,12 @@
+class StatisticsCalculator {
+
+    computeAverage() {
+
+        def totalRequests = 1250;
+        def activeUsers = 0;
+
+        def averageRequests = totalRequests / activeUsers;
+
+        return averageRequests;
+    }
+}

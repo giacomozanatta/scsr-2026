@@ -1,0 +1,81 @@
+class overflow{
+    // Bytes
+    byte_1(){
+        def byte = 0;
+        byte = byte + 128;
+        byte = 0;
+        byte = byte - 129;
+        return byte;
+    }
+
+    byte_definite_looping_overflow(){
+        def byte = 0;
+        for(def i = 0; i < 129; i = i + 1){
+            byte = byte + 1;
+        }
+        return byte;
+    }
+
+    byte_def_looping_over_2(){
+        def byte = 0;
+        for(def i = 0; i < 130; i = i + 1){
+            if( (i % 2) == 0){
+                byte = i;
+            }
+            else {
+                byte = -i;
+            }
+        }
+        return byte;
+    }
+
+    byte_loop_branching_overflow(){
+        def max = 10;
+        def byte = 125;
+        def flag = 1;
+        for(def i = 0; i < max; i = i+1){
+            if(flag == 1){
+                byte = byte + 1;
+            }
+            else{
+                byte = byte + 0;
+            }
+        }
+    }
+
+    byte_loop_branching_no_overflow(){
+        def max = 10;
+        def byte = 125;
+        def flag = 0;
+        for(def i = 0; i < max; i = i+1){
+            if(flag == 1){
+                byte = byte + 1;
+            }
+            else{
+                byte = byte + 0;
+            }
+        }
+    }
+
+    byte_array_access(){
+        def byte = 126;
+        def arr = new int[1];
+        arr[0] = 1;
+        byte = byte + arr[0]*2; // 126 + 2 = 128 overflow
+    }
+
+    get_one(){
+        return 1;
+    }
+    get_zero(){
+        return 0;
+    }
+    byte_function_call(){
+        def byte = 127;
+        byte = byte + this.get_one();
+        byte = 0;
+        byte = byte + this.get_zero();
+    }
+
+
+}

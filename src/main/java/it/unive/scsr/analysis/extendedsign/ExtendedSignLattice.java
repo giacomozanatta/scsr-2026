@@ -1,5 +1,6 @@
 package it.unive.scsr.analysis.extendedsign;
 
+import java.lang.reflect.Executable;
 import java.util.Objects;
 
 import it.unive.lisa.analysis.BaseLattice;
@@ -8,6 +9,7 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
+import it.unive.scsr.analysis.sign.SignLattice;
 
 
 public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
@@ -24,7 +26,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
     public static ExtendedSignLattice BOTTOM = new ExtendedSignLattice(7);
 
     public ExtendedSignLattice(int e) {
-        element = e;
+        this.element = e;
     }
 
     @Override
@@ -67,6 +69,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
+
         ExtendedSignLattice other = (ExtendedSignLattice) obj;
         return element == other.element;
     }
@@ -86,11 +89,11 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
             return true;
 
         if (this == ExtendedSignLattice.LT_ZERO)
-            return other == ExtendedSignLattice.LEQ_ZERO;
+            return other == ExtendedSignLattice.LEQ_ZERO || other ==  ExtendedSignLattice.NON_ZERO;
         else if (this == ExtendedSignLattice.EQ_ZERO)
             return other == LEQ_ZERO || other == GEQ_ZERO;
         else if (this == ExtendedSignLattice.GT_ZERO)
-            return other == GEQ_ZERO;
+            return other == GEQ_ZERO || other == ExtendedSignLattice.NON_ZERO;
         return false;
     }
 
@@ -105,68 +108,101 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         if (this == ExtendedSignLattice.TOP || other == ExtendedSignLattice.TOP)
             return ExtendedSignLattice.TOP;
 
-        // LT_ZERO cases
-        if (this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.EQ_ZERO)
-            return ExtendedSignLattice.LEQ_ZERO;
-        if (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.LT_ZERO)
-            return ExtendedSignLattice.LEQ_ZERO;
-        if (this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.LEQ_ZERO)
-            return ExtendedSignLattice.LEQ_ZERO;
-        if (this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.LT_ZERO)
-            return ExtendedSignLattice.LEQ_ZERO;
+        // strict positive/negative cases
+        if ((this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.LT_ZERO)
+            ||(this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.GT_ZERO))
+            return ExtendedSignLattice.NON_ZERO;
 
-        // GT_ZERO cases
-        if (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.EQ_ZERO)
-            return ExtendedSignLattice.GEQ_ZERO;
-        if (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.GT_ZERO)
-            return ExtendedSignLattice.GEQ_ZERO;
-        if (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.GEQ_ZERO)
-            return ExtendedSignLattice.GEQ_ZERO;
-        if (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.GT_ZERO)
-            return ExtendedSignLattice.GEQ_ZERO;
-
-        // LEQ_ZERO vs GEQ_ZERO
-        if ((this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.GEQ_ZERO) ||
-                (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.LEQ_ZERO))
-            return ExtendedSignLattice.TOP;
-
-        // LT_ZERO vs GT_ZERO
-        if ((this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.GT_ZERO) ||
-                (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.LT_ZERO))
-            return ExtendedSignLattice.TOP;
-
-        if ((this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.EQ_ZERO) ||
-                (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.LEQ_ZERO))
+        // LEQ_ZERO cases
+        if ((this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.EQ_ZERO)
+            || (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.LT_ZERO)
+            || (this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.LEQ_ZERO)
+            || (this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.LT_ZERO)
+            || (this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.EQ_ZERO)
+            || (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.LEQ_ZERO))
             return ExtendedSignLattice.LEQ_ZERO;
 
-        if ((this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.EQ_ZERO) ||
-                (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.GEQ_ZERO))
+        // GEQ_ZERO cases
+        if ((this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.EQ_ZERO)
+                || (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.GT_ZERO)
+                || (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.GEQ_ZERO)
+                || (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.GT_ZERO)
+                || (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.EQ_ZERO)
+                || (this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.GEQ_ZERO))
             return ExtendedSignLattice.GEQ_ZERO;
+
+        //NON_ZERO cases
+        if ((this == ExtendedSignLattice.NON_ZERO && other == ExtendedSignLattice.GT_ZERO)
+                || (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.NON_ZERO)
+                || (this == ExtendedSignLattice.NON_ZERO && other == ExtendedSignLattice.LT_ZERO)
+                || (this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.NON_ZERO))
+            return ExtendedSignLattice.NON_ZERO;
 
         return ExtendedSignLattice.TOP;
     }
 
+    @Override
+    public ExtendedSignLattice glbAux(ExtendedSignLattice other) throws SemanticException {
+        if (this == other)
+            return this;
+
+        if (this == ExtendedSignLattice.TOP)
+            return other;
+
+        if (other == ExtendedSignLattice.TOP)
+            return this;
+
+        if (this == ExtendedSignLattice.BOTTOM || other == ExtendedSignLattice.BOTTOM)
+            return ExtendedSignLattice.BOTTOM;
+
+        if (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.NON_ZERO
+                || this == ExtendedSignLattice.NON_ZERO && other == ExtendedSignLattice.GEQ_ZERO)
+            return ExtendedSignLattice.GT_ZERO;
+
+        if (this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.NON_ZERO
+                || this == ExtendedSignLattice.NON_ZERO && other == ExtendedSignLattice.LEQ_ZERO)
+            return ExtendedSignLattice.LT_ZERO;
+
+        if (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.LEQ_ZERO
+                || this == ExtendedSignLattice.LEQ_ZERO && other == ExtendedSignLattice.GEQ_ZERO)
+            return ExtendedSignLattice.EQ_ZERO;
+
+        return ExtendedSignLattice.BOTTOM;
+    }
+
     public Satisfiability eq(ExtendedSignLattice other) {
-        if (this == BOTTOM || other == BOTTOM)
+        if (this == ExtendedSignLattice.BOTTOM || other == ExtendedSignLattice.BOTTOM)
             return Satisfiability.BOTTOM;
 
-        if (this == EQ_ZERO && other == EQ_ZERO)
+        if (this == other && this != ExtendedSignLattice.TOP && this != ExtendedSignLattice.BOTTOM)
             return Satisfiability.SATISFIED;
 
-        if (this == EQ_ZERO && other == NON_ZERO)
-            return Satisfiability.NOT_SATISFIED;
-
-        if (this == NON_ZERO && other == EQ_ZERO)
+        if ((this == ExtendedSignLattice.EQ_ZERO && other == ExtendedSignLattice.NON_ZERO)
+            ||(this == ExtendedSignLattice.NON_ZERO && other == ExtendedSignLattice.EQ_ZERO)
+            || (this == ExtendedSignLattice.GT_ZERO && other == ExtendedSignLattice.LT_ZERO)
+            || (this == ExtendedSignLattice.LT_ZERO && other == ExtendedSignLattice.GT_ZERO))
             return Satisfiability.NOT_SATISFIED;
 
         return Satisfiability.UNKNOWN;
     }
 
     public Satisfiability gt(ExtendedSignLattice other) {
-        if (this == GT_ZERO && (other == EQ_ZERO || other == LT_ZERO || other == LEQ_ZERO))
+        if (this == ExtendedSignLattice.BOTTOM || other == ExtendedSignLattice.BOTTOM)
+            return Satisfiability.BOTTOM;
+
+        if (this == ExtendedSignLattice.GT_ZERO &&
+            (other == ExtendedSignLattice.EQ_ZERO || other == ExtendedSignLattice.LT_ZERO || other == ExtendedSignLattice.LEQ_ZERO))
             return Satisfiability.SATISFIED;
 
-        if (this == EQ_ZERO && (other == GT_ZERO || other == GEQ_ZERO))
+        if (this == ExtendedSignLattice.GEQ_ZERO && other == ExtendedSignLattice.LT_ZERO)
+            return Satisfiability.SATISFIED;
+
+        if (this == ExtendedSignLattice.LT_ZERO &&
+            (other == ExtendedSignLattice.GT_ZERO || other == ExtendedSignLattice.GEQ_ZERO || other == ExtendedSignLattice.EQ_ZERO))
+            return Satisfiability.NOT_SATISFIED;
+
+        if (this == ExtendedSignLattice.EQ_ZERO &&
+            (other == ExtendedSignLattice.GT_ZERO || other == ExtendedSignLattice.GEQ_ZERO))
             return Satisfiability.NOT_SATISFIED;
 
         return Satisfiability.UNKNOWN;

@@ -1,0 +1,110 @@
+class negativevalues {
+
+    setSpeed(speed) {
+        // simulate robot speed setting
+    }
+
+    setTemperature(temp) {
+        // simulate temperature setting
+    }
+
+    moveForwardSafe() {
+        def speed = 10;
+        this.setSpeed(speed);
+
+        // speed is always positive
+        // no warning expected
+    }
+
+    moveForwardUnsafe() {
+        def speed = -10;
+        this.setSpeed(speed);
+
+        // speed is definitely negative
+        // checker should report a warning
+    }
+
+    moveForwardConditional(flag) {
+        def speed = -5;
+
+        if (flag)
+            speed = 5;
+
+        this.setSpeed(speed);
+
+        // speed may be negative depending on flag
+        // checker should report a possible warning
+    }
+
+    bankAccount() {
+        def balance = 100;
+        def withdrawal = 150;
+
+        def newBalance = balance - withdrawal;
+
+        // newBalance = -50
+        // checker should report a warning
+
+        this.setTemperature(newBalance);
+    }
+
+    bankAccountConditional(flag) {
+        def balance = 100;
+        def withdrawal = 50;
+
+        if (flag)
+            withdrawal = 150;
+
+        def newBalance = balance - withdrawal;
+
+        // newBalance can be:
+        // 50 or -50
+
+        this.setTemperature(newBalance);
+
+        // checker should report possible negative value
+    }
+
+    loopCounter() {
+        def counter = 5;
+
+        while (counter > -5)
+            counter = counter - 1;
+
+        // counter becomes negative during execution
+
+        this.setSpeed(counter);
+
+        // checker should report warning
+    }
+
+    sensorDifference() {
+        def sensorA = 10;
+        def sensorB = 25;
+
+        def diff = sensorA - sensorB;
+
+        // diff = -15
+
+        this.setTemperature(diff);
+
+        // checker should report warning
+    }
+
+    sensorDifferenceConditional(flag) {
+        def sensorA = 10;
+        def sensorB = 5;
+
+        if (flag)
+            sensorB = 25;
+
+        def diff = sensorA - sensorB;
+
+        // diff can be:
+        // 5 or -15
+
+        this.setTemperature(diff);
+
+        // checker should report possible warning
+    }
+}

@@ -1,0 +1,23 @@
+class UserLogin {
+
+    // @lisa.taint.Source
+    getUsername() {
+        return "user";
+    }
+
+    // @lisa.taint.Sink
+    writeLog(msg) {
+        return 0;
+    }
+
+    login() {
+
+        def username = this.getUsername();
+
+        def logMessage = username;
+
+        this.writeLog(logMessage);
+
+        return 1;
+    }
+}

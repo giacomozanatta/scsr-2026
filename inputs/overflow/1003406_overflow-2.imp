@@ -1,0 +1,130 @@
+// ================================================================
+// SENSOR BUFFER SCENARIO
+//
+// Context:
+// Embedded firmware on 8-bit MCUs (Arduino-style)
+// reading temperature and pressure values from
+// analog sensors and accumulating them into running totals.
+// ================================================================
+
+class SensorBuffer {
+
+    // -----------------------------------------------------------------------
+    // Read combined high + low byte from a temperature sensor register;
+    // for example it reads 10 mV per °C. ADC converts voltage to a number.
+    // On 8-bit MCUs the ADC high byte (200) and low byte (100) are added
+    // directly in a uint8 accumulator, wrapping on overflow.
+    //
+    // raw = 200 + 100 = 300
+    //
+    // EXPECT :
+    // [8-bit]  OVERFLOW on raw = high + low  (300 > 127)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    readTemperature() {
+        def high = 200;
+        def low = 100;
+        def raw = high + low;
+        return raw/10;
+    }
+
+    // -----------------------------------------------------------------------
+    // Read a barometric pressure baseline plus a signed delta.
+    // The 16-bit compensated value (30000 Pa) plus a burst
+    // delta (5000 Pa) overflows a 16-bit signed accumulator.
+    //
+    // raw = 30000 + 5000 = 35000
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW
+    // [16-bit] OVERFLOW on raw = baseline + delta (35000 > 32767)
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    readPressure() {
+        def baseline = 30000;
+        def delta = 5000;
+        def raw = baseline + delta;
+        return raw;
+    }
+
+    // -----------------------------------------------------------------------
+    // Accumulate a high-frequency pulse counter across two 32-bit block
+    // registers (e.g. an odometer or flow meter).
+    // Adding two near-max 32-bit values overflows a 32-bit accumulator.
+    //
+    // huge = 2000000000 + 2000000000 = 4000000000
+    //
+    // EXPECT :
+    // [8-bit] OVERFLOW
+    // [16-bit] OVERFLOW
+    // [32-bit] OVERFLOW on huge
+    // -----------------------------------------------------------------------
+    readGigaCounter() {
+        def half_a = 2000000000;
+        def half_b = 2000000000;
+        def huge = half_a + half_b;
+        return huge;
+    }
+
+    // -----------------------------------------------------------------------
+    // Apply a factory bias correction to a signed 8-bit calibration register.
+    // Subtracting a positive trim from an already-negative offset produces a
+    // value below the 8-bit signed minimum — a real issue in sensor trim
+    // workflows on AVR firmware.
+    //
+    // diff = -100 - 50 = -150
+    //
+    // EXPECT :
+    // [8-bit]  UNDERFLOW on diff = offset - trim  (-150 < -128)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    biasOffset() {
+        def offset = -100;
+        def trim = 50;
+        def diff = offset - trim;
+        return diff;
+    }
+
+    // -----------------------------------------------------------------------
+    // Perform a safe in-range calibration step during sensor initialisation.
+    // All intermediate values within 8-bit range.
+    //
+    // a = 15, b = 12
+    //
+    // EXPECT :
+    // [8-bit]  NONE
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    calibrate() {
+        def a = 10 + 5;
+        def b = a - 3;
+        return b;
+    }
+
+    // -----------------------------------------------------------------------
+    // Classify a sensor reading as HIGH or LOW and shift it into an alert
+    // window.
+    //
+    // delta in [150, 300]
+    //
+    // EXPECT :
+    // [8-bit]  OVERFLOW on delta = level + 100 (upper bound 300 > 127)
+    // [16-bit] NONE
+    // [32-bit] NONE
+    // -----------------------------------------------------------------------
+    classifyReading(mode) {
+        def level = 0;
+        if (mode > 0) {
+            level = 200;
+        }
+        else {
+            level = 50;
+        }
+        def delta = level + 100;
+        return delta;
+    }
+
+}

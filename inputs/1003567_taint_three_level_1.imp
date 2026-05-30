@@ -1,0 +1,24 @@
+class UserDatabase {
+
+    // @lisa.taint.Sink
+    executeQuery(query) {
+        return 0;
+    }
+
+    // @lisa.taint.Source
+    getUserInput() {
+        return "user input";
+    }
+
+    testTaintedFlow() {
+
+        def userInput = this.getUserInput();
+
+        def query =
+            "SELECT * FROM users WHERE name = " + userInput;
+
+        this.executeQuery(query);
+
+        return 1;
+    }
+}

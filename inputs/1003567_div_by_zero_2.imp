@@ -1,0 +1,17 @@
+class UserDiscount {
+
+    computeAverage() {
+
+        def total = 100;
+        def users = 0;
+
+        if(total > 50)
+            users = users + 5;
+        else
+            users = users;
+
+        def avg = total / users;
+
+        return avg;
+    }
+}

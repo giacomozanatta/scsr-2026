@@ -35,9 +35,9 @@ public class StudentCombinedTest {
 
     private static final String OUTPUT_BASE = "outputs/students/combined";
 
-    private static final Set<String> SOURCES    = Set.of("GetRequest", "getUserInput");
-    private static final Set<String> SANITIZERS = Set.of("sanitizeInput", "escapeHtml");
-    private static final Set<String> SINKS      = Set.of("runQueryDB", "renderHtml", "sendEmail");
+    private static final Set<String> SOURCES    = Set.of("GetRequest", "getUserInput", "getExternalRequest");
+    private static final Set<String> SANITIZERS = Set.of("sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize");
+    private static final Set<String> SINKS      = Set.of("runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand");
 
     private File[] getAllStudentFiles() {
         List<File> all = new ArrayList<>();

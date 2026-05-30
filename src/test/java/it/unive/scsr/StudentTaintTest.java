@@ -28,9 +28,9 @@ public class StudentTaintTest {
     private static final String INPUT_DIR   = "inputs/students/taint";
     private static final String OUTPUT_BASE = "outputs/students/taint";
 
-    private static final Set<String> SOURCES    = Set.of("GetRequest", "getUserInput");
-    private static final Set<String> SANITIZERS = Set.of("sanitizeInput", "escapeHtml");
-    private static final Set<String> SINKS      = Set.of("runQueryDB", "renderHtml", "sendEmail");
+    private static final Set<String> SOURCES    = Set.of("GetRequest", "getUserInput", "getExternalRequest");
+    private static final Set<String> SANITIZERS = Set.of("sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize");
+    private static final Set<String> SINKS      = Set.of("runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand");
 
     private File[] getStudentFiles() {
         File dir = new File(INPUT_DIR);

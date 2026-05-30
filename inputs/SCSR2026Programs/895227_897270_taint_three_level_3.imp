@@ -1,0 +1,16 @@
+class PossibleTaintTest {
+
+    @lisa.taint.Sink
+    executeSystemCommand(cmd) {
+        return 0;
+    }
+
+    
+    testPossible(userInput) {
+
+        
+        this.executeSystemCommand(userInput);
+
+        return 1;
+    }
+}

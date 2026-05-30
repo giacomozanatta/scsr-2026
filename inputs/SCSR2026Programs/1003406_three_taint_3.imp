@@ -1,0 +1,210 @@
+// ================================================================
+//  PATH TRAVERSAL SCENARIO
+//
+//  CVE: CVE-2021-41773 / CVE-2021-42013
+//
+//  Context:
+//  A path-normalization bug in Apache HTTP Server allowed
+//  attackers to submit URL-encoded path traversal sequences
+//  (e.g. "/.%2e/.%2e/etc/passwd") that bypassed the
+//  require all denied restriction and exposed arbitrary
+//  files on the server filesystem. When mod_cgi was
+//  enabled, the same bypass led to RCE (CVE-2021-42013).
+//
+//  The root cause: user-controlled URL components used to
+//  construct filesystem paths without canonicalization,
+//  reaching a file-read sink before traversal sequences
+//  are neutralized.
+//
+//  Source : getUserInput (URL path component from request)
+//  Sanitizer: sanitizeParam (canonicalize + strip ".." segments)
+//  Sink : readFile (open and return file contents)
+// ================================================================
+
+class PathTraversalScenario {
+
+    // source : user-supplied URL path segment (e.g. from HTTP GET /files/<path>)
+    getUserInput() {
+        return "../../etc/passwd";
+    }
+
+    // sanitizer : resolves the path relative to the web-root and
+    // rejects any ".." that would escape the root directory
+    sanitizeParam(rawPath) {
+        return "/var/www/html/static/safe_file.txt";
+    }
+
+    // sink : opens and returns the contents of the file at the given path
+    readFile(filePath) {
+        return "file_content";
+    }
+
+    // -------------------------------------------------------
+    //  fetchUnsafe
+    //
+    //  Directly maps a URL path from the request onto the
+    //  filesystem — the exact pattern in CVE-2021-41773.
+    //  An attacker supplies "../../etc/passwd" and the server
+    //  opens /var/www/../../etc/passwd == /etc/passwd.
+    //
+    //  urlPath = getUserInput() : TAINT
+    //  readFile(urlPath): TAINT reaches sink
+    //
+    //  EXPECT: definite warning on readFile(urlPath)
+    // -------------------------------------------------------
+    fetchUnsafe() {
+        def urlPath = this.getUserInput();
+        this.readFile(urlPath);
+    }
+
+    // -------------------------------------------------------
+    //  fetchSafe
+    //
+    //  The URL segment is canonicalized and validated before
+    //  the file is opened. Traversal sequences are stripped.
+    //
+    //  raw = getUserInput() : TAINT
+    //  safePath = sanitizeParam(raw) : CLEAN
+    //  readFile(safePath) : CLEAN reaches sink
+    //
+    //  EXPECT: no warning
+    // -------------------------------------------------------
+    fetchSafe() {
+        def raw = this.getUserInput();
+        def safePath = this.sanitizeParam(raw);
+        this.readFile(safePath);
+    }
+
+    // -------------------------------------------------------
+    //  fetchConditionalValidation
+    //
+    //  The server validates paths for anonymous users but
+    //  skips validation for "trusted" internal requests
+    //
+    //  Branch join : TAINT lub CLEAN = TOP
+    //  readFile(path) : TOP reaches sink
+    //
+    //  EXPECT: possible warning on readFile(path)
+    // -------------------------------------------------------
+    fetchConditionalValidation(isTrustedRequest) {
+        def raw = this.getUserInput();
+        def path = raw;
+        if (isTrustedRequest)
+            path = raw;
+        else
+            path = this.sanitizeParam(raw);
+        this.readFile(path);
+    }
+
+    // -------------------------------------------------------
+    //  fetchAfterReTaint
+    //
+    //  Subtle bug: the path is validated first, but then the
+    //  variable is overwritten with a fresh raw path before
+    //  the file-open call.  The sanitization is ineffective.
+    //
+    //  raw = getUserInput() : TAINT
+    //  path = sanitizeParam(raw) : CLEAN
+    //  path = getUserInput() : TAINT (re-tainted)
+    //  readFile(path) : TAINT reaches sink
+    //
+    //  EXPECT: definite warning on readFile(path)
+    // -------------------------------------------------------
+    fetchAfterReTaint() {
+        def raw = this.getUserInput();
+        def path = this.sanitizeParam(raw);
+        path = this.getUserInput();
+        this.readFile(path);
+    }
+
+    // -------------------------------------------------------
+    //  resolveFile (helper)
+    //
+    //  A helper that appends a base directory prefix to a
+    //  path — no sanitization performed.  Taint propagates
+    //  through the return value.
+    //
+    //  EXPECT: taint propagated — callers that pass tainted
+    //          paths receive a tainted return value.
+    // -------------------------------------------------------
+    resolveFile(relativePath) {
+        def full = "/var/www/html/" + relativePath;
+        return full;
+    }
+
+    // -------------------------------------------------------
+    //  fetchViaHelper
+    //
+    //  Interprocedural: user path flows through resolveFile
+    //  (which does NOT sanitize) and into readFile.
+    //
+    //  raw       <- getUserInput()          : TAINT
+    //  resolved  <- resolveFile(raw)        : TAINT  (helper propagates)
+    //  readFile(resolved)                   : TAINT reaches sink
+    //
+    //  EXPECT: definite warning on readFile(resolved)
+    // -------------------------------------------------------
+    fetchViaHelper() {
+        def raw = this.getUserInput();
+        def resolved = this.resolveFile(raw);
+        this.readFile(resolved);
+    }
+
+    // -------------------------------------------------------
+    //  fetchViaHelperSafe
+    //
+    //  Same helper chain but the path is validated before
+    //  being handed to resolveFile.
+    //
+    //  raw = getUserInput() : TAINT
+    //  safe = sanitizeParam(raw) : CLEAN
+    //  resolved = resolveFile(safe) : CLEAN
+    //  readFile(resolved) : CLEAN reaches sink
+    //
+    //  EXPECT: no warning
+    // -------------------------------------------------------
+    fetchViaHelperSafe() {
+        def raw = this.getUserInput();
+        def safe = this.sanitizeParam(raw);
+        def resolved = this.resolveFile(safe);
+        this.readFile(resolved);
+    }
+
+    // -------------------------------------------------------
+    //  batchFetchUnsafe
+    //
+    //  A download manager reads multiple file paths from the
+    //  user in a loop and opens each one without validation.
+    //
+    //  Inside the loop: path is TAINT on every iteration.
+    //  readFile(path) : TAINT reaches sink each iteration.
+    //
+    //  EXPECT: definite warning on readFile(path) inside loop
+    // -------------------------------------------------------
+    batchFetchUnsafe(numFiles) {
+        def i = 0;
+        while (i < numFiles) {
+            def path = this.getUserInput();
+            this.readFile(path);
+            i = i + 1;
+        }
+    }
+
+    // -------------------------------------------------------
+    //  batchFetchSafe
+    //
+    //  Same batch scenario but each path is validated before
+    //  the file-open call.
+    //
+    //  EXPECT: no warning on readFile(safe) inside loop
+    // -------------------------------------------------------
+    batchFetchSafe(numFiles) {
+        def i = 0;
+        while (i < numFiles) {
+            def raw = this.getUserInput();
+            def safe = this.sanitizeParam(raw);
+            this.readFile(safe);
+            i = i + 1;
+        }
+    }
+}

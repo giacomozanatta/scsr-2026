@@ -1,0 +1,23 @@
+// This is a simple database app
+// It pretends that a malicious user attempts to infect with HTTP
+//
+// 913849 -- Quinn Robertson
+class database {
+    user_input(u) {
+        return u;
+    }
+
+    get() {
+        def x = this.user_input("http://here.com");
+        return x;
+    }
+
+    process(e) {
+        return "Do something with it";
+    }
+
+    main() {
+        def u = this.get();
+        this.process(u);
+    }
+}

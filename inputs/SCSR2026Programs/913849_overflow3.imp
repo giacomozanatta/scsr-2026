@@ -1,0 +1,25 @@
+// This is a simple calculator app
+// It allows user input, which creates very easy overflows
+//
+// 913849 -- Quinn Robertson
+class calculator {
+    add(x,y) {
+        return x + y;
+    }
+
+    multiply(x,y) {
+        return x * y;
+    }
+
+    subtract(x,y) {
+        return x - y;
+    }
+
+    divide(x,y) {
+        return x / y;
+    }
+
+    main(x,y) {
+        this.multiply(this.add(x,y),this.add(x,x));
+    }
+}

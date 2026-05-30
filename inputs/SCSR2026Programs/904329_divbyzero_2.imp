@@ -1,0 +1,31 @@
+class dbz
+{
+    /*
+    In this case the checker should issue a warning like "This may be possible division by zero" since 
+    the condition that set the denominator to zero is inside an if statement
+    */
+    f1()
+    {
+        def time = 3; 
+
+        if (time > 0)
+        {
+            time = 0;
+        }
+        else
+        {
+            time = 9;
+        }
+
+        def space = 7;
+        def speed = space/time;
+
+        if(time != 0)
+        {
+            def acceleration = 5;
+            def new_speed = 0.5*acceleration*(time*time);
+        }
+
+        return;
+    }
+}

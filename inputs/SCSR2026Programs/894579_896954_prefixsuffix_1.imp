@@ -1,0 +1,28 @@
+/*
+ * Simulates a program that downloads a file on demand
+ * from a preconfigured configured server based on the
+ * called function
+ */
+class FileDownloader {
+    download(target) {   // simulate file download
+        return target;
+    }
+
+    downloadFromSRV1(resource) {
+        def baseURL = "http://down.load/";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+
+    downloadFromSRV3(resource) {
+        def baseURL = "ftp://up.load/";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+
+    downloadFromSRV3(resource) {
+        def baseURL = "magnet:?xt=urn:btih:e337a880c4d0f552bab5b437fe1208d26130ccc5&dn=btw.com";
+        def fullURL = baseURL + resource;
+        return this.download(fullURL);
+    }
+}

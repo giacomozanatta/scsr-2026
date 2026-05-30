@@ -1,0 +1,89 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp files to test Interval and OverflowIntervalChecker. I need to tests against 8, 16 and 32 bits over/under flow.";
+// I've generated this in the same session of div_by_zero.imp, so IA already knew what should be the structure of the tests.
+// I used this to feed NumericalAnalysesTest.
+class overflow {
+
+    // -------------------------------------------------------------------------
+    // 1. SAFE ARITHMETIC: all values within 8-bit bounds (-128 / 127)
+    //
+    // Real-world: small sensor deltas that are known to stay within range.
+    // The analysis confirms [80,80], [20,20], [60,60] - all safe. No warning.
+    // -------------------------------------------------------------------------
+    safe_arithmetic() {
+        def a = 50;
+        def b = 30;
+        def sum  = a + b;   // [80, 80] --> OK
+        def diff = a - b;   // [20, 20] --> OK
+        def prod = 3 * 20;  // [60, 60] --> OK
+        return sum;
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. 8-BIT OVERFLOW: sum exceeds Byte.MAX_VALUE (127)
+    //
+    // Real-world: sensor readings stored in an 8-bit register (eg Arduino).
+    // Two readings of 100 and 50 are summed; the result 150 exceeds the 8-bit
+    // signed maximum of 127, causing silent data corruption - the register
+    // wraps to -106. The analysis detects [150,150] > 127 → overflow warning.
+    // -------------------------------------------------------------------------
+    byte_overflow() {
+        def a = 100;
+        def b = 50;
+        def sum = a + b;  // [150, 150] - exceeds 127: 8-bit overflow!
+        return sum;
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. 8-BIT UNDERFLOW: difference falls below Byte.MIN_VALUE (-128)
+    //
+    // Real-world: temperature delta stored in an 8-bit signed register.
+    // A drop from -100 to -150 (delta = -50) underflows the 8-bit minimum
+    // of -128. The analysis detects [-150,-150] < -128 → underflow warning.
+    // -------------------------------------------------------------------------
+    byte_underflow() {
+        def a = -100;
+        def b = 50;
+        def diff = a - b;  // [-150, -150] - below -128: 8-bit underflow!
+        return diff;
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. 16-BIT OVERFLOW: multiplication exceeds Short.MAX_VALUE (32767)
+    //
+    // Real-world: pixel buffer size computed as width * height for a 200x200
+    // image. The result 40000 exceeds the 16-bit signed maximum of 32767,
+    // causing a buffer allocation to be undersized - a classic source of
+    // heap corruption. The analysis detects [40000,40000] > 32767 → warning.
+    // -------------------------------------------------------------------------
+    short_overflow() {
+        def base = 200;
+        def factor = 200;
+        def result = base * factor;  // [40000, 40000] - exceeds 32767: 16-bit overflow!
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. LOOP OVERFLOW: accumulator exceeds any finite bound after widening
+    //
+    // Real-world: a retry loop accumulating penalty points. The loop runs
+    // at most 20 times, but the analysis cannot determine the upper bound
+    // without widening - after widening sum ∈ [0, +inf]. Any finite overflow
+    // threshold (8-bit, 16-bit, 32-bit) is exceeded → warning for all sizes.
+    // Note: this is a widening-induced false positive for 32-bit (max ~2B),
+    // since 20 × 50 = 1000 is well within range - but the analysis is sound.
+    //
+    //    iter 1: sum = [0,0] + [50,50] = [50,50]
+    //    after widening (upper grows): sum ∈ [0, +inf]
+    // -------------------------------------------------------------------------
+    loop_accumulation() {
+        def sum = 0;
+        def i = 0;
+        while (i < 20) {
+            sum = sum + 50;
+            i = i + 1;
+        }
+        return sum;  // after widening: sum ∈ [0, +inf]
+    }
+}

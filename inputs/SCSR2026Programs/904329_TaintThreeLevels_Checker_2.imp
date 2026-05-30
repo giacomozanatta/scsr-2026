@@ -1,0 +1,31 @@
+class ttl
+{
+    source1(){
+		return -1;
+	}
+
+	sanitizer1(v){
+		return 0;
+	}
+
+
+	sink1(v){
+	}
+
+    /*
+    In this case i am using the if/else structure to modify the variable database_query but with a 
+	if condition that is unknown so we don't know if the code in the if it is reacheable or not, the 
+	checker should issue a warning anyway for the "this.sink1(database_query);" line
+    */
+	f1(b) {
+		def database_query = "";
+        def security_code = b;
+		if(security_code < 3) {
+			database_query = this.source1();
+		} else {
+		  database_query = this.sanitizer1(database_query);
+		}
+
+		this.sink1(database_query);
+	}
+}

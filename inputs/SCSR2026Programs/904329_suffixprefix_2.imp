@@ -1,0 +1,28 @@
+class sp
+{
+    sink(p)
+    {
+        return;
+    }
+
+    /*
+    In this case the HTTPStringChecker should not issue any warning since no variable contain the prefix it is looking for 
+
+    The DotComStringChecker should issue a warning even if the new definition of secret_site_menu in the if statement may not be reached
+    */
+    f2()
+    {
+        def menu = "chats";
+        def secret_site_menu = "a"
+        def privacy_lock = 0;
+
+        if(privacy_lock == 0)
+        {
+            secret_site_menu = secret_site_menu + "pp.com/" + menu;
+        }
+
+        this.sink(secret_site_menu);
+
+        return;
+    }
+}

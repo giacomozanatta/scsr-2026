@@ -1,0 +1,33 @@
+// A website password emulation
+// Intended to show something similar to SQL injection which is solved with
+// sanitization of inputs
+//
+// 913849 - Quinn Robertson
+class threetaint2 {
+	input(){
+		return -1;
+	}
+
+	fix_pass(v){
+	    if (v < 0) {
+	        return (-v);
+	    }
+		return v;
+	}
+
+
+	read_pass(v){
+	    return "Password evaluated";
+	}
+
+
+    main (x) {
+        def y = this.input();
+        if (x) {
+            y = this.fix_pass(y);
+        }
+        this.read_pass(y);
+    }
+
+
+}

@@ -1,0 +1,167 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp file to test StringAnalysesTest.";
+// I've generated this in the same session of div_by_zero.imp, so IA already knew what should be the structure of the tests.
+class strings {
+
+    // Simulates fetching a remote resource
+    fetch(url) {
+    }
+
+    // Simulates redirecting to an address
+    redirect(url) {
+    }
+
+    // Registers an internal endpoint
+    register_endpoint(path) {
+    }
+
+    // -------------------------------------------------------------------------
+    // Checker conditions (from source):
+    //   HTTPStringChecker:   prefix.startsWith("http://") || prefix.startsWith("https://")
+    //   DotComStringChecker: suffix.endsWith(".com")
+    //
+    // The two checkers run as separate analyses; each visits every call site.
+    // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // 1. HTTP URL
+    //
+    // Real-world: an HTTP client fetching an unencrypted API endpoint.
+    // Prefix domain retains the full literal as the known prefix.
+    // HTTPStringChecker fires because prefix starts with "http://".
+    // DotComStringChecker is silent: suffix is "/data", not ".com".
+    // -------------------------------------------------------------------------
+    fetch_http() {
+        def url = "http://api.example.com/data";
+        this.fetch(url);  // WARNING [HTTP]: prefix "http://"
+                          // SAFE    [DOTCOM]: suffix "/data"
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. HTTPS URL: checker flags both http:// and https://
+    //
+    // Real-world: SSRF (ServerSideRequestForgery) detection
+    // A server-side fetch of any HTTP-family URL is a potential attack vector.
+    // If the URL is attacker-controlled, both http:// and https://
+    // can be used to reach internal services (e.g. metadata endpoints, internal APIs).
+    // The checker explicitly checks both schemes.
+    // DotComStringChecker is silent: suffix is "/login", not ".com".
+    // -------------------------------------------------------------------------
+    fetch_https() {
+        def url = "https://secure.example.com/login";
+        this.fetch(url);  // WARNING [HTTP]: prefix matches "https://" condition
+                          // SAFE    [DOTCOM]: suffix "/login"
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. NON-HTTP PROTOCOL
+    //
+    // Real-world: an FTP file transfer.
+    // Prefix "ftp://" matches neither "http://" nor "https://" --> both silent.
+    // -------------------------------------------------------------------------
+    fetch_ftp() {
+        def url = "ftp://internal.server/resource";
+        this.fetch(url);  // SAFE [HTTP]:   prefix "ftp://"
+                          // SAFE [DOTCOM]: suffix "/resource"
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. .COM DOMAIN
+    //
+    // Real-world: a redirect to a commercial domain.
+    // Suffix domain retains the full literal as the known suffix.
+    // DotComStringChecker fires because suffix ends with ".com".
+    // HTTPStringChecker is silent: prefix "shop.amazon.com" is not http/https.
+    // -------------------------------------------------------------------------
+    redirect_dotcom() {
+        def domain = "shop.amazon.com";
+        this.redirect(domain);  // SAFE    [HTTP]:   prefix "shop.amazon.com"
+                                // WARNING [DOTCOM]: suffix ".com"
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. NON-.COM TLD
+    //
+    // Real-world: a university domain.
+    // Suffix ".it" does not match ".com" --> both checkers silent.
+    // -------------------------------------------------------------------------
+    redirect_other_tld() {
+        def domain = "university.it";
+        this.redirect(domain);  // SAFE [HTTP]:   prefix "university.it"
+                                // SAFE [DOTCOM]: suffix ".it"
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. HTTP + .COM: both checkers fire on both calls
+    //
+    // Real-world: a commercial API endpoint over plain HTTP.
+    // url = "http://www.google.com":
+    //   prefix "http://..." --> HTTPStringChecker fires on every call with url
+    //   suffix "...google.com" --> DotComStringChecker fires on every call with url
+    // -------------------------------------------------------------------------
+    fetch_http_dotcom() {
+        def url = "http://www.google.com";
+        this.fetch(url);     // WARNING [HTTP] + WARNING [DOTCOM]
+        this.redirect(url);  // WARNING [HTTP] + WARNING [DOTCOM]
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. INTERNAL PATH: both checkers silent
+    //
+    // Real-world: a relative path to an internal REST endpoint.
+    // Prefix "/api/..." does not match http/https.
+    // Suffix "...users" does not match ".com".
+    // -------------------------------------------------------------------------
+    register_local() {
+        def path = "/api/v1/users";
+        this.register_endpoint(path);  // SAFE [HTTP] + SAFE [DOTCOM]
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. HTTP REDIRECT to .COM: both checkers fire
+    //
+    // Real-world: a payment redirect to a commercial provider over plain HTTP.
+    // url = "http://checkout.stripe.com":
+    //   prefix "http://..." --> HTTPStringChecker fires
+    //   suffix "...stripe.com" --> DotComStringChecker fires
+    // -------------------------------------------------------------------------
+    redirect_http_dotcom() {
+        def target = "http://checkout.stripe.com";
+        this.redirect(target);  // WARNING [HTTP] + WARNING [DOTCOM]
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. PREFIX PROPAGATION through concatenation
+    //
+    // Real-world: a URL builder prepending the scheme to an unknown host.
+    // scheme = "https://" (known prefix); host = parameter (unknown prefix/suffix).
+    // Prefix domain: scheme + host retains "https://" as the known prefix
+    //   --> HTTPStringChecker fires (prefix matches "https://").
+    // Suffix domain: suffix of (scheme + host) depends on host --> TOP (empty)
+    //   --> DotComStringChecker silent (empty suffix does not end with ".com").
+    // -------------------------------------------------------------------------
+    build_and_fetch(host) {
+        def scheme = "https://";
+        def url = scheme + host;
+        this.fetch(url);    // WARNING [HTTP]:   prefix "https://" preserved
+                            // SAFE    [DOTCOM]: suffix of host unknown (TOP)
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. SUFFIX PROPAGATION through concatenation
+    //
+    // Real-world: a domain builder appending ".com" to an unknown brand name.
+    // tld = ".com" (known suffix); brand = parameter (unknown prefix/suffix).
+    // Suffix domain: brand + tld retains ".com" as the known suffix
+    //   --> DotComStringChecker fires (suffix ends with ".com").
+    // Prefix domain: prefix of (brand + tld) depends on brand --> TOP (empty)
+    //   --> HTTPStringChecker silent (empty prefix does not start with http/https).
+    // -------------------------------------------------------------------------
+    build_and_redirect(brand) {
+        def tld = ".com";
+        def domain = brand + tld;
+        this.redirect(domain);  // SAFE    [HTTP]:   prefix of brand unknown (TOP)
+                                // WARNING [DOTCOM]: suffix ".com" preserved
+    }
+}

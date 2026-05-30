@@ -1,0 +1,22 @@
+/*
+ * Protocol updater, makes request go from
+ * plain http to https
+ */
+ class ProtocolUpgrader {
+     send(target) {
+         return target;
+     }
+
+     upgrade(url) {
+         if (url.startsWith("http://")) {
+             return url.replace("http://", "https://");
+         }
+         return url;
+     }
+
+     testUpgrade() {
+         def raw = "http://google.com";
+         def upgraded = this.upgrade(raw);
+         return this.send(upgraded);
+     }
+ }

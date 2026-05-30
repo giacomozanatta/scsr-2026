@@ -1,0 +1,253 @@
+/*
+ * AI Assistance Disclaimer:
+ *   This file was developed with the support of Claude (Anthropic, claude-sonnet-4-6).
+ *   The following prompt was used to guide the generation:
+ *
+ *   "I need a meaningful IMP test program for a static analysis course project.
+ *    The program should be inspired by a real-world domain where string prefix
+ *    and suffix properties are security-relevant. It should test HTTP/HTTPS prefix
+ *    detection (insecure vs secure connections) as the primary security concern,
+ *    and .com suffix detection as a secondary auxiliary check for external commercial
+ *    domains. It should include cases where the prefix is preserved through
+ *    concatenation, cases where it is lost, and safe baseline cases for comparison.
+ *    Each method should have a clear real-world motivation and inline comments
+ *    explaining the expected checker behavior."
+ *
+ *   The output was reviewed, tested, and validated against LiSA's checkers by the author.
+ */
+
+/*
+ * Test Program: WebClient
+ *
+ * Real-world motivation:
+ *   Web clients and HTTP libraries must distinguish between secure (https://)
+ *   and insecure (http://) connections, especially when handling redirects,
+ *   user-supplied URLs, or third-party API endpoints. Sending sensitive data
+ *   over plain HTTP is a well-documented security vulnerability (CWE-319:
+ *   Cleartext Transmission of Sensitive Information).
+ *
+ *   The .com suffix check serves as an auxiliary property, flagging calls to
+ *   external commercial domains — relevant in corporate environments where
+ *   outbound traffic to external services must be logged or reviewed.
+ *
+ *   This program models a simplified web client and tests:
+ *     - HTTP/HTTPS prefix detection (HTTPStringChecker)
+ *     - .com suffix detection (DotComStringChecker)
+ *     - Prefix preservation through string concatenation
+ *     - Prefix loss when a string is prepended
+ *     - Safe baseline cases (non-http schemes, non-.com domains)
+ *
+ * Target checkers:
+ *   HTTPStringChecker    -> fires when a parameter starts with "http://" or "https://"
+ *   DotComStringChecker  -> fires when a parameter ends with ".com"
+ *
+ * Known limitation:
+ *   HTTPStringChecker cannot distinguish http:// from https:// — it fires on both.
+ *   This is a precision limitation of the Prefix abstract domain: the abstraction
+ *   tracks only the longest known common prefix, so both schemes trigger the checker.
+ *   A more expressive domain (e.g. Bricks or String Graphs) would be needed to
+ *   distinguish the two.
+ */
+class WebClient {
+
+    // ----------------------------------------------------------------
+    // Sink methods — these receive URLs or domains and perform actions.
+    // In a real client, these would open connections or log requests.
+    // ----------------------------------------------------------------
+
+    get(url) {
+        def result = "GET " + url;
+        return result;
+    }
+
+    post(url, body) {
+        def result = "POST " + url + " " + body;
+        return result;
+    }
+
+    logExternalDomain(domain) {
+        def result = "external: " + domain;
+        return result;
+    }
+
+    redirect(url) {
+        def result = "redirect -> " + url;
+        return result;
+    }
+
+    // ----------------------------------------------------------------
+    // 1. Direct HTTP/HTTPS calls
+    // ----------------------------------------------------------------
+
+    /*
+     * Plain HTTP call to a legacy API endpoint.
+     * Real bug: sensitive data sent over unencrypted connection.
+     *
+     * Expected: WARN (HTTPStringChecker) — starts with "http://"
+     *           No warn (DotComStringChecker) — ends with "/data", not ".com"
+     */
+    fetchInsecure() {
+        def url = "http://legacy.internal.api/data";
+        def r = this.get(url);
+        return r;
+    }
+
+    /*
+     * HTTPS call to a secure API endpoint.
+     * Note: HTTPStringChecker fires on BOTH http and https — this is a known
+     * precision limitation of the Prefix domain (see disclaimer above).
+     *
+     * Expected: WARN (HTTPStringChecker) — starts with "https://"
+     *           No warn (DotComStringChecker) — ends with "/data"
+     */
+    fetchSecure() {
+        def url = "https://secure.internal.api/data";
+        def r = this.get(url);
+        return r;
+    }
+
+    /*
+     * POST request to an external commercial endpoint over plain HTTP.
+     * Real bug: form data or credentials sent unencrypted to a .com domain.
+     *
+     * Expected: WARN (HTTPStringChecker) — starts with "http://"
+     *           WARN (DotComStringChecker) — ends with ".com"
+     *           Both checkers fire simultaneously.
+     */
+    postToExternalInsecure() {
+        def url = "http://api.example.com";
+        def body = "user=admin&pass=secret";
+        def r = this.post(url, body);
+        return r;
+    }
+
+    /*
+     * Baseline: non-HTTP scheme (internal RPC call).
+     * Real scenario: internal service calls use custom schemes.
+     *
+     * Expected: No warn (either checker) — "rpc://" is neither http nor https,
+     *           and the URL does not end with ".com"
+     */
+    callInternalRpc() {
+        def url = "rpc://internal.service/compute";
+        def r = this.get(url);
+        return r;
+    }
+
+    // ----------------------------------------------------------------
+    // 2. Prefix preservation through concatenation
+    // ----------------------------------------------------------------
+
+    /*
+     * Build a URL by appending a path to an HTTPS base.
+     * The Prefix domain preserves the prefix through concatenation
+     * (appending to the right does not change what the string starts with).
+     *
+     * Expected: WARN (HTTPStringChecker) — prefix "https://" preserved after concat
+     *           No warn (DotComStringChecker) — ends with "/transfer", not ".com"
+     */
+    buildSecureUrl() {
+        def base = "https://payments.gateway.net";
+        def path = "/transfer";
+        def url  = base + path;
+        def r = this.post(url, "amount=100");
+        return r;
+    }
+
+    /*
+     * Build a URL by appending a path to an HTTP base.
+     * Same prefix preservation, but insecure scheme.
+     *
+     * Expected: WARN (HTTPStringChecker) — prefix "http://" preserved after concat
+     *           WARN (DotComStringChecker) — base ends with ".com", but after
+     *           concat the suffix is "/search" — NO suffix warn.
+     *           This demonstrates that suffix information is LOST after appending.
+     */
+    buildInsecureUrl() {
+        def base = "http://www.example.com";
+        def path = "/search";
+        def url  = base + path;
+        def r = this.get(url);
+        return r;
+    }
+
+    // ----------------------------------------------------------------
+    // 3. Prefix loss through prepending
+    // ----------------------------------------------------------------
+
+    /*
+     * A proxy wrapper prepends a marker string before the real URL.
+     * The Prefix domain loses the "http://" prefix because the new
+     * prefix is "PROXY:" — the checker cannot see through it.
+     *
+     * Real scenario: logging or proxy wrappers that prepend metadata.
+     * This demonstrates a FALSE NEGATIVE — a real insecure URL is missed.
+     *
+     * Expected: No warn (HTTPStringChecker) — prefix is now "PROXY:", not "http://"
+     *           This is a known precision limitation of the Prefix domain.
+     */
+    proxyWrappedUrl() {
+        def marker = "PROXY:";
+        def url    = marker + "http://legacy.service/api";
+        def r = this.redirect(url);
+        return r;
+    }
+
+    // ----------------------------------------------------------------
+    // 4. Suffix detection — external commercial domains
+    // ----------------------------------------------------------------
+
+    /*
+     * Log a call to an external .com domain for audit purposes.
+     * Real scenario: corporate firewall logging of outbound commercial traffic.
+     *
+     * Expected: WARN (DotComStringChecker) — "analytics.tracking.com" ends with ".com"
+     *           No warn (HTTPStringChecker) — no URL scheme prefix
+     */
+    logCommercialDomain() {
+        def domain = "analytics.tracking.com";
+        def r = this.logExternalDomain(domain);
+        return r;
+    }
+
+    /*
+     * Log a call to a non-commercial domain.
+     * Expected: No warn (either checker) — ".org" is not ".com", no http prefix
+     */
+    logNonCommercialDomain() {
+        def domain = "opensource.project.org";
+        def r = this.logExternalDomain(domain);
+        return r;
+    }
+
+    /*
+     * Full external HTTPS call to a .com domain.
+     * Both checkers fire: the URL starts with "https://" AND ends with ".com".
+     *
+     * Expected: WARN (HTTPStringChecker) — starts with "https://"
+     *           WARN (DotComStringChecker) — ends with ".com"
+     */
+    fetchExternalCommercial() {
+        def url = "https://cdn.provider.com";
+        def r = this.get(url);
+        return r;
+    }
+
+    /*
+     * Suffix lost after appending a path.
+     * Once a path segment is appended, the ".com" suffix is replaced.
+     *
+     * Real scenario: a CDN URL with a resource path — suffix is no longer ".com".
+     * This demonstrates a FALSE NEGATIVE for the suffix checker.
+     *
+     * Expected: No warn (DotComStringChecker) — suffix is now "/image.png"
+     *           WARN (HTTPStringChecker) — prefix "https://" still intact
+     */
+    fetchExternalWithPath() {
+        def base = "https://cdn.provider.com";
+        def path = "/image.png";
+        def url  = base + path;
+        def r = this.get(url);
+        return r;
+    }
+}

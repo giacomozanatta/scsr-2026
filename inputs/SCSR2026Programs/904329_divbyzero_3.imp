@@ -1,0 +1,40 @@
+class dbz
+{
+    /*
+    In this case the checker should issue a warning like "This may be possible division by zero" since 
+    the condition that set the denominator to zero is after a while cycle so it's possible to assure the presence 
+    of a division by zero only after all the iterations of the cycle
+    */
+    f2()
+    {
+        def errors_player1 = 3;
+        def record = 1;
+
+        while (errors_player1 > record)
+        {
+            errors_player1 = errors_player1-1;
+        }
+
+        def over = errors_player1/(record-errors_player1) * 100; //By how much do I exceed the record (percentage)
+        
+        return;
+    }
+
+    */
+    This case is pretty similar to the previous one but in this case the divison by zero is performed within the cycle
+    */
+    f3()
+    {
+        def lives = 3;
+        def round = 1;
+
+        while (lives > 0)
+        {
+            def points_of_penalty = round/lives;
+            round = round + 1;
+            lives = lives - 1;
+        }
+
+        return;
+    }
+}

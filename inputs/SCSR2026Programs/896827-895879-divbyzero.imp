@@ -1,0 +1,85 @@
+class divbyzero {
+
+    // CASE 1: division by a literal zero
+    literalZero() {
+        def x = 10;
+        def result = x / 0;
+        return result;
+    }
+
+   // CASE 2: divisor shrinks toward zero inside a loop
+   shrinkingDenominator() {
+       def value = 1000;
+       def denom = 80;
+       while (denom > 0) {
+           denom = denom - 3;
+       }
+
+       value = value / denom;
+       return value;
+   }
+
+    // CASE 3: division by a known positive constant [16,16]
+    safeConstantDivisor() {
+        def total = 256;
+        def size = 16;
+        def idx1 = total / size;
+        def idx2 = 128 / size;
+        def idx3 = 64 / size;
+        return idx1;
+    }
+
+    // CASE 4: unguarded division by external input (TOP interval)
+    guardedDivision(divisor) {
+        def dividend = 100;
+
+        def unsafe = dividend / divisor;
+
+        if (divisor > 0) {
+            def safe = dividend / divisor;
+            return safe;
+        }
+        return unsafe;
+    }
+
+    // CASE 5: product of two non-zero constants used as divisor
+    safeProductDivisor() {
+        def a = 3;
+        def b = 5;
+        def divisor = a * b;
+        def result = 900 / divisor;
+        return result;
+    }
+
+    /*
+     Real-world scenario: a rate limiter computes how many requests
+     are allowed per time window. The window duration comes from
+     a user-controlled configuration value. If an attacker sets
+     window_ms = 0 (or the value wraps around to 0 after arithmetic),
+     the division produces an undefined result — in practice either
+     an exception that skips the limiter entirely, or integer overflow
+     producing a huge allowed_rate that grants unlimited access.
+
+     The security impact: if allowed_rate is unchecked after the division,
+     the subsequent comparison (requests_made <= allowed_rate) is always
+     true if default behavior in case of error is to set the value of allowed_rate to MAX_INT,
+     effectively disabling the rate limiter.
+    */
+    divisionRateLimiterBypass(budget, window_ms) {
+        def allowed_rate = budget / window_ms;
+
+        /*
+         if window_ms = 0: allowed_rate is undefined/exception
+         a catching framework may default allowed_rate to MAX_INT,
+         making the check below always pass → unlimited requests
+        */
+        def requests_made = 42;
+        if (requests_made <= allowed_rate) {
+            // access granted — potentially unlimited if allowed_rate is corrupt
+            def session_token = budget * window_ms;
+            return session_token;
+        } else {
+            return 0;
+        }
+    }
+}

@@ -1,0 +1,17 @@
+// This is a simple api
+// Ensure an HTTP, though not a DotCom
+//
+// 913849 -- Quinn Robertson
+class ap {
+    process(url) {
+        return "Do something here";
+    }
+
+    access_api(url) {
+        this.process(url);
+    }
+
+    main() {
+        this.access_api("http://api.theweb.net");
+    }
+}

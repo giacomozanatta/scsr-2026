@@ -2,21 +2,21 @@ class cartesian{
 
     sink(i)
     {
-        
+
     }
 
     source()
     {
         return -1;
     }
-    
+
     sanitize(i)
-    {  
+    {
         if(i < 0)
             return -i;
         return i;
     }
-    
+
     cart1()
     {
         def x = 1;

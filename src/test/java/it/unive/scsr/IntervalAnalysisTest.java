@@ -8,6 +8,7 @@ import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.outputs.HtmlResults;
+import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import org.junit.Test;
 

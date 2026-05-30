@@ -14,6 +14,7 @@ import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.analysis.heap.pointbased.PointBasedHeap;
 import it.unive.lisa.analysis.numeric.Interval;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
+import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.scsr.checkers.OverflowIntervalChecker;
@@ -37,6 +38,7 @@ public class OverflowProgramsTest {
             conf.analysis = simpleDomain(new PointBasedHeap(), new Interval(), defaultTypeDomain());
             conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
             conf.semanticChecks.add(new OverflowIntervalChecker<>(Integer.MIN_VALUE, Integer.MAX_VALUE));
+            conf.outputs.add(new HtmlResults<>(true));
             conf.outputs.add(new JSONReportDumper());
 
             new LiSA(conf).run(program);

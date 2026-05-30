@@ -1,0 +1,104 @@
+class divbyzero {
+
+    f0() {
+        def a = 10;
+        def b = 0;
+        def c = 5;
+
+        def d = a / b;
+        def e = a / c;
+
+        return;
+    }
+
+    f1() {
+        def x = 5;
+        def y = 5;
+        def z = x - y;
+        def w = 100 / z;
+
+        return;
+    }
+
+    readInt() {
+        return 0;
+    }
+
+    f2() {
+        def input = this.readInt();
+        def result = 100 / input;
+
+        return;
+    }
+
+    f3() {
+        def a = 100;
+        def b = 10;
+        def c = a / b;
+        def d = a / b / c;
+        def e = 0;
+        def f = 0;
+        def g = 0;
+        if (d == 1) {
+            f = 500;
+            g = a / b / e;
+        } else {
+            f = 1;
+            g = a + b / c / d;
+        }
+
+        return;
+    }
+
+    f4() {
+        def x = 10;
+        def y = 0;
+        while (y < 5) {
+            x = x - 2;
+            y = y + 1;
+        }
+
+        def z = 100 / x;
+
+        return;
+    }
+
+    f5() {
+        def a = this.readInt();
+        def b = 0;
+
+        if (a == 0) {
+            b = 0;
+        } else {
+            if (a > 0) {
+                b = 10;
+            } else {
+                b = -5;
+            }
+        }
+
+        def c = 1000 / b;
+
+        return;
+    }
+
+    f6() {
+        def i = this.readInt();
+        if (i > 0) {
+            def j = 200 / i;
+        }
+
+        return;
+    }
+
+    f7() {
+        def m = 5;
+        def n = 3;
+        def o = m * n;
+        def p = m * n * o;
+        def q = 500 / p;
+
+        return;
+    }
+
+}

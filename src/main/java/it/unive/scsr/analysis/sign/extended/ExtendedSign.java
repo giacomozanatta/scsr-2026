@@ -287,7 +287,8 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
             // - if `eval op start`, `update = U { start n v | eval op v, v in {
             // +, 0, -} }`
 
-            ExtendedSignLattice[] all = new ExtendedSignLattice[] { ExtendedSignLattice.NEG, ExtendedSignLattice.ZERO, ExtendedSignLattice.POS };
+            ExtendedSignLattice[] all = new ExtendedSignLattice[] { ExtendedSignLattice.NEG, ExtendedSignLattice.ZERO, ExtendedSignLattice.POS,
+            ExtendedSignLattice.NOTNEG, ExtendedSignLattice.NOTPOS, ExtendedSignLattice.NOTZERO};
             if (operator == ComparisonGe.INSTANCE)
                 if (rightIsExpr) {
                     for (ExtendedSignLattice s : all)

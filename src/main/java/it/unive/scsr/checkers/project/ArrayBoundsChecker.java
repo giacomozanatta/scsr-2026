@@ -75,7 +75,10 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
         }
         System.out.println("www.check.com: " + var.getVariable());
         Expression access_exp = access.getRight();
+
+        // TODO I am confusion.
         PentagonLattice index_pentagon_lattice = get_pentagon_lattice(tool, graph, access, access_exp);
+
         IntInterval index_interval = get_interval(tool, graph, access, access_exp);
 
         if( !arrays.containsKey(var.getName()) || arrays.get(var.getName()) == null || index_interval == null){
@@ -93,7 +96,6 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
         MathNumber size_high = arrays.get(var.getName()).getHigh();
         System.out.println("Checking interval " + index_interval + " against size high " + size_high);
         boolean flag_definite_exc;
-        // TODO Use pentagon to make the analysis more precise
         if(index_interval.getHigh().geq(size_high)){
             flag_definite_exc = index_interval.getLow().geq(size_high);
             access_type |= flag_definite_exc ? EXCDEF : EXCPOS;

@@ -15,7 +15,7 @@ class extsign{
     looping_definite_notzero(val){
         def start = 0;
         // start is either positive or negative. It can't be zero
-        // this is not detected, tho.
+        // this is not detected, though.
         for(def i = 0; i < 10; i = i + 1){
             if(val > 0){
                 start = start + 1;
@@ -24,7 +24,6 @@ class extsign{
                 start = start - 1;
             }
         }
-
         return start;
     }
 

@@ -1,0 +1,74 @@
+class divbyzero_pentagon {
+
+    /*
+     CASE 1: classic Pentagon precision showcase.
+     The guard (y < x) causes the UpperBounds component to track y < x.
+     When gap = x - y is computed, Pentagon sees y is an upper bound of x
+     and refines gap to [1, +inf) — provably non-zero.
+    */
+    correlatedSubtraction(x, y) {
+        def total = 100;
+        if (y < x) {
+            def gap = x - y;
+            def result = total / gap;
+            return result;
+        }
+        return 0;
+    }
+
+    // CASE 2: chained upper bounds.
+    chainedUpperBounds(a, b, c) {
+        def budget = 500;
+
+        if (a < b) {
+            if (b < c) {
+                def span = c - a;
+                def share = budget / span;
+                return share;
+            }
+        }
+
+        return 0;
+    }
+
+    // CASE 3: remainder operator with explicit guard.
+    remainderAsDivisor(x, divisor) {
+        def total = 200;
+        if (divisor > 1) {
+            def rem = x % divisor;
+            if (rem > 0) {
+                def result = total / rem;
+                return result;
+            }
+        }
+        return 0;
+    }
+
+    /*
+     CASE 4: non-trivial real-world scenario — privilege escalation via
+     correlated penalty counters.
+     A permission system computes effective_score = max_score - penalty.
+     An attacker controls penalty via repeated API calls. The system
+     enforces penalty < max_score as a precondition before computing
+     the privilege level. If this guard is removed or bypassed, the
+     division by (max_score - penalty) hits zero when penalty = max_score,
+     producing undefined behaviour that may grant elevated access.
+    */
+    privilegeLevelDivision(base_score, penalty, max_score) {
+        def required_level = 10;
+
+        if (penalty < max_score) {
+            def gap = max_score - penalty;
+            def privilege_level = base_score / gap;
+
+            // if gap were 0 (guard removed), privilege_level would be
+            // undefined — a fault-tolerant runtime might default it to
+            // MAX_INT, making the check below always pass
+            if (privilege_level >= required_level) {
+                def granted = privilege_level * 2;
+                return granted;
+            }
+        }
+        return 0;
+    }
+}

@@ -1,5 +1,6 @@
 class arraybounds{
-    basic_assignment(any_index){
+    basic_assignment(any_index)
+    {
         def arr0 = new int[10];
         def arr1 = new int[100];
 

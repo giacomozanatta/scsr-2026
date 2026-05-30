@@ -33,7 +33,7 @@ public class SignTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Sign(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new NonNegativeSpeedInMoveForwardChecker<>()); //sign checker

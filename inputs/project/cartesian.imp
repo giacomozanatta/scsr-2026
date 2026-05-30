@@ -24,6 +24,9 @@ class cartesian{
 
         def y = -5;
         this.sink(y);
+
+        def z = 0;
+        this.sink(y);
     }
 
     cart2()
@@ -31,7 +34,7 @@ class cartesian{
         def x = this.source();
         x = -x;
         x = this.sanitize(x);
-        sink(x);
+        this.sink(x);
     }
 
     cart3()
@@ -47,34 +50,28 @@ class cartesian{
     cart4()
     {
         def x = this.source();
-        for(def i = 0; i < 10; i++)
-        {
-            x = this.sanitize(x);
-        }
+        def y = this.source();
+        x = this.sanitize(x) + this.sanitize(y);
+        
         this.sink(x);
     }
 
     cart5()
     {
         def x = -4;
-        for(def i = 0; i < 10; i++)
-        {
-            x = this.source();
-            x = this.sanitize(x);
-        }
+        x = x + this.source();
+        x = this.sanitize(x);
         this.sink(x);
     }
 
     cart6()
     {
         def x = -4;
-        for(def i = 0; i < 10; i++)
+        x = this.source();
+        def i = x;
+        if(i % 2 == 0)
         {
-            x = this.source();
-            if(i % 2 == 0)
-            {
-                x = this.sanitize(x);
-            }
+            x = this.sanitize(x);
         }
         this.sink(x);
     }
@@ -90,7 +87,7 @@ class cartesian{
         def x = this.source();
         x = -x;
         x = this.nested_sanitizer(x);
-        sink(x);
+        this.sink(x);
     }
 
     cart8()
@@ -103,38 +100,40 @@ class cartesian{
         this.sink(x);
     }
 
-    cart9()
-    {
-        def x = this.source();
-        for(def i = 0; i < 10; i++)
-        {
-            x = this.nested_sanitizer(x);
-        }
-        this.sink(x);
-    }
-
     cart10()
     {
         def x = -4;
-        for(def i = 0; i < 10; i++)
-        {
-            x = this.source();
-            x = this.nested_sanitizer(x);
-        }
+        x = this.source();
+        x = this.nested_sanitizer(x);
         this.sink(x);
     }
 
     cart11()
     {
         def x = -4;
-        for(def i = 0; i < 10; i++)
+        x = this.source();
+        if(x % 2 == 0)
         {
-            x = this.source();
-            if(i % 2 == 0)
-            {
-                x = this.nested_sanitizer(x);
-            }
+            x = this.nested_sanitizer(x);
         }
+        this.sink(x);
+    }
+
+    cart12(p)
+    {
+        def x = p;
+        this.sink(x);
+    }
+
+    cart13(p)
+    {
+        def x = this.sanitize(p);
+        this.sink(x);
+    }
+
+    cart14(p)
+    {
+        def x = this.nested_sanitizer(p);
         this.sink(x);
     }
 }

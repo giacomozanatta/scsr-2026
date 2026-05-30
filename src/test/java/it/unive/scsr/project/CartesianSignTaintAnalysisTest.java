@@ -15,6 +15,7 @@ import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
@@ -50,8 +51,10 @@ public class CartesianSignTaintAnalysisTest {
         // we specify the analysis that we want to execute
         // Field sensitive heap --> each memory cell has its own abstraction rather than being part of
         // the same abstraction shared among all cells as would happen with a simple point based heap
-        conf.analysis = simpleDomain(new FieldSensitivePointBasedHeap(), new CartesianSignTaint(), defaultTypeDomain());
-
+        conf.analysis = simpleDomain(new PointBasedHeap(), new CartesianSignTaint(), defaultTypeDomain());
+        
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
+        
         for(CFG cfg : program.getAllCFGs()) {
             String name = cfg.getDescriptor().getName();
             if(isSource(name))

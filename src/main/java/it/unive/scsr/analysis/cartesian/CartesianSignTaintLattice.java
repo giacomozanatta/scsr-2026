@@ -198,4 +198,16 @@ public class CartesianSignTaintLattice implements TaintLattice<CartesianSignTain
     {
         return this.taint.isPossiblyClean();
     }
+    
+    @Override
+    public boolean isTop()
+    {
+        return this.taint.isTop() || this.sign.isTop();
+    }
+    
+    @Override
+    public boolean isBottom()
+    {
+        return this.taint.isBottom() || this.sign.isBottom();
+    }
 }

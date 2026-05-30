@@ -187,8 +187,8 @@ class ExtendedSigns {
     }
 
     moveForward10() {
-       def n = this.getOffset(); // sees TOP
-       this.setSpeed(n); // TOP, possibly negative var warning
+       def n = this.getOffset(); // retrieves NEG value
+       this.setSpeed(n); // definite negative warning
     }
 
     moveForward11(b) {

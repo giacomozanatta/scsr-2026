@@ -23,9 +23,9 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class NumericalAnalysesTest {
 
-    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/intervals/1003406_stream_throughput-interval.imp";
-    private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/1003406_stream_throughput-pentagon.imp";
-    private final String INPUT_PATH_OVERFLOW = "overflows/1003406_sensor_buffer.imp";
+    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/interval/1003406_image_rasterizer-interval.imp";
+    private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/1003406_image_rasterizer-pentagon.imp";
+    private final String INPUT_PATH_OVERFLOW = "overflows/876957-overflow.imp";
 
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
@@ -43,7 +43,7 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
-
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
@@ -72,7 +72,7 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroPentagonChecker<>());
         // A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder
@@ -103,6 +103,7 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
@@ -193,7 +194,7 @@ public class NumericalAnalysesTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Pentagon(), defaultTypeDomain());
-
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowPentagonChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
 

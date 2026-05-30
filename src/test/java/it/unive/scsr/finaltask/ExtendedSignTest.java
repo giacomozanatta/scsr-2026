@@ -6,6 +6,7 @@ import it.unive.lisa.LiSA;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
 import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
@@ -33,6 +34,7 @@ public class ExtendedSignTest {
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
+        conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 
         // added checker to the analysis
         conf.semanticChecks.add(new ExtendedNonNegativeSpeedInMoveForwardChecker<>());

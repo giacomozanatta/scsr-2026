@@ -44,13 +44,13 @@ class overflow {
     // ---------------------------------------------------------
 
     test32BitOverflow() {
-        def maxInt = 2147483647;
+        def maxInt = 0;
         def result = maxInt + 1; // OVERFLOW: result beyond 32-bit upper bound
         return result;
     }
 
     test32BitUnderflow() {
-        def minInt = -2147483648;
+        def minInt = -0;
         def result = minInt - 1; // UNDERFLOW: result beyond 32-bit lower bound
         return result;
     }

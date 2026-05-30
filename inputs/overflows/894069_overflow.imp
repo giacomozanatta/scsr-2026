@@ -1,0 +1,50 @@
+// ================================================================
+//  OVERFLOW / UNDERFLOW TEST SUITE
+//  Target checker: OverflowChecker (32-bit signed integers)
+//
+//  Real-world inspiration: game engine score and physics system.
+//  A game tracks player scores, damage values, and physics
+//  velocities. Unchecked arithmetic on large values can silently
+//  wrap, producing negative scores or impossible physics states.
+//
+//  Warning levels:
+//    OVERFLOW     result exceeds  +2147483647
+//    UNDERFLOW    result goes below -2147483647
+//    SAFE         result stays within 32-bit signed range
+// ================================================================
+
+class GameEngine {
+
+    addBonusScore() {
+        def score = 2147483647;   // INT_MAX
+        def bonus = 1;
+        def result = score + bonus;   // OVERFLOW: exceeds INT_MAX
+        return result;
+    }
+
+    applyDamage() {
+        def hp = -2147483647;   // close to INT_MIN
+        def damage = 10;
+        def result = hp - damage;     // UNDERFLOW: goes below INT_MIN
+        return result;
+    }
+
+    simulateVelocity() {
+        def velocity = 0;
+        def accel = 1000;
+        def frames = 10;
+        while (frames > 0) {
+            velocity = velocity + accel;
+            frames = frames - 1;
+        }
+        // After widening: velocity in [0, +INF] -> may overflow
+        return velocity;
+    }
+
+    levelUpScore() {
+        def score = 500;
+        def reward = 100;
+        def result = score + reward;   // SAFE: [600,600] within range
+        return result;
+    }
+}

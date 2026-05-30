@@ -186,9 +186,10 @@ class Calculator {
     // the increment produces [1, 100], well within all signed ranges.
     //
     // EXPECT :
-    // [8-bit] NONE on i = i + 1
-    // [16-bit] NONE
-    // [32-bit] NONE
+    // [8-bit] concretely, no overflow, but widening will cause i
+    // and total to widen to [100,+INF] and [0,+INF] so OVERFLOW WARNING
+    // [16-bit] same
+    // [32-bit] same
     // -----------------------------------------------------------------------
     countToHundred() {
         def i = 0;

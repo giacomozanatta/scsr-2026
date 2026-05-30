@@ -10,6 +10,7 @@ import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,38 +20,24 @@ import java.util.Objects;
  */
 public class CPropSetElem implements DataflowElement<CPropSetElem> {
 
-    private Identifier id;
-    private Integer constant;
+    /**
+     * IMPLEMENT THIS CLASS
+     * the code below is outside of the scope of the course.
+     * You can uncomment it to get your code to compile.
+     * Be aware that the code is written expecting that a field named "id"
+     * and a field named "constant" exist in this class.
+     */
 
     public CPropSetElem(Identifier id, Integer constant) {
         this.id = id;
         this.constant = constant;
     }
 
-    @Override
-    public Collection<Identifier> getInvolvedIdentifiers() {
-        return List.of();
-    }
 
-    @Override
-    public CPropSetElem replaceIdentifier(Identifier identifier, Identifier identifier1) {
-        return null;
-    }
 
-    @Override
-    public CPropSetElem pushScope(ScopeToken scopeToken, ProgramPoint programPoint) throws SemanticException {
-        return null;
-    }
+    private Identifier id;
 
-    @Override
-    public CPropSetElem popScope(ScopeToken scopeToken, ProgramPoint programPoint) throws SemanticException {
-        return null;
-    }
-
-    @Override
-    public StructuredRepresentation representation() {
-        return new ListRepresentation(new StringRepresentation(id), new StringRepresentation(constant));
-    }
+    private Integer constant;
 
     public Identifier getId() {
         return id;
@@ -79,4 +66,33 @@ public class CPropSetElem implements DataflowElement<CPropSetElem> {
     public int hashCode() {
         return Objects.hash(id, constant);
     }
+
+    @Override
+    public StructuredRepresentation representation() {
+        return new ListRepresentation(
+                new StringRepresentation(id),
+                new StringRepresentation(constant));
+    }
+
+
+    @Override
+    public Collection<Identifier> getInvolvedIdentifiers() {
+        return Collections.singleton(id);
+    }
+
+    @Override
+    public CPropSetElem replaceIdentifier(Identifier source, Identifier target) {
+        return null;
+    }
+
+    @Override
+    public CPropSetElem pushScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
+        return null;
+    }
+
+    @Override
+    public CPropSetElem popScope(ScopeToken token, ProgramPoint pp) throws SemanticException {
+        return null;
+    }
+
 }

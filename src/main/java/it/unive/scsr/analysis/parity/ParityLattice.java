@@ -14,57 +14,58 @@ import java.util.Objects;
  */
 public class ParityLattice implements BaseLattice<ParityLattice> {
 
-    private final int element;
+	private final int element;
 
-    public static final ParityLattice TOP    = new ParityLattice(0);
-    public static final ParityLattice EVEN   = new ParityLattice(1);
-    public static final ParityLattice ODD    = new ParityLattice(2);
-    public static final ParityLattice BOTTOM = new ParityLattice(3);
+	// Encoding: 0=TOP, 1=EVEN, 2=ODD, 3=BOTTOM
+	public static final ParityLattice TOP    = new ParityLattice(0);
+	public static final ParityLattice EVEN   = new ParityLattice(1);
+	public static final ParityLattice ODD    = new ParityLattice(2);
+	public static final ParityLattice BOTTOM = new ParityLattice(3);
 
-    public ParityLattice(int e) {
-        this.element = e;
-    }
+	public ParityLattice(int e) {
+		this.element = e;
+	}
 
-    @Override
-    public ParityLattice top() {
-        return TOP;
-    }
+	@Override
+	public ParityLattice top() {
+		return TOP;
+	}
 
-    @Override
-    public ParityLattice bottom() {
-        return BOTTOM;
-    }
-
-
-    @Override
-    public boolean lessOrEqualAux(ParityLattice other) throws SemanticException {
-        return false;
-    }
-
-    @Override
-    public ParityLattice lubAux(ParityLattice other) throws SemanticException {
-        return TOP;
-    }
+	@Override
+	public ParityLattice bottom() {
+		return BOTTOM;
+	}
 
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ParityLattice that = (ParityLattice) o;
-        return element == that.element;
-    }
+	@Override
+	public boolean lessOrEqualAux(ParityLattice other) throws SemanticException {
+		return false;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(element);
-    }
+	@Override
+	public ParityLattice lubAux(ParityLattice other) throws SemanticException {
+		return TOP;
+	}
 
-    @Override
-    public StructuredRepresentation representation() {
-        if (this == BOTTOM) return Lattice.bottomRepresentation();
-        if (this == TOP)    return Lattice.topRepresentation();
-        if (this == EVEN)   return new StringRepresentation("EVEN");
-        return new StringRepresentation("ODD");
-    }
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ParityLattice that = (ParityLattice) o;
+		return element == that.element;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(element);
+	}
+
+	@Override
+	public StructuredRepresentation representation() {
+		if (this == BOTTOM) return Lattice.bottomRepresentation();
+		if (this == TOP)    return Lattice.topRepresentation();
+		if (this == EVEN)   return new StringRepresentation("EVEN");
+		return new StringRepresentation("ODD");
+	}
 }

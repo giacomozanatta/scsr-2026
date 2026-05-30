@@ -45,18 +45,18 @@ public class ParityAnalysisTest {
         conf.outputs.add(new HtmlResults<>(true));
         conf.outputs.add(new JSONResults<>());
         conf.outputs.add(new JSONReportDumper());
-        
+
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Parity(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
-        
+
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 
         // finally, we tell LiSA to analyze the program
         lisa.run(program);
-        
+
         Path expectedPath = Paths.get("expected", "parity-eval");
         Path actualPath = Paths.get("outputs", "parity");
 

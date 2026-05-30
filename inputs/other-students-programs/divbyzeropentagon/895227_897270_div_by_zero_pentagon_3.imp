@@ -1,0 +1,22 @@
+class NetworkSync {
+
+    calculateLossRatio() {
+        def received = 0;
+        def sent = 5; 
+        def ratio = 0;
+
+        
+        while (received < 100) {
+            received = received + 1;
+            sent = sent + 1;
+
+            def difference = sent - received;
+
+            
+
+            ratio = 1000 / difference;
+        }
+
+        return ratio;
+    }
+}

@@ -144,7 +144,7 @@ class RealIntervals {
     }
 
     // ============================================================
-    // WIDENING + NARROWING TESTS with convergent / bounded loops
+    // WIDENING tests with convergent / bounded loops
 
    // -------- Bounded by integer: classic integer interval case --------
     boundedByInt(b) {

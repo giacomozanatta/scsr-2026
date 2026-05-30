@@ -1,130 +1,102 @@
 package it.unive.scsr.analysis.sign;
 
-import java.util.Objects;
-
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
+import java.util.Objects;
 
-public class SignLattice 
-		implements BaseLattice<SignLattice>{
-	
-	private int element;
-	
-	// declaration of lattice elements
-	// 0, 1, 2, 3, 4 are just an encoding
-	public static SignLattice TOP = new SignLattice(0);
-	public static SignLattice POS = new SignLattice(1);
-	public static SignLattice NEG = new SignLattice(2);
-	public static SignLattice ZERO = new SignLattice(3);
-	public static SignLattice BOTTOM = new SignLattice(4);
-	
-	public SignLattice(int e) {
-		element = e;
-	}
+public class SignLattice implements BaseLattice<SignLattice> {
+    
+    private final int element;
+    
+    public static final SignLattice TOP = new SignLattice(0);      // Z
+    public static final SignLattice GEQ_ZERO = new SignLattice(1); // Z >= 0
+    public static final SignLattice NOT_ZERO = new SignLattice(2); // Z != 0
+    public static final SignLattice LEQ_ZERO = new SignLattice(3); // Z <= 0
+    public static final SignLattice POS = new SignLattice(4);      // Z > 0
+    public static final SignLattice ZERO = new SignLattice(5);     // Z = 0
+    public static final SignLattice NEG = new SignLattice(6);      // Z < 0
+    public static final SignLattice BOTTOM = new SignLattice(7);   // Empty
 
-	@Override
-	    public SignLattice top() {
-		return SignLattice.TOP;
-	    }
+    public SignLattice(int e) { this.element = e; }
 
-	    @Override
-	    public SignLattice bottom() {
-		return SignLattice.BOTTOM;
-	    }
-	    
-	    
+    @Override public SignLattice top() { return TOP; }
+    @Override public SignLattice bottom() { return BOTTOM; }
 
-	    @Override
-		public int hashCode() {
-			return Objects.hash(element);
-		}
+    @Override
+    public SignLattice lubAux(SignLattice other) throws SemanticException {
+        if (this == other || other == BOTTOM) return this;
+        if (this == BOTTOM) return other;
+        if (this == TOP || other == TOP) return TOP;
+        
+        // Объединение по решетке из PDF
+        if (this == ZERO) {
+            if (other == POS || other == GEQ_ZERO) return GEQ_ZERO;
+            if (other == NEG || other == LEQ_ZERO) return LEQ_ZERO;
+        }
+        if (this == POS) {
+            if (other == ZERO || other == GEQ_ZERO) return GEQ_ZERO;
+            if (other == NEG || other == NOT_ZERO) return NOT_ZERO;
+        }
+        if (this == NEG) {
+            if (other == ZERO || other == LEQ_ZERO) return LEQ_ZERO;
+            if (other == POS || other == NOT_ZERO) return NOT_ZERO;
+        }
+        
+        return TOP;
+    }
 
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			SignLattice other = (SignLattice) obj;
-			return element == other.element;
-		}
+    @Override
+    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
+        if (this == other || other == TOP || this == BOTTOM) return true;
+        if (other == GEQ_ZERO) return this == POS || this == ZERO;
+        if (other == LEQ_ZERO) return this == NEG || this == ZERO;
+        if (other == NOT_ZERO) return this == POS || this == NEG;
+        return false;
+    }
 
-		@Override
-	    public StructuredRepresentation representation() {
-		
-			if(this == SignLattice.BOTTOM)
-				return Lattice.bottomRepresentation();
-			else if(this == SignLattice.TOP)
-				return Lattice.topRepresentation();
-			else if(this == SignLattice.ZERO)
-				return new StringRepresentation("0");
-			else if(this == SignLattice.POS) 
-				return new StringRepresentation("+");
-	
-			return new StringRepresentation("-");
-	    }
+    // ТЕ САМЫЕ МЕТОДЫ, КОТОРЫХ НЕ ХВАТАЛО:
+    public Satisfiability eq(SignLattice other) {
+        if (this == BOTTOM || other == BOTTOM) return Satisfiability.BOTTOM;
+        if (this == TOP || other == TOP) return Satisfiability.UNKNOWN;
+        if (this == ZERO && other == ZERO) return Satisfiability.SATISFIED;
+        if (this == POS && other == NEG) return Satisfiability.NOT_SATISFIED;
+        if (this == NEG && other == POS) return Satisfiability.NOT_SATISFIED;
+        return Satisfiability.UNKNOWN;
+    }
 
-	    @Override
-	    public SignLattice lubAux(SignLattice other) throws SemanticException {
-	    	if(this == SignLattice.POS &&
-	    			other == SignLattice.ZERO)
-	    		return SignLattice.TOP;
-	    	// in general should be handled all case... In this sign domain with POS, ZERO, NEG, it is simply TOP	
-	    	return SignLattice.TOP;
-	    }
+    public Satisfiability gt(SignLattice other) {
+        if (this == BOTTOM || other == BOTTOM) return Satisfiability.BOTTOM;
+        if (this == TOP || other == TOP) return Satisfiability.UNKNOWN;
+        if (this == POS && (other == ZERO || other == NEG)) return Satisfiability.SATISFIED;
+        if (this == ZERO && other == NEG) return Satisfiability.SATISFIED;
+        if (this == NEG && (other == ZERO || other == POS)) return Satisfiability.NOT_SATISFIED;
+        return Satisfiability.UNKNOWN;
+    }
 
-	    @Override
-	    public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
-	    	// implement less or Equals logic
-	    	return false;
-	    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SignLattice that = (SignLattice) o;
+        return element == that.element;
+    }
 
-		// For glb in this case we use default LiSA implementation
-	
-	
-	    // Other method implementations to use in Sign domain to assume and check satisfability of some stuff
-		
-	    public Satisfiability eq(
-				SignLattice other) {
-			if (this.isBottom() || other.isBottom())
-				return Satisfiability.BOTTOM;
-			else if (this.isTop() || other.isTop())
-				return Satisfiability.UNKNOWN;
-			else if (!this.equals(other))
-				return Satisfiability.NOT_SATISFIED;
-			else if (this == ZERO)
-				return Satisfiability.SATISFIED;
-			else
-				return Satisfiability.UNKNOWN;
-		}
+    @Override
+    public int hashCode() { return Objects.hash(element); }
 
-		/**
-		 * Tests if this instance is greater than the given one, returning a
-		 * {@link Satisfiability} element.
-		 * 
-		 * @param other the instance
-		 * 
-		 * @return the satisfiability of {@code this > other}
-		 */
-		public Satisfiability gt(
-				SignLattice other) {
-			if (this.isBottom() || other.isBottom())
-				return Satisfiability.BOTTOM;
-			else if (this.isTop() || other.isTop())
-				return Satisfiability.UNKNOWN;
-			else if (this == NEG)
-				return other == NEG ? Satisfiability.UNKNOWN : Satisfiability.NOT_SATISFIED;
-			else if (this == ZERO)
-				return other == NEG ? Satisfiability.SATISFIED : Satisfiability.NOT_SATISFIED;
-			else
-				return other == POS ? Satisfiability.UNKNOWN : Satisfiability.SATISFIED;
-		}
-
-
+    @Override
+    public StructuredRepresentation representation() {
+        if (this == BOTTOM) return Lattice.bottomRepresentation();
+        if (this == TOP) return Lattice.topRepresentation();
+        if (this == POS) return new StringRepresentation(">");
+        if (this == NEG) return new StringRepresentation("<");
+        if (this == ZERO) return new StringRepresentation("0");
+        if (this == GEQ_ZERO) return new StringRepresentation(">=");
+        if (this == LEQ_ZERO) return new StringRepresentation("<=");
+        return new StringRepresentation("!=");
+    }
 }

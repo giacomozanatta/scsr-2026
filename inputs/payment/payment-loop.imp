@@ -1,0 +1,34 @@
+class paymentLoop {
+
+	// Test 1: Payment in loop with potential negative
+	loopPayment(n) {
+		def i = 0;
+		while (i < n) {
+			def amount = i - 10;
+			pay(amount);
+			i = i + 1;
+		}
+		return i;
+	}
+
+	// Test 2: Transfer with decrementing amount
+	decrementingTransfer(start) {
+		def amount = start;
+		while (amount > -10) {
+			transfer(amount);
+			amount = amount - 5;
+		}
+		return amount;
+	}
+
+	// Test 3: Payment with user input that could be negative
+	userInputPayment() {
+		def userInput = getUserAmount();
+		def amount = userInput;
+		while (amount != 0) {
+			pay(amount);
+			amount = amount - 10;
+		}
+		return amount;
+	}
+}

@@ -1,0 +1,33 @@
+class paymentConditional {
+
+	// Test 1: Conditional negative payment
+	conditionalNegativePayment(isRefund) {
+		def amount;
+		if (isRefund)
+			amount = -100;
+		else
+			amount = 100;
+		pay(amount);
+		return amount;
+	}
+
+	// Test 2: Payment with arithmetic that could be negative
+	arithmeticPayment(base, adjustment) {
+		def amount = base - adjustment;
+		pay(amount);
+		return amount;
+	}
+
+	// Test 3: Nested conditional payment
+	nestedPayment(isDiscount, isRefund) {
+		def amount = 100;
+		if (isDiscount) {
+			if (isRefund)
+				amount = -50;
+			else
+				amount = 50;
+		}
+		withdraw(amount);
+		return amount;
+	}
+}

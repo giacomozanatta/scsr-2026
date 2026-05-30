@@ -1,0 +1,23 @@
+class paymentNegative {
+
+	// Test 1: Direct negative payment
+	directNegativePayment() {
+		def amount = -100;
+		pay(amount);
+		return amount;
+	}
+
+	// Test 2: Negative withdrawal
+	negativeWithdrawal() {
+		def amount = -50;
+		withdraw(amount);
+		return amount;
+	}
+
+	// Test 3: Negative transfer
+	negativeTransfer() {
+		def amount = -200;
+		transfer(amount);
+		return amount;
+	}
+}

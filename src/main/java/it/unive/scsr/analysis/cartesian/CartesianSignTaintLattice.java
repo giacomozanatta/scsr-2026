@@ -8,6 +8,7 @@ import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.lattices.Satisfiability;
+import it.unive.lisa.lattices.informationFlow.TaintLattice;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 import it.unive.scsr.analysis.sign.extended.ExtendedSignLattice;
 import it.unive.lisa.util.representation.StringRepresentation;
@@ -20,7 +21,7 @@ import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.POS;
 import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.ZERO;
 import java.util.Objects;
 
-public class CartesianSignTaintLattice implements BaseLattice<CartesianSignTaintLattice> {
+public class CartesianSignTaintLattice implements TaintLattice<CartesianSignTaintLattice> {
 
     final TaintThreeLevelsLattice taint;
     final ExtendedSignLattice sign;
@@ -159,5 +160,42 @@ public class CartesianSignTaintLattice implements BaseLattice<CartesianSignTaint
 
         // Notzero
         return Satisfiability.UNKNOWN;
+    }
+
+    @Override
+    public CartesianSignTaintLattice tainted() {
+        return new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, this.sign);
+    }
+
+    @Override
+    public CartesianSignTaintLattice clean() {
+        return new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, this.sign);
+    }
+
+    @Override
+    public CartesianSignTaintLattice or(CartesianSignTaintLattice l) throws SemanticException {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public boolean isAlwaysTainted() {
+        return this.taint.isAlwaysTainted();
+    }
+
+    @Override
+    public boolean isPossiblyTainted() {
+        return this.taint.isPossiblyTainted();
+    }
+    
+    @Override
+    public boolean isAlwaysClean()
+    {
+        return this.taint.isAlwaysClean();
+    }
+    
+    @Override
+    public boolean isPossiblyClean()
+    {
+        return this.taint.isPossiblyClean();
     }
 }

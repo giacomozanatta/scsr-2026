@@ -34,7 +34,7 @@ class taint{
 
     sanitize(int[3] arr)
     {
-        for(int i = 0; i < 3; i = i + 1)
+        for(def i = 0; i < 3; i = i + 1)
         {
             arr[i] = sanitize(arr[i]);
         }
@@ -60,7 +60,7 @@ class taint{
         def a = 3;
         def b = source_int();
         b = b + a;
-        sanitize(b);
+        b = sanitize(b);
         sink(b); //b clean
     }
     
@@ -114,7 +114,7 @@ class taint{
     test9()
     {
         def a = source_arr();
-        for(int i = 0; i < 10; i = i + 1)
+        for(def i = 0; i < 10; i = i + 1)
         {
             a[0] = a[0] + 1;
             a = sanitize(a);
@@ -126,7 +126,7 @@ class taint{
     {
         def x = source_arr();
         def y = 10;
-        for(int i = 0; i < 10; i = i + 1)
+        for(def i = 0; i < 10; i = i + 1)
         {
             if(i%2 == 0)
             {
@@ -165,7 +165,7 @@ class taint{
         return sanitize(t);
     }
 
-n  nested_sanitizer3(int t)
+   nested_sanitizer3(int t)
    {
        def x = 0;
        if(x > 0)
@@ -178,40 +178,40 @@ n  nested_sanitizer3(int t)
     test13()
     {
         def x = source_int();
-        def t = sanitizer1(x);
+        def t = nested_sanitizer1(x);
         sink(t);//t clean
     }
 
     test14()
     {
         def x = source_int();
-        def t = sanitizer2(x);
+        def t = nested_sanitizer2(x);
         sink(t); //t clean
     }
 
     test15()
     {
         def x = source_int();
-        def t = sanitizer3(x);
+        def t = nested_sanitizer3(x);
         sink(t);//t top
     }
 
     test16()
     {
         def x = source_int();
-        for(int i = 0; i < 100000; i = i + 1)
+        for(def i = 0; i < 100000; i = i + 1)
         {
             x = x * 1;
         }
-        sanitize(x);
+        x = sanitize(x);
         sink(x);//x clean
     }
 
     test17()
     {
         def x = source_int();
-        sanitize(x);
-        for(int i = 0; i < 100000; i = i + 1)
+        x = sanitize(x);
+        for(def i = 0; i < 100000; i = i + 1)
         {
             x = x * 1;
         }        

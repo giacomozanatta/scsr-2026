@@ -6,6 +6,7 @@ package it.unive.scsr.analysis.cartesian;
 
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
+import it.unive.lisa.analysis.informationFlow.BaseTaint;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
 import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
 import it.unive.lisa.lattices.Satisfiability;
@@ -30,7 +31,7 @@ import it.unive.scsr.analysis.sign.extended.ExtendedSignLattice;
  *
  * @author brauny
  */
-public class CartesianSignTaint implements BaseNonRelationalValueDomain<CartesianSignTaintLattice> {
+public class CartesianSignTaint extends BaseTaint<CartesianSignTaintLattice> {
 
     private TaintThreeLevels taint = new TaintThreeLevels();
     private ExtendedSign sign = new ExtendedSign();
@@ -178,6 +179,16 @@ public class CartesianSignTaint implements BaseNonRelationalValueDomain<Cartesia
     @Override
     public CartesianSignTaintLattice bottom() {
         return CartesianSignTaintLattice.BOTTOM;
+    }
+
+    @Override
+    protected CartesianSignTaintLattice tainted() {
+        return new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.TOP);
+    }
+
+    @Override
+    protected CartesianSignTaintLattice clean() {
+        return new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.TOP);
     }
     
 }

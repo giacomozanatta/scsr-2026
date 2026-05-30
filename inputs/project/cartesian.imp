@@ -1,0 +1,140 @@
+class cartesian{
+
+    sink(i)
+    {
+        
+    }
+
+    source()
+    {
+        return -1;
+    }
+    
+    sanitize(i)
+    {  
+        if(i < 0)
+            return -i;
+        return i;
+    }
+    
+    cart1()
+    {
+        def x = 1;
+        sink(x);
+
+        def y = -5;
+        sink(y);
+    }
+
+    cart2()
+    {
+        def x = source();
+        x = -x;
+        x = sanitize(x);
+        sink(x);
+    }
+
+    cart3()
+    {
+        def x = source();
+        if(x % 2 == 0)
+        {
+            x = sanitize(x);
+        }
+        sink(x);
+    }
+
+    cart4()
+    {
+        def x = source();
+        for(def i = 0; i < 10; i++)
+        {
+            x = sanitize(x);
+        }
+        sink(x);
+    }
+
+    cart5()
+    {
+        def x = -4;
+        for(def i = 0; i < 10; i++)
+        {
+            x = source();
+            x = sanitize(x);
+        }
+        sink(x);
+    }
+
+    cart6()
+    {
+        def x = -4;
+        for(def i = 0; i < 10; i++)
+        {
+            x = source();
+            if(i % 2 == 0)
+            {
+                x = sanitize(x);
+            }
+        }
+        sink(x);
+    }
+
+    nested_sanitizer(x)
+    {
+        x = sanitize(x);
+        return x;
+    }
+
+    cart7()
+    {
+        def x = source();
+        x = -x;
+        x = nested_sanitizer(x);
+        sink(x);
+    }
+
+    cart8()
+    {
+        def x = source();
+        if(x % 2 == 0)
+        {
+            x = nested_sanitizer(x);
+        }
+        sink(x);
+    }
+
+    cart9()
+    {
+        def x = source();
+        for(def i = 0; i < 10; i++)
+        {
+            x = nested_sanitizer(x);
+        }
+        sink(x);
+    }
+
+    cart10()
+    {
+        def x = -4;
+        for(def i = 0; i < 10; i++)
+        {
+            x = source();
+            x = nested_sanitizer(x);
+        }
+        sink(x);
+    }
+
+    cart11()
+    {
+        def x = -4;
+        for(def i = 0; i < 10; i++)
+        {
+            x = source();
+            if(i % 2 == 0)
+            {
+                x = nested_sanitizer(x);
+            }
+        }
+        sink(x);
+    }
+}

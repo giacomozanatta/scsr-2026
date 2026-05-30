@@ -1,0 +1,94 @@
+// ================================================================
+// IMAGE RASTERIZER SCENARIO
+//
+// CVE: CVE-2021-2043
+//
+// Context:
+// ImageMagick’s image resizing code failed to properly validate
+// derived geometry values before performing arithmetic operations.
+// When processing specially crafted images, intermediate width/height
+// values could become zero, leading to a division by zero condition and
+// causing a denial of service crash.
+// ================================================================
+
+class ImageRasterizer {
+
+    // We can't test definite division by zero because Pentagon crashes on them
+
+    // -----------------------------------------------------------------------
+    // Compute pixel layout metrics from decoded image geometry.
+    // Width and height are parsed from untrusted file content, then propagated
+    // through resize and sampling operations.
+    // In ImageMagick-like pipelines, these values may be transformed before use,
+    // meaning intermediate divisors can become zero.
+    //
+    // EXPECT :
+    // [INTERVAL & PENTAGON] POSSIBLE warning on total_pixels / height (height = TOP)
+    // [INTERVAL & PENTAGON] POSSIBLE warning on total_pixels / width (width = TOP)
+    // -----------------------------------------------------------------------
+    computeMetricsVulnerable(total_pixels, width, height, bytes_per_pixel) {
+        def pixels_per_row = total_pixels / height;
+        def bytes_per_row = pixels_per_row * bytes_per_pixel;
+        def row_count = total_pixels / width;
+        return bytes_per_row;
+    }
+
+    // -----------------------------------------------------------------------
+    // Computes tiling from stride after image resampling.
+    // In ImageMagick-style pipelines, stride can become zero if:
+    // - downsampling collapses width
+    // - rounding truncates values
+    // - invalid density / filter kernel reduces effective width
+    //
+    // EXPECT :
+    // [INTERVAL & PENTAGON] POSSIBLE warning on tile_size / stride
+    // -----------------------------------------------------------------------
+    processTiledImage(file_width, tile_size) {
+        def stride = file_width; // TOP
+
+        // Simulate transformation path where stride collapses
+        if (file_width <= 1) {
+            stride = 0; // stride becomes [0, 0]
+        }
+
+        def tiles = tile_size / stride; // possible div by zero !
+        return tiles;
+    }
+
+    // -----------------------------------------------------------------------
+    // Safe version mirrors patched ImageMagick behavior where
+    // all derived geometry is validated before arithmetic.
+    //
+    // EXPECT :
+    // [INTERVAL & PENTAGON] NO warning on total_pixels / height
+    // [INTERVAL & PENTAGON] NO warning on total_pixels / width
+    // -----------------------------------------------------------------------
+    computeMetricsSafe(total_pixels, width, height, bytes_per_pixel) {
+        def bytes_per_row = 0;
+        if (width > 0) {
+            if (height > 0) { // need to do this since we haven't handled binary expressions using &&
+                def pixels_per_row = total_pixels / height;
+                bytes_per_row = pixels_per_row * bytes_per_pixel;
+            }
+        }
+        return bytes_per_row;
+    }
+
+    // -----------------------------------------------------------------------
+    // Vulnerable pipeline: mimics ImageMagick decode -> transform −> rasterize flow.
+    // Tests interprocedural calls.
+    // Warnings should happen on the callee. The callee sees TOP for the parameters.
+    // no warning expected on this method
+    // -----------------------------------------------------------------------
+    loadAndComputeVulnerable(width, height, channels) {
+        def total = width * height * channels;
+
+        // simulate transformation step (resize/filter/sampling)
+        def transformed_width = width - (width % 2); // can collapse to 0
+        def transformed_height = height;
+
+        def result = this.computeMetricsVulnerable(total, transformed_width, transformed_height, channels);
+        return result;
+    }
+
+}

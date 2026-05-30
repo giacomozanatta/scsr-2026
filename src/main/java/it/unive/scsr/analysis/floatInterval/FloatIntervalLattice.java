@@ -9,12 +9,13 @@ import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 /**
+ *
+ *
+ * @author Mattia Acquilesi - 896827
+ * @author Alan Dal Col - 895879
+ *
  * Lattice for the Float Interval domain.
  *
- * Elements represent closed real intervals [low, high] where low, high ∈ ℝ ∪ {-∞, +∞}.
- * Special elements:
- *   TOP    = [-∞, +∞]
- *   BOTTOM = ∅  (represented by low > high, here stored as null bounds)
  *
  * Key difference from IntervalLattice (integer):
  *   - Bounds are double, so [0.0, 1.0] contains infinitely many values.
@@ -32,59 +33,34 @@ import it.unive.lisa.util.representation.StructuredRepresentation;
  */
 public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
 
-    // -----------------------------------------------------------------------
-    // Sentinel values for ±∞
-    // -----------------------------------------------------------------------
 
     public static final double NEG_INF = Double.NEGATIVE_INFINITY;
     public static final double POS_INF = Double.POSITIVE_INFINITY;
 
-    // -----------------------------------------------------------------------
-    // Widening thresholds (sorted ascending)
-    // Used to bound the number of widening steps for real-valued intervals.
-    // Can be extended with domain-specific constants found in the analysed program.
-    // -----------------------------------------------------------------------
 
     private static final double[] WIDENING_THRESHOLDS = {
             NEG_INF, -1000.0, -100.0, -10.0, -1.0, 0.0, 1.0, 10.0, 100.0, 1000.0, POS_INF
     };
 
-    // -----------------------------------------------------------------------
-    // Fields
-    // -----------------------------------------------------------------------
 
-    /** Lower bound of the interval; Double.NaN signals BOTTOM. */
     private final double low;
 
-    /** Upper bound of the interval; Double.NaN signals BOTTOM. */
     private final double high;
 
-    /** True iff this element represents ∅ (BOTTOM). */
     private final boolean isBottom;
 
-    // -----------------------------------------------------------------------
-    // Singletons
-    // -----------------------------------------------------------------------
 
     public static final FloatIntervalLattice TOP    = new FloatIntervalLattice(NEG_INF, POS_INF);
     public static final FloatIntervalLattice BOTTOM = new FloatIntervalLattice();
     public static final FloatIntervalLattice ZERO   = new FloatIntervalLattice(0.0, 0.0);
 
-    // -----------------------------------------------------------------------
-    // Constructors
-    // -----------------------------------------------------------------------
 
-    /** Constructs BOTTOM. */
     public FloatIntervalLattice() {
         this.low      = Double.NaN;
         this.high     = Double.NaN;
         this.isBottom = true;
     }
 
-    /**
-     * Constructs the interval [low, high].
-     * If low > high the result is BOTTOM (empty interval).
-     */
     public FloatIntervalLattice(double low, double high) {
         if (Double.isNaN(low) || Double.isNaN(high) || low > high) {
             this.low      = Double.NaN;
@@ -97,16 +73,10 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Accessors
-    // -----------------------------------------------------------------------
 
     public double getLow()  { return low;  }
     public double getHigh() { return high; }
 
-    // -----------------------------------------------------------------------
-    // BaseLattice
-    // -----------------------------------------------------------------------
 
     @Override
     public FloatIntervalLattice top() {
@@ -128,9 +98,6 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
         return !isBottom && low == NEG_INF && high == POS_INF;
     }
 
-    // -----------------------------------------------------------------------
-    // LUB  (join) – smallest interval containing both
-    // -----------------------------------------------------------------------
 
     @Override
     public FloatIntervalLattice lubAux(FloatIntervalLattice other) throws SemanticException {
@@ -139,21 +106,14 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
         return new FloatIntervalLattice(newLow, newHigh);
     }
 
-    // -----------------------------------------------------------------------
-    // GLB  (meet) – largest interval contained in both
-    // -----------------------------------------------------------------------
 
     @Override
     public FloatIntervalLattice glbAux(FloatIntervalLattice other) throws SemanticException {
         double newLow  = Math.max(this.low,  other.low);
         double newHigh = Math.min(this.high, other.high);
-        // If newLow > newHigh the constructor returns BOTTOM automatically
         return new FloatIntervalLattice(newLow, newHigh);
     }
 
-    // -----------------------------------------------------------------------
-    // Ordering  (this ≤ other  iff  [this] ⊆ [other])
-    // -----------------------------------------------------------------------
 
     @Override
     public boolean lessOrEqualAux(FloatIntervalLattice other) throws SemanticException {
@@ -161,7 +121,7 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
     }
 
     // -----------------------------------------------------------------------
-    // Widening  –  the key novelty for real-valued intervals
+    // Widening
     //
     // Standard integer widening:
     //   w(X, Y) = [ Y.low < X.low  ? -∞ : X.low,
@@ -189,15 +149,8 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
         return new FloatIntervalLattice(newLow, newHigh);
     }
 
-    /**
-     * Widens the lower bound.
-     * If the new lower bound is smaller than the old one (growing downward),
-     * jump to the largest threshold that is still ≤ newLow.
-     * Otherwise keep the old lower bound.
-     */
     private static double widenLow(double oldLow, double newLow) {
         if (newLow < oldLow) {
-            // Find the largest threshold t such that t <= newLow
             double threshold = NEG_INF;
             for (double t : WIDENING_THRESHOLDS) {
                 if (t <= newLow) threshold = t;
@@ -205,18 +158,12 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
             }
             return threshold;
         }
-        return oldLow; // stable or growing upward → keep
+        return oldLow;
     }
 
-    /**
-     * Widens the upper bound.
-     * If the new upper bound is larger than the old one (growing upward),
-     * jump to the smallest threshold that is still ≥ newHigh.
-     * Otherwise keep the old upper bound.
-     */
+
     private static double widenHigh(double oldHigh, double newHigh) {
         if (newHigh > oldHigh) {
-            // Find the smallest threshold t such that t >= newHigh
             double threshold = POS_INF;
             for (int i = WIDENING_THRESHOLDS.length - 1; i >= 0; i--) {
                 double t = WIDENING_THRESHOLDS[i];
@@ -225,33 +172,21 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
             }
             return threshold;
         }
-        return oldHigh; // stable or shrinking → keep
+        return oldHigh;
     }
 
-    /**
-     * Returns true if this interval contains zero.
-     */
     public boolean containsZero() {
         return !isBottom && low <= 0.0 && 0.0 <= high;
     }
 
-    /**
-     * Returns true if this interval is strictly positive (low > 0).
-     */
     public boolean isStrictlyPositive() {
         return !isBottom && low > 0.0;
     }
 
-    /**
-     * Returns true if this interval is strictly negative (high < 0).
-     */
     public boolean isStrictlyNegative() {
         return !isBottom && high < 0.0;
     }
 
-    // -----------------------------------------------------------------------
-    // Representation
-    // -----------------------------------------------------------------------
 
     @Override
     public StructuredRepresentation representation() {
@@ -261,9 +196,6 @@ public class FloatIntervalLattice implements BaseLattice<FloatIntervalLattice> {
         return new StringRepresentation("[" + lo + ", " + hi + "]");
     }
 
-    // -----------------------------------------------------------------------
-    // equals / hashCode
-    // -----------------------------------------------------------------------
 
     @Override
     public boolean equals(Object obj) {

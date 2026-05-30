@@ -1,97 +1,72 @@
 class divbyzero_pentagon {
 
-    // CASE 1: divisor built from a loop counter — Pentagon tracks
-    // the relational constraint slots > 0 after the loop
-    // Expected: NO warning (Pentagon knows slots ∈ [10,10] after loop)
-    safeLoopDivisor() {
-        def requests = 0;
-        def slots = 0;
-        def i = 0;
-        while (i < 10) {
-            requests = requests + 3;
-            slots = slots + 1;
-            i = i + 1;
-        }
-        def rate = requests / slots;
-        return rate;
-    }
-
-    // CASE 2: x - x is always zero; Pentagon detects the relational equality
-    // Interval alone gives TOP - TOP = TOP and cannot determine the result
-    // Expected: "definitely division by zero" (Pentagon knows step = 0)
-    selfSubtraction(x) {
+    /*
+     CASE 1: classic Pentagon precision showcase.
+     The guard (y < x) causes the UpperBounds component to track y < x.
+     When gap = x - y is computed, Pentagon sees y is an upper bound of x
+     and refines gap to [1, +inf) — provably non-zero.
+    */
+    correlatedSubtraction(x, y) {
         def total = 100;
-        def step = x - x;
-        def result = total / step;
-        return result;
-    }
-
-    // CASE 3: page_size = offset + 1 is always >= 1
-    // Pentagon tracks page_size > offset >= 0 → page_size > 0
-    // Expected: NO warning on pages, warning on adjusted
-    pageSize(offset) {
-        def total = 100;
-
-        // page_size is always >= 1: safe divisor
-        def page_size = offset + 1;
-        def pages = total / page_size;      // NO warning
-
-        // adjusted = page_size - 1 = offset >= 0, may be 0
-        def adjusted = page_size - 1;
-        def result = total / adjusted;      // "may be division by zero"
-
-        return pages;
-    }
-
-    // CASE 4: guard makes constraint explicit — Pentagon refines
-    // the relational environment after the conditional
-    // Expected: NO warning inside the guard
-    explicitGuard(slots) {
-        def requests = 50;
-        if (slots > 0) {
-            def rate = requests / slots;    // NO warning: Pentagon knows slots > 0
-            return rate;
+        if (y < x) {
+            def gap = x - y;
+            def result = total / gap;
+            return result;
         }
         return 0;
     }
 
-    // Real-world scenario: a permission system computes a user's effective
-    // privilege level from two factors — a base score and a penalty count.
-    // The effective divisor is (max_penalty - actual_penalty). When a user
-    // accumulates exactly max_penalty infractions, the divisor hits zero.
-    // An attacker who can control their penalty count to match max_penalty
-    // gets either an exception (bypassing the privilege check) or an
-    // arithmetic result that grants elevated access.
-    //
-    // Pentagon advantage: it tracks the relational constraint
-    // divisor = max_penalty - actual_penalty. When actual_penalty
-    // approaches max_penalty from below (both in [0, 100]), Pentagon
-    // can determine that divisor ∈ [0, 100] — which includes zero —
-    // and pinpoints that the dangerous case is actual_penalty = max_penalty.
-    // The interval domain alone would widen divisor to [-∞, +∞] after
-    // the loop and lose this relational precision.
-    //
-    // Expected: "may be division by zero" on base_score / divisor
-    divisionPrivilegeEscalationPentagon(base_score, actual_penalty) {
-        def max_penalty = 100;
-
-        // attacker controls actual_penalty via repeated actions in the system
-        // Pentagon tracks: divisor = max_penalty - actual_penalty
-        // if actual_penalty ∈ [0, 100] then divisor ∈ [0, 100] → includes 0
-        def divisor = max_penalty - actual_penalty;
-
-        // when divisor = 0: privilege_level is undefined
-        // a fault-tolerant runtime may default to 0 (no privilege)
-        // or to the raw base_score (full privilege) — both are wrong
-        def privilege_level = base_score / divisor;
-
-        def required_level = 10;
-        if (privilege_level >= required_level) {
-            // security-sensitive action: should only run with valid privilege
-            def granted = privilege_level * 2;
-            return granted;
-        } else {
-            return 0;
+    // CASE 2: chained upper bounds.
+    chainedUpperBounds(a, b, c) {
+        def budget = 500;
+        if (a < b) {
+            if (b < c) {
+                def span = c - a;
+                def share = budget / span;
+                return share;
+            }
         }
+        return 0;
+    }
+
+    // CASE 3: remainder operator with explicit guard.
+    remainderAsDivisor(x, divisor) {
+        def total = 200;
+        if (divisor > 1) {
+            def rem = x % divisor;
+            if (rem > 0) {
+                def result = total / rem;
+                return result;
+            }
+        }
+        return 0;
+    }
+
+    /*
+     CASE 4: non-trivial real-world scenario — privilege escalation via
+     correlated penalty counters.
+     A permission system computes effective_score = max_score - penalty.
+     An attacker controls penalty via repeated API calls. The system
+     enforces penalty < max_score as a precondition before computing
+     the privilege level. If this guard is removed or bypassed, the
+     division by (max_score - penalty) hits zero when penalty = max_score,
+     producing undefined behaviour that may grant elevated access.
+    */
+    privilegeLevelDivision(base_score, penalty, max_score) {
+        def required_level = 10;
+
+        if (penalty < max_score) {
+            def gap = max_score - penalty;
+            def privilege_level = base_score / gap;
+
+            // if gap were 0 (guard removed), privilege_level would be
+            // undefined — a fault-tolerant runtime might default it to
+            // MAX_INT, making the check below always pass
+            if (privilege_level >= required_level) {
+                def granted = privilege_level * 2;
+                return granted;
+            }
+        }
+        return 0;
     }
 }

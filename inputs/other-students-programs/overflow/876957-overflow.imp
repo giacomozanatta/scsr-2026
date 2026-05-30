@@ -1,0 +1,181 @@
+
+//LLM used: gemini unsing the notebookLM tool and claude Sonnet 4.6 with the github copilot agent
+//LLM context: I provided notebookLM with all the course slides and the links for LiSA and the course project.
+ //While the Claude agent had the whole project, I gave it only the imp file created by notebookLM as a local context
+//prompt used:
+//1 - "can you generate a test file in imp language that are considered meaningful programs to test  Overflow and underflows code problems?"
+//result: the first prompt generated some test methods but i didn't like them because they were too generic
+//2 - “il programma dovrebbe testare 8-bit,16-bit e 32-bit sign integer”
+//result: the second prompt generated the all the test methods and comment of the overflow class
+//4 - "“Puoi sistemare il file di test e aggiungere delle casistiche per float” "
+// result: This prompt added the TestFloat method to the overflow class.
+
+class overflow {
+
+    // ---------------------------------------------------------
+    // Integer overflow/underflow: 8-bit signed [-128, 127]
+    // ---------------------------------------------------------
+
+    test8BitOverflow() {
+        def maxByte = 127;
+        def result = maxByte + 1; // OVERFLOW: result [128,128] > 127
+        return result;
+    }
+
+    test8BitUnderflow() {
+        def minByte = -128;
+        def result = minByte - 1; // UNDERFLOW: result [-129,-129] < -128
+        return result;
+    }
+
+    test8BitSafe() {
+        def a = 50;
+        def b = 60;
+        def result = a + b; // SAFE: result [110,110] within [-128,127]
+        return result;
+    }
+
+    // ---------------------------------------------------------
+    // Integer overflow/underflow: 16-bit signed [-32768, 32767]
+    // ---------------------------------------------------------
+
+    test16BitOverflow() {
+        def maxShort = 32767;
+        def result = maxShort + 1; // OVERFLOW: result [32768,32768] > 32767
+        return result;
+    }
+
+    test16BitUnderflow() {
+        def minShort = -32768;
+        def result = minShort - 1; // UNDERFLOW: result [-32769,-32769] < -32768
+        return result;
+    }
+
+    // ---------------------------------------------------------
+    // Integer overflow/underflow: 32-bit signed [-2147483647, 2147483647]
+    // ---------------------------------------------------------
+
+    test32BitOverflow() {
+        def maxInt = 2147483647;
+        def result = maxInt + 1; // OVERFLOW: result beyond 32-bit upper bound
+        return result;
+    }
+
+    test32BitUnderflow() {
+        def minInt = -2147483647;
+        def result = minInt - 1; // UNDERFLOW: result beyond 32-bit lower bound
+        return result;
+    }
+
+    // ---------------------------------------------------------
+    // Multiplication crossing bit boundaries
+    // ---------------------------------------------------------
+
+    testMultiplicationOverflow8Bit() {
+        def a = 100;
+        def b = 2;
+        def result = a * b; // OVERFLOW for 8-bit: 200 > 127
+        return result;
+    }
+
+    testMultiplicationSafe32Bit() {
+        def c = 30000;
+        def d = 10;
+        def result = c * d; // OVERFLOW for 16-bit (300000 > 32767), safe for 32-bit
+        return result;
+    }
+
+    // ---------------------------------------------------------
+    // Float overflow/underflow tests (requires IntervalReal domain)
+    // Float literals trigger a wider abstract interval.
+    // ---------------------------------------------------------
+
+    testFloatOverflow8Bit() {
+        // 127.5 already exceeds the 8-bit upper bound of 127
+        def f = 127.5;
+        def result = f + 1.0; // OVERFLOW for 8-bit
+        return result;
+    }
+
+    testFloatUnderflow8Bit() {
+        // -127.5 close to 8-bit lower bound, subtracting 2.0 goes below -128
+        def f = -127.5;
+        def result = f - 2.0; // UNDERFLOW for 8-bit
+        return result;
+    }
+
+    testFloatOverflow16Bit() {
+        // 32767.9 is already above 16-bit upper bound of 32767
+        def f = 32767.9;
+        def result = f + 1.0; // OVERFLOW for 16-bit
+        return result;
+    }
+
+    testFloatSafe() {
+        // 1.5 + 2.5 = 4.0, well within all bit-width limits
+        def a = 1.5;
+        def b = 2.5;
+        def result = a + b; // SAFE for all bit widths
+        return result;
+    }
+}
+
+//LLM used: gemini unsing the notebookLM tool
+//LLM context: I provided notebookLM with all the course slides and the links for LiSA and the course project.
+//prompt used:
+//3 - “now create a meaningful program to test a realistic code case where overflow/underflow could happen”
+//result: this prompt generated various realistic textbook scenarios but in the end i kept only the bankAccount class
+ 
+
+
+// ---------------------------------------------------------
+// Realistic scenario: bank account with deposit/withdraw.
+// Demonstrates 32-bit overflow/underflow in a real-world context.
+// ---------------------------------------------------------
+class bankAccount {
+
+    balance;
+
+    init(initialBalance) {
+        this.balance = initialBalance;
+    }
+
+    deposit(amount) {
+        if (amount > 0) {
+            // REALISTIC BUG: depositing a huge amount into an already large account
+            // can overflow the 32-bit signed integer limit, making balance negative.
+            this.balance = this.balance + amount;
+        }
+    }
+
+    withdraw(amount) {
+        if (amount > 0) {
+            // REALISTIC BUG: withdrawing a huge amount from an already very negative
+            // account can underflow, wrapping the 32-bit integer to a large positive.
+            this.balance = this.balance - amount;
+        }
+    }
+
+    testDepositOverflow() {
+        // Start with 2 Billion (close to 32-bit max ~2.1 Billion)
+        this.init(2000000000);
+        // Depositing 500 Million pushes total to 2.5 Billion: OVERFLOW for 32-bit
+        this.deposit(500000000);
+        return this.balance;
+    }
+
+    testWithdrawUnderflow() {
+        // Start with -2 Billion (close to 32-bit min ~-2.1 Billion)
+        this.init(-2000000000);
+        // Withdrawing 500 Million: UNDERFLOW for 32-bit
+        this.withdraw(500000000);
+        return this.balance;
+    }
+
+    testSafeDeposit() {
+        // 1000 + 500 = 1500: SAFE for all bit widths >= 16
+        this.init(1000);
+        this.deposit(500);
+        return this.balance;
+    }
+}

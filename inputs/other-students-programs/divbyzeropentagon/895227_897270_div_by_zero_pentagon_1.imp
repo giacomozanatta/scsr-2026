@@ -1,0 +1,15 @@
+class BankSystem {
+
+    calculateFee() {
+        def accountBalance = 0;
+        def transferLimit = accountBalance; 
+
+        
+        def baseFee = 50;
+
+        
+        def feeRatio = baseFee / transferLimit;
+
+        return feeRatio;
+    }
+}

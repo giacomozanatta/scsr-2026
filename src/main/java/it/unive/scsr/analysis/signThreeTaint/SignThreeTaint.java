@@ -26,47 +26,34 @@ import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 
 /**
+ *
+ *
+ *  @author Mattia Acquilesi - 896827
+ *  @author Alan Dal Col - 895879
+ *
  * Cartesian Product domain: ExtendedSign × ThreeTaint.
  *
- * <p>We use LiSA's built-in {@link LatticeProduct} as the lattice element type.
+ * We use LiSA's built-in LatticeProduct as the lattice element type.
  * This means we do NOT need a hand-written lattice class: LatticeProduct
  * already provides component-wise lub, glb, lessOrEqual, top, and bottom
  * for free, following the formal definition from the slides:
  *
- * <pre>
  *   (s1, t1) ⊔ (s2, t2) = (s1 ⊔_S s2, t1 ⊔_T t2)
  *   (s1, t1) ⊑ (s2, t2) iff s1 ⊑_S s2  AND  t1 ⊑_T t2
- * </pre>
- *
- * <p>The two components are accessed via the public fields inherited from
- * CartesianCombination:
- * <ul>
- *   <li>{@code pair.first}  — the {@link ExtendedSignLattice} component</li>
- *   <li>{@code pair.second} — the {@link TaintThreeLevelsLattice} component</li>
- * </ul>
  */
 public class SignThreeTaint
         implements BaseNonRelationalValueDomain<LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice>> {
 
-    // -----------------------------------------------------------------------
-    // Sub-domain instances — stateless, used only for delegation
-    // -----------------------------------------------------------------------
 
     private final ExtendedSign     signDomain  = new ExtendedSign();
     private final TaintThreeLevels taintDomain = new TaintThreeLevels();
 
-    // -----------------------------------------------------------------------
-    // Convenience factory
-    // -----------------------------------------------------------------------
 
     private LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> pair(
             ExtendedSignLattice s, TaintThreeLevelsLattice t) {
         return new LatticeProduct<>(s, t);
     }
 
-    // -----------------------------------------------------------------------
-    // BaseNonRelationalValueDomain — top / bottom
-    // -----------------------------------------------------------------------
 
     @Override
     public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> top() {
@@ -78,15 +65,7 @@ public class SignThreeTaint
         return pair(signDomain.bottom(), taintDomain.bottom());
     }
 
-    // -----------------------------------------------------------------------
-    // Constant evaluation
-    // -----------------------------------------------------------------------
 
-    /**
-     * Literal constants are always CLEAN (they come from the program text,
-     * not from an external source) and carry a precise sign from
-     * {@link ExtendedSign}.
-     */
     @Override
     public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> evalConstant(
             Constant constant,
@@ -99,14 +78,7 @@ public class SignThreeTaint
         return pair(s, t);
     }
 
-    // -----------------------------------------------------------------------
-    // PushAny — models unknown / externally-provided values
-    // -----------------------------------------------------------------------
 
-    /**
-     * Values read from external sources (__any__ in IMP) are TAINTED with
-     * unknown sign (TOP). This is the primary taint source in the domain.
-     */
     @Override
     public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> evalPushAny(
             PushAny pushAny,
@@ -117,14 +89,6 @@ public class SignThreeTaint
         return pair(signDomain.top(),  new TaintThreeLevelsLattice().tainted());
     }
 
-    // -----------------------------------------------------------------------
-    // Unary expression evaluation
-    // -----------------------------------------------------------------------
-
-    /**
-     * Taint propagates unchanged through unary operations (no sanitisation).
-     * Sign is computed by the {@link ExtendedSign} sub-domain.
-     */
     @Override
     public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> evalUnaryExpression(
             UnaryExpression expression,
@@ -140,20 +104,6 @@ public class SignThreeTaint
         return pair(s, t);
     }
 
-    // -----------------------------------------------------------------------
-    // Binary expression evaluation
-    // -----------------------------------------------------------------------
-
-    /**
-     * Sign is computed component-wise by {@link ExtendedSign}.
-     *
-     * Taint propagates from either operand via {@code or()}:
-     * <pre>
-     *   T or C = T,   C or C = C,   T or T = T,   ⊤ or x = ⊤
-     * </pre>
-     * This correctly models that any operation involving a tainted operand
-     * produces a tainted result.
-     */
     @Override
     public LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice> evalBinaryExpression(
             BinaryExpression expression,
@@ -178,14 +128,6 @@ public class SignThreeTaint
         return pair(s, t);
     }
 
-    // -----------------------------------------------------------------------
-    // Satisfiability
-    // -----------------------------------------------------------------------
-
-    /**
-     * Satisfiability is driven by the Sign component only.
-     * Taint does not influence whether a guard condition holds.
-     */
     @Override
     public Satisfiability satisfiesBinaryExpression(
             BinaryExpression expression,
@@ -202,15 +144,6 @@ public class SignThreeTaint
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Assume — environment refinement from guard conditions
-    // -----------------------------------------------------------------------
-
-    /**
-     * Guards refine only the Sign component. The Taint component of the
-     * variable is preserved unchanged: a numeric guard such as
-     * {@code if (x > 0)} does not sanitise a tainted value.
-     */
     @Override
     public ValueEnvironment<LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice>> assumeBinaryExpression(
             ValueEnvironment<LatticeProduct<ExtendedSignLattice, TaintThreeLevelsLattice>> environment,
@@ -250,7 +183,6 @@ public class SignThreeTaint
         if (current.isBottom() || eval.isBottom())
             return environment.bottom();
 
-        // ── Refine the sign component (taint is preserved unchanged) ────────
         ExtendedSignLattice starting = current.first;
         ExtendedSignLattice evalSign = eval.first;
         ExtendedSignLattice[] concrete = {
@@ -296,7 +228,6 @@ public class SignThreeTaint
                             : update.lub(starting.glb(s));
             }
         } else if (operator == ComparisonNe.INSTANCE) {
-            // Key improvement over basic Sign: x != 0 → refine to NON_ZERO
             if (evalSign.equals(ExtendedSignLattice.ZERO))
                 update = starting.glb(ExtendedSignLattice.NON_ZERO);
             else if (evalSign.equals(ExtendedSignLattice.POS))

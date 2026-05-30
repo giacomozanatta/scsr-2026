@@ -15,6 +15,7 @@ import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
+import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.scsr.analysis.sign.extended.ExtendedSign;
@@ -38,6 +39,7 @@ public class ExtendedSignAnalysisTest {
 		LiSAConfiguration conf = new DefaultConfiguration();
 		conf.workdir = "outputs/extended-signs";
 		conf.analysis = simpleDomain(defaultHeapDomain(), new ExtendedSign(), defaultTypeDomain());
+		conf.outputs.add(new HtmlResults<>(true));
 		conf.outputs.add(new JSONReportDumper());
 
 		LiSA lisa = new LiSA(conf);

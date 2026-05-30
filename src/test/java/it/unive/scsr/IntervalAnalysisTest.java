@@ -25,9 +25,7 @@ public class IntervalAnalysisTest {
         // we specify where we want files to be generated
         conf.workdir = "outputs/intervals";
 
-        // Skip HtmlResults here: LiSA's HTML/JSON/Graphviz dump often dominates wall time (minutes).
-        // To inspect CFGs, uncomment:
-        // conf.outputs.add(new it.unive.lisa.outputs.HtmlResults<>(true));
+        conf.outputs.add(new it.unive.lisa.outputs.HtmlResults<>(true));
         // we specify the analysis that we want to execute
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
 

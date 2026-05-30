@@ -88,6 +88,7 @@ public class TaintAnalysisTest {
 		}
 
 		conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+		conf.outputs.add(new HtmlResults<>(true));
 		conf.outputs.add(new JSONReportDumper());
 
 		LiSA lisa = new LiSA(conf);

@@ -14,6 +14,7 @@ import it.unive.lisa.conf.LiSAConfiguration;
 import it.unive.lisa.imp.IMPFrontend;
 import it.unive.lisa.imp.ParsingException;
 import it.unive.lisa.interprocedural.context.ContextBasedAnalysis;
+import it.unive.lisa.outputs.HtmlResults;
 import it.unive.lisa.outputs.JSONReportDumper;
 import it.unive.lisa.program.Program;
 import it.unive.lisa.program.cfg.CFG;
@@ -46,6 +47,7 @@ public class TaintThreeProgramsTest {
 		conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
 		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
 		conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
+		conf.outputs.add(new HtmlResults<>(true));
 		conf.outputs.add(new JSONReportDumper());
 
 		new LiSA(conf).run(program);

@@ -23,9 +23,9 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class NumericalAnalysesTest {
 
-    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/interval/1003406_image_rasterizer-interval.imp";
+    private final String INPUT_PATH_DIV_INTERVALS = "div-by-zero/intervals/1003406_image_rasterizer-interval.imp";
     private final String INPUT_PATH_DIV_PENTAGONS = "div-by-zero/pentagons/1003406_image_rasterizer-pentagon.imp";
-    private final String INPUT_PATH_OVERFLOW = "overflows/876957-overflow.imp";
+    private final String INPUT_PATH_OVERFLOW = "overflows/1003406_calculator.imp";
 
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {

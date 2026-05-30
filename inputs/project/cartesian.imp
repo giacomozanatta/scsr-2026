@@ -20,38 +20,38 @@ class cartesian{
     cart1()
     {
         def x = 1;
-        sink(x);
+        this.sink(x);
 
         def y = -5;
-        sink(y);
+        this.sink(y);
     }
 
     cart2()
     {
-        def x = source();
+        def x = this.source();
         x = -x;
-        x = sanitize(x);
+        x = this.sanitize(x);
         sink(x);
     }
 
     cart3()
     {
-        def x = source();
+        def x = this.source();
         if(x % 2 == 0)
         {
-            x = sanitize(x);
+            x = this.sanitize(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart4()
     {
-        def x = source();
+        def x = this.source();
         for(def i = 0; i < 10; i++)
         {
-            x = sanitize(x);
+            x = this.sanitize(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart5()
@@ -59,10 +59,10 @@ class cartesian{
         def x = -4;
         for(def i = 0; i < 10; i++)
         {
-            x = source();
-            x = sanitize(x);
+            x = this.source();
+            x = this.sanitize(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart6()
@@ -70,47 +70,47 @@ class cartesian{
         def x = -4;
         for(def i = 0; i < 10; i++)
         {
-            x = source();
+            x = this.source();
             if(i % 2 == 0)
             {
-                x = sanitize(x);
+                x = this.sanitize(x);
             }
         }
-        sink(x);
+        this.sink(x);
     }
 
     nested_sanitizer(x)
     {
-        x = sanitize(x);
+        x = this.sanitize(x);
         return x;
     }
 
     cart7()
     {
-        def x = source();
+        def x = this.source();
         x = -x;
-        x = nested_sanitizer(x);
+        x = this.nested_sanitizer(x);
         sink(x);
     }
 
     cart8()
     {
-        def x = source();
+        def x = this.source();
         if(x % 2 == 0)
         {
-            x = nested_sanitizer(x);
+            x = this.nested_sanitizer(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart9()
     {
-        def x = source();
+        def x = this.source();
         for(def i = 0; i < 10; i++)
         {
-            x = nested_sanitizer(x);
+            x = this.nested_sanitizer(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart10()
@@ -118,10 +118,10 @@ class cartesian{
         def x = -4;
         for(def i = 0; i < 10; i++)
         {
-            x = source();
-            x = nested_sanitizer(x);
+            x = this.source();
+            x = this.nested_sanitizer(x);
         }
-        sink(x);
+        this.sink(x);
     }
 
     cart11()
@@ -129,12 +129,12 @@ class cartesian{
         def x = -4;
         for(def i = 0; i < 10; i++)
         {
-            x = source();
+            x = this.source();
             if(i % 2 == 0)
             {
-                x = nested_sanitizer(x);
+                x = this.nested_sanitizer(x);
             }
         }
-        sink(x);
+        this.sink(x);
     }
 }

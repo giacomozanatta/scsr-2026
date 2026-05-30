@@ -36,95 +36,95 @@ class taint{
     {
         for(def i = 0; i < 3; i = i + 1)
         {
-            arr[i] = sanitize(arr[i]);
+            arr[i] = this.sanitize(arr[i]);
         }
         return arr;
     }
 
     test1()
     {
-        def y = source_int();
-        y = sanitize(y);
-        sink(y); //y clean
+        def y = this.source_int();
+        y = this.sanitize(y);
+        this.sink(y); //y clean
     }
 
     test2()
     {
-        def y = source_arr();
-        y = sanitize(y);
-        sink(y); //y clean
+        def y = this.source_arr();
+        y = this.sanitize(y);
+        this.sink(y); //y clean
     }
 
     test3()
     {
         def a = 3;
-        def b = source_int();
+        def b = this.source_int();
         b = b + a;
-        b = sanitize(b);
-        sink(b); //b clean
+        b = this.sanitize(b);
+        this.sink(b); //b clean
     }
     
     test4()
     {
-        def a = source_int();
+        def a = this.source_int();
         def b = 5;
-        b = sanitize(b);
+        b = this.sanitize(b);
         a = a + b;
-        sink(a); //a taint
+        this.sink(a); //a taint
     }
 
     test5()
     {
-        def a = source_arr();
+        def a = this.source_arr();
         a[0] = -4;
-        a = sanitize(a);
-        sink(a); //a clean
+        a = this.sanitize(a);
+        this.sink(a); //a clean
     }
 
     test6()
     {
-        def a = source_arr();
-        a[0] = source_int();
-        a = sanitize(a);
-        sink(a); //a clean
+        def a = this.source_arr();
+        a[0] = this.source_int();
+        a = this.sanitize(a);
+        this.sink(a); //a clean
     }
 
     test7()
     {
-        def a = source_arr();        
-        a = sanitize(a);
-        a[0] = source_int();
-        sink(a); //a taint, because of a[0]
+        def a = this.source_arr();        
+        a = this.sanitize(a);
+        a[0] = this.source_int();
+        this.sink(a); //a taint, because of a[0]
     }
 
     test8()
     {
-        def x = source_int();
+        def x = this.source_int();
         if(x < 0)
         {
-            x = sanitize(x);
+            x = this.sanitize(x);
         }
         else
         {
             x = 1;
         }
-        sink(x); //x top
+        this.sink(x); //x top
     }
 
     test9()
     {
-        def a = source_arr();
+        def a = this.source_arr();
         for(def i = 0; i < 10; i = i + 1)
         {
             a[0] = a[0] + 1;
-            a = sanitize(a);
+            a = this.sanitize(a);
         }
-        sink(a);//a clean 
+        this.sink(a);//a clean 
     }
 
     test10()
     {
-        def x = source_arr();
+        def x = this.source_arr();
         def y = 10;
         for(def i = 0; i < 10; i = i + 1)
         {
@@ -134,35 +134,35 @@ class taint{
             }
             else
             {
-                x = sanitize(x);
+                x = this.sanitize(x);
             }
         }
-        sink(x); //x clean
+        this.sink(x); //x clean
     }
 
     test11()
     {
-        def a = source_arr();
-        def x = sanitize(a[0]);
-        sink(x); // x clean
+        def a = this.source_arr();
+        def x = this.sanitize(a[0]);
+        this.sink(x); // x clean
     }
 
     test12()
     {
-        def a = source_arr();
+        def a = this.source_arr();
         def x = a[0];
-        sink(x); //x taint
+        this.sink(x); //x taint
     }
 
    nested_sanitizer1(int t)
    {
-       def x = sanitize(t);
+       def x = this.sanitize(t);
        return x;
    }
 
     nested_sanitizer2(int t)
     {
-        return sanitize(t);
+        return this.sanitize(t);
     }
 
    nested_sanitizer3(int t)
@@ -170,51 +170,51 @@ class taint{
        def x = 0;
        if(x > 0)
        {
-           x = sanitize(t);
+           x = this.sanitize(t);
        }
        return x;
    }
 
     test13()
     {
-        def x = source_int();
-        def t = nested_sanitizer1(x);
-        sink(t);//t clean
+        def x = this.source_int();
+        def t = this.nested_sanitizer1(x);
+        this.sink(t);//t clean
     }
 
     test14()
     {
-        def x = source_int();
-        def t = nested_sanitizer2(x);
-        sink(t); //t clean
+        def x = this.source_int();
+        def t = this.nested_sanitizer2(x);
+        this.sink(t); //t clean
     }
 
     test15()
     {
-        def x = source_int();
-        def t = nested_sanitizer3(x);
-        sink(t);//t top
+        def x = this.source_int();
+        def t = this.nested_sanitizer3(x);
+        this.sink(t);//t top
     }
 
     test16()
     {
-        def x = source_int();
+        def x = this.source_int();
         for(def i = 0; i < 100000; i = i + 1)
         {
             x = x * 1;
         }
-        x = sanitize(x);
-        sink(x);//x clean
+        x = this.sanitize(x);
+        this.sink(x);//x clean
     }
 
     test17()
     {
-        def x = source_int();
-        x = sanitize(x);
+        def x = this.source_int();
+        x = this.sanitize(x);
         for(def i = 0; i < 100000; i = i + 1)
         {
             x = x * 1;
         }        
-        sink(x);//x clean
+        this.sink(x);//x clean
     }
 }

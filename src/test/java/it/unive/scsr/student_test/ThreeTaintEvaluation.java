@@ -25,6 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static it.unive.lisa.DefaultConfiguration.defaultTypeDomain;
 import static it.unive.lisa.DefaultConfiguration.simpleDomain;
@@ -34,50 +35,44 @@ import static org.junit.Assert.fail;
 public class ThreeTaintEvaluation {
 
 	String[] nameSource = {"source1", "GetRequest", "getUserInput"};
-	String[] nameSanitizers = {"sanitizeInput"};
+	String[] nameSanitizers = {"sanitizeInput", "sanitizer1"};
 	String[] nameSinks = {"sink1", "runQueryDB", "sendEmail", "renderHtml"};
 
 
 
 	@Test
 	public void testThreeTaintAnalysis() throws ParsingException, AnalysisException {
-		// we parse the program to get the CFG representation of the code in it
-		Program program = IMPFrontend.processFile("inputs/student_programs/taint/894069_taint.imp");
+		List<String> files = List.of("894069_taint.imp", "894004_taint.imp");
 
-		// we build a new configuration for the analysis
 		LiSAConfiguration conf = new DefaultConfiguration();
-
-		// we specify where we want files to be generated
-		conf.workdir = "outputs/student_programs/taint/894069_taint";
-
-
-		// we specify the visual format of the analysis results
-		//conf.outputs.add(new HtmlInputs(true));
 		conf.outputs.add(new HtmlResults<>(true));
 		// we specify the analysis that we want to execute
 		conf.analysis = simpleDomain(new PointBasedHeap(), new TaintThreeLevels(), defaultTypeDomain());
 		conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
-		for(CFG cfg : program.getAllCFGs()) {
-		String name = cfg.getDescriptor().getName();
-		if(isSource(name))
-			cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
-		else if(isSanitizer(name))
-			cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
-		else if(isSink(name))
-			cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
-		}
+
 	
 		// added checker to the analysis
 		conf.semanticChecks.add(new TaintThreeLevelsChecker<>());
 		// A report file (.json) containing the warning triggered by the analysis can be found in the analysis output folder 
 		conf.outputs.add(new JSONReportDumper());
-	
-		// we instantiate LiSA with our configuration
-		LiSA lisa = new LiSA(conf);
-	
-		// finally, we tell LiSA to analyze the program
-		lisa.run(program);
 
+		for(String f : files){
+			String dir = f.replaceAll(".imp$", "");
+			Program program = IMPFrontend.processFile("inputs/student_programs/taint/" + f);
+			conf.workdir = "outputs/student_programs/taint/" + dir;
+			for(CFG cfg : program.getAllCFGs()) {
+				String name = cfg.getDescriptor().getName();
+				if(isSource(name))
+					cfg.getDescriptor().addAnnotation(BaseTaint.TAINTED_ANNOTATION);
+				else if(isSanitizer(name))
+					cfg.getDescriptor().addAnnotation(BaseTaint.CLEAN_ANNOTATION);
+				else if(isSink(name))
+					cfg.getDescriptor().addAnnotation(TaintThreeLevels.SINK_ANNOTATION);
+			}
+			LiSA lisa = new LiSA(conf);
+			lisa.run(program);
+
+		}
 	}
 	
 

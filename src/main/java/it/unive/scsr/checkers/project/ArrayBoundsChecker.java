@@ -75,6 +75,7 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
         }
         System.out.println("www.check.com: " + var.getVariable());
         Expression access_exp = access.getRight();
+        PentagonLattice index_pentagon_lattice = get_pentagon_lattice(tool, graph, access, access_exp);
         IntInterval index_interval = get_interval(tool, graph, access, access_exp);
 
         if( !arrays.containsKey(var.getName()) || arrays.get(var.getName()) == null || index_interval == null){
@@ -87,6 +88,7 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
             flag_definite_neg = index_interval.getHigh().lt(MathNumber.ZERO);
             access_type |= flag_definite_neg ? NEGDEF : NEGPOS ;
         }
+
 
         MathNumber size_high = arrays.get(var.getName()).getHigh();
         System.out.println("Checking interval " + index_interval + " against size high " + size_high);
@@ -118,7 +120,7 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
     }
 
     private IntInterval get_interval(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
-                                  CFG graph, Statement statement, Expression exp){
+                                     CFG graph, Statement statement, Expression exp){
         for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>>
                 res : tool.getResultOf(graph))
         {
@@ -145,8 +147,45 @@ public class ArrayBoundsChecker <H extends HeapValue<H>, T extends TypeValue<T>>
                             ValueEnvironment<IntInterval> intervalEnv = a.first;
                             Interval intervalDomain = new Interval();
                             IntInterval i = intervalDomain.eval(intervalEnv, (ValueExpression) s, (ProgramPoint) exp, oracle);
-                            if(i != null && !i.isBottom()){
+                            if (i != null && !i.isBottom())
                                 return i;
+                        }
+                    }
+                } catch (SemanticException e){
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
+
+    private PentagonLattice get_pentagon_lattice(SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>> tool,
+                                     CFG graph, Statement statement, Expression exp){
+        for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>>
+                res : tool.getResultOf(graph))
+        {
+            AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<PentagonLattice>, TypeEnvironment<T>>>
+                    postState = res.getAnalysisStateAfter(exp); // get post abstract state of denominator
+
+            Iterator<SymbolicExpression> comExprIterator = postState.getExecutionExpressions().iterator();
+            if(comExprIterator.hasNext()){
+                SymbolicExpression boolExpr = comExprIterator.next();
+                try{
+                    Set<SymbolicExpression> reachableIds = new HashSet<>(tool.getAnalysis().reachableFrom(postState, boolExpr, exp).elements);
+                    SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
+
+                    for (SymbolicExpression s : reachableIds) {
+                        Set<Type> types = tool.getAnalysis().getRuntimeTypesOf(postState, s, statement);
+
+                        if (types.stream().allMatch(t -> !t.isNumericType() || t.isInMemoryType() || t.isPointerType()))
+                            continue;
+
+                        Collection<PentagonLattice> abstractValues = postState.getExecutionState()
+                                .getAllLatticeInstances(PentagonLattice.class);
+
+                        for (PentagonLattice a : abstractValues) {
+                            if(a != null && !a.isBottom()){
+                                return a;
                             }
                         }
                     }

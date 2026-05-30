@@ -21,6 +21,17 @@ class arraybounds{
         return arr[i];
     }
 
+    index_from_heap_multicell(){
+        def arr = new int[4];
+        arr[0] = 0;
+        arr[1] = 10;
+        arr[2] = 10;
+        arr[3] = 10;
+        def i = arr[0];
+        return arr[i]; // Field sensitive heap --> `arr[0]` has its own interval, unaffected by the other memory locations of this array
+                       // Field insensitive heap --> `arr[0]` shares the same abstraction with other array locations
+    }
+
     branch_def_exceed(b){
         def a = new int[3];
         def foo = 0;
@@ -33,4 +44,14 @@ class arraybounds{
 
         return foo;
     }
+
+    array_var_bound(n){
+        def a = new int[n];
+        def banana = 0;
+        for(def i = 0; i < n; i = i + 1){
+            banana = banana + a[i];
+        }
+        return banana;
+    }
+
 }

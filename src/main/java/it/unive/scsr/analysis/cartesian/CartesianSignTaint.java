@@ -17,6 +17,10 @@ import it.unive.lisa.symbolic.value.UnaryExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
 import it.unive.lisa.symbolic.value.operator.binary.ComparisonEq;
+import it.unive.lisa.symbolic.value.operator.binary.ComparisonGe;
+import it.unive.lisa.symbolic.value.operator.binary.ComparisonGt;
+import it.unive.lisa.symbolic.value.operator.binary.ComparisonLe;
+import it.unive.lisa.symbolic.value.operator.binary.ComparisonLt;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevels;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 import it.unive.scsr.analysis.sign.extended.ExtendedSign;
@@ -97,8 +101,65 @@ public class CartesianSignTaint implements BaseNonRelationalValueDomain<Cartesia
             update = starting.glb(eval);
         else 
         {
-            //TODO
-            throw new UnsupportedOperationException();
+            CartesianSignTaintLattice[] all = new CartesianSignTaintLattice[]
+            { 
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.NOTPOS),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.NOTNEG),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.NOTZERO),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.POS),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.ZERO),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.CLEAN, ExtendedSignLattice.NEG),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.NOTPOS),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.NOTNEG),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.NOTZERO),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.POS),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.ZERO),
+                new CartesianSignTaintLattice(TaintThreeLevelsLattice.TAINT, ExtendedSignLattice.NEG)
+            };
+            if (operator == ComparisonGe.INSTANCE)
+                if (rightIsExpr) {
+                    for (CartesianSignTaintLattice s : all)
+                        if (s.gt(eval).or(s.eq(eval)).mightBeTrue())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                } else {
+                    for (CartesianSignTaintLattice s : all)
+                        if (eval.gt(s).or(eval.eq(s)).mightBeTrue())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                }
+            else if (operator == ComparisonLe.INSTANCE)
+                if (rightIsExpr) {
+                    for (CartesianSignTaintLattice s : all)
+                        // we invert <= to > and look at the failing ones
+                        if (s.gt(eval).mightBeFalse())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                } else {
+                    for (CartesianSignTaintLattice s : all)
+                        // we invert <= to > and look at the failing ones
+                        if (eval.gt(s).mightBeFalse())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                }
+            else if (operator == ComparisonLt.INSTANCE)
+                if (rightIsExpr) {
+                    for (CartesianSignTaintLattice s : all)
+                        // we invert < to >= and look at the failing ones
+                        if (s.gt(eval).or(s.eq(eval)).mightBeFalse())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                } else {
+                    for (CartesianSignTaintLattice s : all)
+                        // we invert < to >= and look at the failing ones
+                        if (eval.gt(s).or(eval.eq(s)).mightBeFalse())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                }
+            else if (operator == ComparisonGt.INSTANCE)
+                if (rightIsExpr) {
+                    for (CartesianSignTaintLattice s : all)
+                        if (s.gt(eval).mightBeTrue())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                } else {
+                    for (CartesianSignTaintLattice s : all)
+                        if (eval.gt(s).mightBeTrue())
+                            update = update == null ? starting.glb(s) : update.lub(starting.glb(s));
+                }
         }
         
         if (update == null)

@@ -7,10 +7,18 @@ package it.unive.scsr.analysis.cartesian;
 import it.unive.lisa.analysis.Lattice;
 import it.unive.lisa.analysis.BaseLattice;
 import it.unive.lisa.analysis.SemanticException;
+import it.unive.lisa.lattices.Satisfiability;
 import it.unive.scsr.analysis.taint.threelevels.TaintThreeLevelsLattice;
 import it.unive.scsr.analysis.sign.extended.ExtendedSignLattice;
 import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.NEG;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.NOTNEG;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.NOTPOS;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.NOTZERO;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.POS;
+import static it.unive.scsr.analysis.sign.extended.ExtendedSignLattice.ZERO;
+import java.util.Objects;
 
 public class CartesianSignTaintLattice implements BaseLattice<CartesianSignTaintLattice> {
 
@@ -63,4 +71,93 @@ public class CartesianSignTaintLattice implements BaseLattice<CartesianSignTaint
         return new StringRepresentation("(" + signR + ", " + taintR + ")");
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CartesianSignTaintLattice other = (CartesianSignTaintLattice) obj;
+        return this.taint == other.taint && this.sign == other.sign;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 17 * hash + Objects.hashCode(this.taint);
+        hash = 17 * hash + Objects.hashCode(this.sign);
+        return hash;
+    }
+
+    public Satisfiability eq(CartesianSignTaintLattice other){
+        if(this.isBottom() || other.isBottom())
+            return Satisfiability.BOTTOM;
+        if(this.isTop() || other.isTop())
+            return Satisfiability.UNKNOWN;
+        if(!this.equals(other))
+            return Satisfiability.NOT_SATISFIED;
+        if(this.sign == ExtendedSignLattice.ZERO)
+            return Satisfiability.SATISFIED;
+
+        return Satisfiability.UNKNOWN;
+    }
+
+    public Satisfiability gt(CartesianSignTaintLattice other){
+        if (this.isBottom() || other.isBottom())
+            return Satisfiability.BOTTOM;
+        if (this.isTop() || other.isTop())
+            return Satisfiability.UNKNOWN;
+
+        if(this.sign == NEG){
+            if(other.sign == NEG || other.sign == NOTZERO || other.sign == NOTPOS){
+                return Satisfiability.UNKNOWN;
+            }
+            // Zero, pos, notneg
+            return Satisfiability.NOT_SATISFIED;
+        }
+        if(this.sign == NOTPOS){
+            if(other.sign == NEG
+            || other.sign == NOTZERO
+            || other.sign == ZERO
+            || other.sign == NOTNEG
+            || other.sign == NOTPOS){
+                return Satisfiability.UNKNOWN;
+            }
+            if(other.sign == POS)
+                return Satisfiability.NOT_SATISFIED;
+        }
+
+        if(this.sign == POS){
+            if(other.sign == POS
+            || other.sign == NOTNEG
+            || other.sign == NOTZERO){
+                return Satisfiability.UNKNOWN;
+            }
+            // Zero, notpos, neg
+            return Satisfiability.SATISFIED;
+        }
+        if(this.sign == NOTNEG){
+            if(other.sign == ZERO || other.sign == NOTZERO || other.sign == POS || other.sign == NOTPOS){
+                return Satisfiability.UNKNOWN;
+            }
+            return Satisfiability.SATISFIED;
+        }
+
+        if(this.sign == ZERO){
+            if(other.sign == ZERO || other.sign == NOTNEG || other.sign == POS){
+                return Satisfiability.NOT_SATISFIED;
+            }
+            if(other.sign == NOTZERO || other.sign == NOTPOS){
+                return Satisfiability.UNKNOWN;
+            }
+
+            // Neg
+            return Satisfiability.SATISFIED;
+        }
+
+        // Notzero
+        return Satisfiability.UNKNOWN;
+    }
 }

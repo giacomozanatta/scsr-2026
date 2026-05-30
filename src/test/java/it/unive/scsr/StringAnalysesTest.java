@@ -25,7 +25,21 @@ public class StringAnalysesTest {
     @Test
     public void testStringPrefixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/SuffixPrefix_Checker/904329_suffixprefix_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/SuffixPrefix/896827-895879-prefix.imp");
+
+        /*
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        903942_strings.imp
+        */
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -55,7 +69,7 @@ public class StringAnalysesTest {
     @Test
     public void testStringSuffixAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/SuffixPrefix_Checker/904329_suffixprefix_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/SuffixPrefix/896827-895879-prefix.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

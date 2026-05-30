@@ -3,8 +3,8 @@ package it.unive.scsr;
 import it.unive.lisa.AnalysisException;
 import it.unive.lisa.DefaultConfiguration;
 import it.unive.lisa.LiSA;
-import it.unive.lisa.analysis.numeric.Interval;
 import it.unive.lisa.analysis.numeric.Pentagon;
+import it.unive.scsr.analysis.Extended_Interval.Extended_Interval;
 import it.unive.scsr.checkers.DivByZeroIntervalChecker;
 import it.unive.scsr.checkers.DivByZeroPentagonChecker;
 import it.unive.scsr.checkers.OverflowIntervalChecker;
@@ -27,7 +27,21 @@ public class NumericalAnalysesTest {
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
         Program program = IMPFrontend.processFile(
-         "inputs/homework/DivByZero_Checker/904329_divbyzero_1.imp");
+         "inputs/programs_to_test/DivByZero/divbyzero.imp");
+
+        /*
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        */
+
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -39,7 +53,7 @@ public class NumericalAnalysesTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Extended_Interval(), defaultTypeDomain());
     
         // added checker to the analysis
         conf.semanticChecks.add(new DivByZeroIntervalChecker<>());
@@ -56,7 +70,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroPentagonAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/DivByZero_Checker/904329_divbyzero_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/DivByZero/divbyzero.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -86,7 +100,22 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval8bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/DivByZero_Checker/904329_divbyzero_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/Overflow/Underflow/overflow32.imp");
+
+        /*
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        overflow16.imp
+        overflow32.imp
+        */
+
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -98,7 +127,7 @@ public class NumericalAnalysesTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Extended_Interval(), defaultTypeDomain());
     
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Byte.MIN_VALUE, Byte.MAX_VALUE)); // checks overflow for integer 8 bits
@@ -116,7 +145,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval16bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/DivByZero_Checker/904329_divbyzero_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/Overflow/Underflow/overflow32.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -128,7 +157,7 @@ public class NumericalAnalysesTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Extended_Interval(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Short.MIN_VALUE, Short.MAX_VALUE)); // checks overflow for integer 16 bits
@@ -146,7 +175,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testOverflowInterval32bitsAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/DivByZero_Checker/904329_divbyzero_1.imp");
+        Program program = IMPFrontend.processFile("inputs/programs_to_test/Overflow/Underflow/overflow32.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
@@ -158,7 +187,7 @@ public class NumericalAnalysesTest {
         //conf.outputs.add(new HtmlInputs(true));
         conf.outputs.add(new HtmlResults<>(true));
         // we specify the analysis that we want to execute
-        conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
+        conf.analysis = simpleDomain(defaultHeapDomain(), new Extended_Interval(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
         conf.semanticChecks.add(new OverflowIntervalChecker<>(Integer.MIN_VALUE, Integer.MAX_VALUE)); // checks overflow for integer 32bits

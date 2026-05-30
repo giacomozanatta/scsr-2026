@@ -29,7 +29,7 @@ public class ImplicitFlow__CheckerTest {
     @Test
     public void testTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/homework/implicitflow_checker.imp");
+        Program program = IMPFrontend.processFile("inputs/homework/ImplicitFlow_Checker/implicitflow_checker3.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

@@ -1,0 +1,204 @@
+/*
+   Generated with Gemini AI version Flash 3.5
+   PROMPT: Crea un file di input per testare l'efficienza di un implicit flow checker, dai al tuo file di input 
+   anche una applicazione concreta, quindi uno scenario che può essere di attacco informatico, ecc..
+*/
+
+
+class SecurityAuthTest {
+
+    // Il segreto o l'input utente non fidato agiscono come sorgente di contaminazione (Taint Source)
+    source_user_input() {
+        return "attacker_payload"; 
+    }
+
+    source_admin_secret() {
+        return "SUPER_SECRET_PASSWORD";
+    }
+
+    // Pulisce la variabile interrompendo la propagazione del taint
+    sanitizer_reset_counter(v) {
+        return 0;
+    }
+
+    // Il Sink rappresenta un'azione critica (es. log di sistema, blocco IP, o risposta HTTP)
+    sink_security_alert(v) {
+    }
+
+    /*
+    SCENARIO 1: Rilevamento base di un canale laterale (Side-Channel)
+    L'attaccante testa se la password inserita è corretta. Anche se il valore segreto non è 
+    assegnato direttamente a 'login_attempts', il suo valore influenza il contatore.
+    Il checker deve emettere 2 warning: uno per l'istruzione 'if' (condizione contaminata) 
+    e uno per l'incremento di 'login_attempts' (variabile pulita modificata in blocco contaminato).
+    */
+    test_implicit_brute_force_detect() {
+        def secret = this.source_admin_secret();
+        def input = this.source_user_input();
+        def login_attempts = 0;
+
+        if (input == secret) {
+            // Flusso implicito: se indovino, il contatore non incrementa
+            login_attempts = login_attempts + 1; 
+        }
+
+        this.sink_security_alert(login_attempts);
+    }
+
+    /*
+    SCENARIO 2: Loop di Timeout (Timing Attack)
+    Un ciclo 'while' simula un ritardo di elaborazione basato sulla correttezza dell'input.
+    Il checker deve emettere 4 warning totali: 2 per le condizioni dei 'while' contaminati 
+    e 2 per le manipolazioni della variabile pulita 'delay_ticks'.
+    La riassegnazione costante 'delay_ticks = 0' pulisce la variabile a metà percorso.
+    */
+    test_timing_attack_loop() {
+        def secret_key = this.source_admin_secret();
+        def guess = this.source_user_input();
+        def delay_ticks = 0;
+
+        // Primo attacco: loop basato sul segreto
+        while (guess != secret_key) {
+            delay_ticks = delay_ticks + 1;
+            guess = guess + "next"; // t = t + 1 equivalente
+        }
+
+        // Reset della variabile (Ritorna pulita)
+        delay_ticks = 0;
+
+        // Secondo attacco: verifica se il checker monitora il flusso dopo il reset
+        while (guess == secret_key) {
+            delay_ticks = delay_ticks + 5;
+            guess = "stop";
+        }
+
+        delay_ticks = 10;
+        def backup_delay = delay_ticks; 
+        delay_ticks = 200;
+
+        this.sink_security_alert(delay_ticks);
+    }
+
+    /*
+    SCENARIO 3: Flag di autorizzazione implicito (Boolean Check)
+    Verifica se il checker gestisce condizioni non binarie (es. un flag booleano o di presenza).
+    Il checker deve emettere 2 warning: uno per 'if(is_admin_tainted)' e uno per l'istruzione interna.
+    */
+    test_implicit_privilege_escalation() {
+        def is_admin_tainted = this.source_user_input(); // Input manipolato dall'utente
+        def access_granted = 0; // Variabile pulita
+
+        if (is_admin_tainted) {
+            access_granted = access_granted + 1;
+            is_admin_tainted = 0;
+        }
+
+        this.sink_security_alert(access_granted);
+    }
+
+    /*
+    SCENARIO 4: Condizioni composte in Cortocircuito (AND Logico)
+    Un controllo composto dove la variabile pulita è posizionata prima. Il checker non deve fermarsi 
+    al primo elemento (pulito), ma deve analizzare l'intera espressione rilevando il taint in 'input'.
+    Il checker deve emettere 2 warning: uno sull'if e uno sulla manipolazione interna.
+    */
+    test_short_circuit_and_bypass() {
+        def input = this.source_user_input();
+        def system_ready = 1;
+        def security_level = 0;
+
+        if (system_ready == 1 && input == "MALICIOUS") {
+            security_level = security_level + 1;
+            input = "CLEANSED";
+        }
+
+        this.sink_security_alert(security_level);
+    }
+
+    /*
+    SCENARIO 5: Nested If (Annidamento di controlli)
+    Stessa logica dello Scenario 4, ma strutturata a blocchi nidificati per testare la persistenza 
+    del contesto di contaminazione (scope tracking) del checker.
+    Il checker deve emettere 2 warning: uno per l'if più interno e uno per 'security_level = security_level + 1'.
+    */
+    test_nested_conditional_bypass() {
+        def input = this.source_user_input();
+        def system_ready = 1;
+        def security_level = 0;
+
+        if (system_ready == 1) {
+            if (input == "MALICIOUS") {
+                security_level = security_level + 1;
+                input = "CLEANSED";
+            }
+        }
+
+        this.sink_security_alert(security_level);
+    }
+
+    /*
+    SCENARIO 6: Logica d'errore permissiva (OR Logico)
+    Test critico per verificare se l'algoritmo gestisce l'istruzione OR. Anche se una condizione 
+    è pulita, l'intero blocco diventa insicuro a causa del secondo operando contaminato.
+    Il checker deve emettere 4 warning (2 per le strutture if, 2 per le manipolazioni interne).
+    */
+    test_permissive_or_condition() {
+        def input = this.source_user_input();
+        def login_attempts = 0;
+
+        if (login_attempts == 0 || input == "BACKDOOR") {
+            login_attempts = login_attempts + 1;
+            input = "CLEAN";
+        }
+
+        if (login_attempts == 2 || input == "EXPLOIT") {
+            login_attempts = login_attempts + 1;
+            input = "CLEAN";
+        }
+
+        this.sink_security_alert(login_attempts);
+    }
+
+    /*
+    SCENARIO 7: Espressioni complesse nidificate
+    Verifica l'efficienza nel calcolo del taint su espressioni booleane multicondizionali nidificate.
+    Il checker deve emettere 3 warning: due per i rispettivi 'if' e uno per l'incremento di 'security_level'.
+    */
+    test_complex_nested_logic() {
+        def input = this.source_user_input();
+        def system_ready = 1;
+        def security_level = 0;
+
+        if (system_ready == 1 && input == "ATTACK") {
+            if (input != "SAFE" && security_level == 0) {
+                security_level = security_level + 1;
+                input = "CLEAN";
+            }
+        }
+
+        this.sink_security_alert(security_level);
+    }
+
+    /*
+    SCENARIO 8: Sanificazione dopo un flusso implicito malsano
+    In questo caso finale, la variabile 'security_level' viene contaminata implicitamente nell'if. 
+    Tuttavia, prima di essere inviata al sink, viene passata attraverso 'sanitizer_reset_counter'.
+    Il checker deve emettere 2 warning (sull'if e sulla riga 'security_level = security_level + 1'),
+    ma l'output finale verso il sink deve essere considerato SICURO perché sanificato correttamente.
+    */
+    test_implicit_flow_with_sanitization() {
+        def input = this.source_user_input();
+        def security_level = 0;
+        def ip_blocked_status = 0;
+
+        if ((security_level == 0 || input == "MALICIOUS") && ip_blocked_status == 0) {
+            security_level = security_level + 1;
+            input = "CLEAN";
+
+            // Sanificazione dell'effetto collaterale
+            ip_blocked_status = this.sanitizer_reset_counter(security_level);
+        }
+
+        this.sink_security_alert(ip_blocked_status);
+    }
+}

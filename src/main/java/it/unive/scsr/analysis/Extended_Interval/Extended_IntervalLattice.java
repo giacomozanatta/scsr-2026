@@ -189,4 +189,8 @@ public class Extended_IntervalLattice
 			
 			return i.compareTo(o.i);
 		}
+
+		public IntInterval getInterval() {
+    		return this.i;
+		}
 }

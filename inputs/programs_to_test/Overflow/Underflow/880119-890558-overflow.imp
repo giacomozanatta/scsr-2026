@@ -1,0 +1,79 @@
+class overflow {
+
+    f0() {
+        def a = 2147483640;
+        def b = 1000;
+        def c = a + b;
+        def d = b + b;
+
+        return;
+    }
+
+    f1() {
+        def x = 100000;
+        def y = 100000;
+        def z = x * y;
+
+        return;
+    }
+
+    readInt() {
+        return 0;
+    }
+
+    f2() {
+        def input = this.readInt();
+        def x = 2000000000;
+        def result = input + x;
+
+        return;
+    }
+
+    f3() {
+        def a = -2147483640;
+        def b = 1000;
+        def c = a - b;
+        return;
+    }
+
+    f4() {
+        def a = this.readInt();
+        def result = 0;
+
+        if (a > 0) {
+            def x = 2147483640;
+            def y = 100;
+            result = x + y;
+        } else {
+            def x = 100;
+            def y = 200;
+            result = x + y;
+        }
+
+        return;
+    }
+
+    f5() {
+        def a = 1000000000;
+        def b = 10;
+        def c = a * b;
+
+        def input = this.readInt();
+        def x = 0;
+
+        if (input > 0) {
+            x = 3;
+        }
+        else if (input == 0) {
+            x = 1;
+        }
+        else {
+            x = -2;
+        }
+
+        def result = c * x;
+
+        return;
+    }
+
+}

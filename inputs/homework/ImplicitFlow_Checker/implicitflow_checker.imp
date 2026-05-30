@@ -54,10 +54,9 @@ class hc
             t = c;
         }
 
-        c = 8;
+        c = this.source1();
 
         def d = c;
-        c = 110;
 
         this.sink1(c);
     }
@@ -139,9 +138,9 @@ class hc
             t = t + 1;
         }
 
-        if(c==2 || t)
+        if(c==2)
         {
-            c = c + 1;
+            c = this.source1();
             t = t + 1;
         }
 

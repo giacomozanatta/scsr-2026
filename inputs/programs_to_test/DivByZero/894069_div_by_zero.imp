@@ -1,0 +1,45 @@
+// ================================================================
+//  DIV BY ZERO TEST SUITE
+//  Target checker: DivByZeroIntervalChecker
+//
+//  Real-world inspiration: IoT sensor data processing pipeline.
+//  A gateway aggregates readings from multiple sensors and computes
+//  averages, rates, and ratios. If a sensor batch is empty or a
+//  time window collapses to zero, divisions by zero can occur.
+//
+//  Warning levels:
+//    DEFINITE  denominator is exactly [0,0]
+//    POSSIBLE  denominator interval includes 0
+//    SAFE      denominator interval excludes 0
+// ================================================================
+
+class SensorGateway {
+
+    computeAverage() {
+        def totalReading = 1024;
+        def count = 0;
+        def avg = totalReading / count;   // DEFINITE: [0,0] denominator
+        return avg;
+    }
+
+    computeRate() {
+        def delta = 500;
+        def window = 5;
+        while (window > 0) {
+            window = window - 1;
+        }
+        // After loop: window widened to [0,5] -> includes 0
+        def rate = delta / window;        // POSSIBLE: [0,5] includes 0
+        return rate;
+    }
+
+    computeLoad() {
+        def load = 300;
+        def activeSensors = 4;
+        def ratio = 0;
+        if (activeSensors > 0) {
+            ratio = load / activeSensors; // SAFE: [1,+INF] denominator
+        }
+        return ratio;
+    }
+}

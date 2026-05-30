@@ -30,9 +30,11 @@ import it.unive.lisa.symbolic.SymbolicExpression;
 import it.unive.lisa.symbolic.value.ValueExpression;
 import it.unive.lisa.type.Type;
 import it.unive.lisa.util.numeric.IntInterval;
+import it.unive.scsr.analysis.Extended_Interval.Extended_Interval;
+import it.unive.scsr.analysis.Extended_Interval.Extended_IntervalLattice;
 
 public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue<T>> implements
-		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> {
+		SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>> {
 
 	private IntInterval representableIntegers;
 
@@ -42,7 +44,7 @@ public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue
 
 	@Override
 	public boolean visit(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
 		if (node instanceof Addition || node instanceof IMPAddOrConcat || node instanceof Subtraction
@@ -53,12 +55,12 @@ public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue
 	}
 
 	private void checkOverflow(
-			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> tool,
+			SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>> tool,
 			CFG graph, Statement node) {
 
-		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> res : tool
+		for (AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>> res : tool
 				.getResultOf(graph)) {
-			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<IntInterval>, TypeEnvironment<T>>> postState = res
+			AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<Extended_IntervalLattice>, TypeEnvironment<T>>> postState = res
 					.getAnalysisStateAfter(node); // get post abstract state of denominator
 
 			Set<SymbolicExpression> reachableIds = new HashSet<>();
@@ -85,14 +87,14 @@ public class OverflowIntervalChecker<H extends HeapValue<H>, T extends TypeValue
 
 						SemanticOracle oracle = tool.getAnalysis().domain.makeOracle(postState.getExecutionState());
 
-						Interval analysisValueDomain = (Interval) tool.getAnalysis().domain.valueDomain;
+						Extended_Interval analysisValueDomain = (Extended_Interval) tool.getAnalysis().domain.valueDomain;
 
-						IntInterval abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
+						Extended_IntervalLattice abstractValue = analysisValueDomain.eval(valueState, (ValueExpression) s,
 								(ProgramPoint) node, oracle);
 
-						if (!abstractValue.isBottom() && !representableIntegers.includes(abstractValue)) {
-							boolean overflow = abstractValue.getHigh().gt(representableIntegers.getHigh());
-							boolean underflow = abstractValue.getLow().lt(representableIntegers.getLow());
+						if (!abstractValue.isBottom() && !representableIntegers.includes(abstractValue.getInterval())) {
+							boolean overflow = abstractValue.getInterval().getHigh().gt(representableIntegers.getHigh());
+							boolean underflow = abstractValue.getInterval().getLow().lt(representableIntegers.getLow());
 							String sep = overflow && underflow ? "/" : "";
 							tool.warnOn(node, "This is an " + (overflow ? "over" : "") + sep
 									+ (underflow ? "under" : "") + "flow");

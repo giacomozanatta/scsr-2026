@@ -1,0 +1,337 @@
+/**
+   Generated with Claude AI version Sonnet 4.6 (low)
+   PROMPT: Crea un file di input per testare l'efficienza di un implicit flow checker, dai al tuo file di input 
+   anche una applicazione concreta, quindi uno scenario che può essere di attacco informatico, ecc..
+
+ * =============================================================================
+ * SCENARIO: Sistema di Autenticazione Bancaria - Bypass e Information Leakage
+ * =============================================================================
+ *
+ * Contesto di attacco:
+ * Questo file modella un sistema di autenticazione per un'applicazione bancaria.
+ * Le fonti di dati sensibili (source) sono: credenziali utente, PIN, token di sessione
+ * e dati provenienti dal database degli utenti.
+ *
+ * Il rischio concreto modellato è il seguente: un attaccante che riesce a iniettare
+ * dati malevoli (es. tramite credential stuffing, SQL injection, o intercettazione
+ * di sessione) può far trapelare informazioni riservate attraverso FLUSSI IMPLICITI,
+ * ovvero senza che il valore tainted venga mai passato direttamente a una sink.
+ * Il checker deve rilevare quando una variabile "pulita" viene modificata all'interno
+ * di un branch condizionato da una variabile tainted.
+ *
+ * Struttura:
+ *   - source1()     : restituisce credenziali utente non validate (input HTTP)
+ *   - source2()     : restituisce un PIN letto dal database (potenzialmente corrotto)
+ *   - sanitizer1(v) : valida e normalizza un valore (es. hashing, whitelist check)
+ *   - sink1(v)      : log di sistema (un log con dato sensibile è un info leak)
+ *   - sink2(v)      : risposta HTTP inviata al client (espone dati al browser)
+ *
+ * Per ogni funzione è indicato quante e quali warning il checker DEVE emettere.
+ * =============================================================================
+ */
+class BankAuthChecker
+{
+    /**
+     * Simula la lettura di credenziali raw da una richiesta HTTP (POST body).
+     * In un attacco reale: valore controllato dall'attaccante via credential stuffing.
+     */
+    source1() {
+        return -99; // valore sentinella: rappresenta input non fidato
+    }
+
+    /**
+     * Simula la lettura di un PIN dal database (potenzialmente alterato via SQLi).
+     */
+    source2() {
+        return -88; // valore sentinella: dato dal DB non ancora validato
+    }
+
+    /**
+     * Sanitizza un valore (es. bcrypt hash, whitelist check).
+     * Dopo sanitizer1(), la variabile è considerata pulita.
+     */
+    sanitizer1(v) {
+        return 0;
+    }
+
+    /**
+     * Sink: scrive nel log di sistema.
+     * Un valore tainted qui causa information leakage nei log.
+     */
+    sink1(v) {}
+
+    /**
+     * Sink: invia una risposta HTTP al client.
+     * Un valore tainted qui espone dati sensibili al browser/attaccante.
+     */
+    sink2(v) {}
+
+
+    // =========================================================================
+    // TEST 1 — Login attempt counter (implicit flow base)
+    //
+    // Scenario: il contatore dei tentativi falliti "failCount" è una variabile
+    // pulita, ma viene incrementata solo se la password inserita (tainted) supera
+    // un controllo di lunghezza. Un attaccante osservando il comportamento del
+    // contatore può dedurre informazioni sulla password (es. se è troppo corta
+    // viene scartata prima ancora di essere verificata).
+    //
+    // Warning attesi: 2
+    //   [W1] if(password > MIN_LEN) — condizione tainted
+    //   [W2] failCount = failCount + 1 — variabile pulita modificata in branch tainted
+    // =========================================================================
+    test_loginAttemptCounter()
+    {
+        def password = this.source1();   // tainted: input attaccante
+        def failCount = 0;               // clean: contatore tentativi falliti
+        def MIN_LEN = 6;
+
+        if (password > MIN_LEN)
+            failCount = failCount + 1;   // implicit flow: failCount dipende da password
+
+        this.sink1(failCount);
+    }
+
+
+    // =========================================================================
+    // TEST 2 — Session token rotation con while loop
+    //
+    // Scenario: il sistema ruota il token di sessione finché il PIN grezzo (tainted)
+    // è sotto una soglia (meccanismo di rate limiting difettoso). La variabile
+    // "sessionToken" è pulita ma viene azzerata dentro il loop tainted.
+    // Dopo la prima rotazione, il PIN viene "ripulito" riassegnando una costante,
+    // ma poi un secondo loop riprende con lo stesso PIN (ora ancora tainted dal
+    // secondo source2()). Il checker deve seguire correttamente il ciclo di vita.
+    //
+    // Warning attesi: 4
+    //   [W1] while(pin < THRESHOLD) — prima condizione tainted
+    //   [W2] sessionToken = 0 — variabile pulita azzerata in branch tainted
+    //   [W3] while(pin < THRESHOLD) — seconda condizione tainted (dopo re-assign pin)
+    //   [W4] sessionToken = sessionToken - 1 — variabile pulita modificata in secondo loop
+    // =========================================================================
+    test_sessionTokenRotation()
+    {
+        def pin = this.source2();        // tainted
+        def sessionToken = 100;          // clean: token corrente
+        def THRESHOLD = 1000;
+
+        while (pin < THRESHOLD)
+        {
+            sessionToken = 0;            // implicit flow
+            pin = pin + 1;              // pin resta tainted (era già tainted)
+        }
+
+        pin = 500;                       // pin diventa clean (costante)
+
+        // Simula un secondo tentativo con un nuovo PIN dal DB
+        pin = this.source2();            // pin è di nuovo tainted
+
+        while (pin < THRESHOLD)
+        {
+            sessionToken = sessionToken - 1;  // implicit flow
+            pin = pin + 1;
+        }
+
+        pin = 500;                       // clean di nuovo
+        def backup = sessionToken;
+        sessionToken = 999;
+
+        this.sink2(sessionToken);
+    }
+
+
+    // =========================================================================
+    // TEST 3 — Controllo accesso con flag booleano (condizione non binaria)
+    //
+    // Scenario: il flag "accessGranted" (clean) viene alzato se il token di
+    // autenticazione (tainted) è truthy. Questo è un classico implicit flow:
+    // l'attaccante non vede il token, ma può dedurre se era valido osservando
+    // se l'accesso è stato concesso.
+    //
+    // Warning attesi: 2
+    //   [W1] if(authToken) — condizione tainted (non binaria, solo variabile)
+    //   [W2] accessGranted = 1 — variabile pulita modificata in branch tainted
+    // =========================================================================
+    test_accessFlagLeak()
+    {
+        def authToken = this.source1();  // tainted
+        def accessGranted = 0;           // clean
+
+        if (authToken)
+        {
+            accessGranted = 1;           // implicit flow
+            authToken = authToken + 1;   // authToken era già tainted: no warning
+        }
+
+        this.sink2(accessGranted);
+    }
+
+
+    // =========================================================================
+    // TEST 4 — Controllo multiplo con AND (&&)
+    //
+    // Scenario: il sistema verifica sia che l'account non sia bloccato (clean)
+    // sia che la password (tainted) superi la soglia di entropia. Se entrambe
+    // le condizioni sono vere, un codice di errore "errorCode" viene aggiornato.
+    // L'attaccante può sfruttare il valore di errorCode per capire quale delle
+    // due condizioni ha fallito (side-channel via implicit flow).
+    //
+    // Warning attesi: 2
+    //   [W1] if(accountNotLocked == 1 && password > ENTROPY_MIN) — condizione tainted
+    //   [W2] errorCode = errorCode + 10 — variabile pulita modificata in branch tainted
+    // =========================================================================
+    test_errorCodeSideChannel()
+    {
+        def password = this.source1();   // tainted
+        def accountNotLocked = 1;        // clean
+        def errorCode = 0;               // clean
+        def ENTROPY_MIN = 50;
+
+        if (accountNotLocked == 1 && password > ENTROPY_MIN)
+        {
+            errorCode = errorCode + 10;  // implicit flow
+            password = password + 1;    // password era già tainted: no warning
+        }
+
+        this.sink1(errorCode);
+    }
+
+
+    // =========================================================================
+    // TEST 5 — If annidati (nested privilege escalation)
+    //
+    // Scenario: il sistema prima controlla se l'utente è admin (clean), poi
+    // verifica se il token privilegiato (tainted) supera una soglia. Se entrambe
+    // vere, eleva il livello di privilegio. L'implicit flow avviene solo nel
+    // branch interno (dove la condizione tainted è attiva).
+    //
+    // Warning attesi: 2
+    //   [W1] if(token > PRIV_THRESHOLD) — condizione tainted (if interno)
+    //   [W2] privilegeLevel = privilegeLevel + 1 — variabile pulita in branch tainted
+    // =========================================================================
+    test_nestedPrivilegeEscalation()
+    {
+        def token = this.source1();      // tainted
+        def isAdmin = 1;                 // clean
+        def privilegeLevel = 0;          // clean
+        def PRIV_THRESHOLD = 9000;
+
+        if (isAdmin == 1)
+        {
+            if (token > PRIV_THRESHOLD)
+            {
+                privilegeLevel = privilegeLevel + 1;  // implicit flow
+                token = token + 1;                    // token era già tainted
+            }
+        }
+
+        this.sink2(privilegeLevel);
+    }
+
+
+    // =========================================================================
+    // TEST 6 — Condizione OR (||) — account lockout bypass
+    //
+    // Scenario: il sistema blocca l'account se l'IP è in blacklist (clean) OPPURE
+    // se il numero di tentativi dal token (tainted) supera il limite. Con OR,
+    // anche se solo una condizione è tainted, l'intero branch è tainted.
+    // Il checker deve riconoscere questa semantica anche con OR.
+    // Il secondo if usa una variabile pulita OR il token tainted (sempre OR).
+    //
+    // Warning attesi: 4
+    //   [W1] if(ipBlacklisted == 0 || token > MAX_ATTEMPTS) — condizione tainted (OR)
+    //   [W2] lockCount = lockCount + 1 — clean modificata in branch tainted
+    //   [W3] if(lockCount == 2 || token) — condizione tainted (OR con variabile semplice)
+    //   [W4] lockCount = lockCount + 1 — clean modificata nel secondo branch tainted
+    // =========================================================================
+    test_lockoutBypass()
+    {
+        def token = this.source1();      // tainted
+        def ipBlacklisted = 0;           // clean
+        def lockCount = 0;               // clean
+        def MAX_ATTEMPTS = 3;
+
+        if (ipBlacklisted == 0 || token > MAX_ATTEMPTS)
+        {
+            lockCount = lockCount + 1;   // implicit flow
+            token = token + 1;
+        }
+
+        if (lockCount == 2 || token)
+        {
+            lockCount = lockCount + 1;   // implicit flow
+            token = token + 1;
+        }
+
+        this.sink1(lockCount);
+    }
+
+
+    // =========================================================================
+    // TEST 7 — If annidati con condizioni composte (doppia verifica MFA)
+    //
+    // Scenario: sistema MFA a due fattori. Il checker verifica prima la password
+    // (clean) e poi il codice OTP (tainted). Se entrambi validi, un flag MFA
+    // viene alzato. L'annidamento con condizioni composte non deve confondere
+    // il checker: il warning deve propagarsi correttamente al body interno.
+    //
+    // Warning attesi: 3
+    //   [W1] if(password == 0 && otp > 0) — condizione tainted (if esterno)
+    //   [W2] if(otp > MIN_OTP && counter == 0) — condizione tainted (if interno)
+    //   [W3] mfaFlag = mfaFlag + 1 — clean modificata nel branch interno tainted
+    // =========================================================================
+    test_mfaDoubleCheck()
+    {
+        def otp = this.source2();        // tainted: codice OTP dal DB
+        def password = 0;               // clean (già validata esternamente)
+        def mfaFlag = 0;                 // clean
+        def counter = 0;                 // clean
+        def MIN_OTP = 100000;
+
+        if (password == 0 && otp > 0)
+        {
+            if (otp > MIN_OTP && counter == 0)
+            {
+                mfaFlag = mfaFlag + 1;   // implicit flow
+                otp = otp + 1;           // otp era già tainted
+            }
+        }
+
+        this.sink2(mfaFlag);
+    }
+
+
+    // =========================================================================
+    // TEST 8 — Sanitizzazione parziale con condizione complessa
+    //
+    // Scenario: il sistema accetta una transazione bancaria solo se la password
+    // (tainted) supera il controllo E un PIN ausiliario (clean) è positivo.
+    // All'interno del branch, il PIN viene sanitizzato, ma la variabile "amount"
+    // (clean) viene comunque modificata prima della sanitizzazione.
+    // Dopo la sanitizzazione, "amount" è ancora considerata implicitamente
+    // influenzata dal branch tainted.
+    //
+    // Warning attesi: 2
+    //   [W1] if((amount == 0 || password > MIN_PASS) && pin > 0) — condizione tainted
+    //   [W2] amount = amount + 1 — clean modificata in branch tainted
+    //
+    // Nota: dopo sanitizer1(amount), "pin" diventa clean → sink2(pin) NON deve
+    // generare warning.
+    // =========================================================================
+    test_transactionSanitization()
+    {
+        def password = this.source1();   // tainted
+        def amount = 0;                  // clean
+        def pin = 9;                     // clean
+
+        if ((amount == 0 || password > 8) && pin > 0)
+        {
+            amount = amount + 1;         // implicit flow → warning
+            password = password + 1;    // password era già tainted: no warning
+
+            pin = this.sanitizer1(amount); // pin diventa clean
+        }
+
+        this.sink2(pin);                 // pin è clean → no warning
+    }
+}

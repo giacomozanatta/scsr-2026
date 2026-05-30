@@ -1,0 +1,75 @@
+// generated using paid licence of claude code sonnet 4.6
+// i used the following prompt:
+// "Generate .imp file to test Interval and DivByZeroIntervalChecker. Use the same logic of extendedsign_three_taint.imp";
+// In this case, I force the IA to take another .imp file as an example; this, plus its memory, let me to reduce the length of the prompt.
+// With the same file, i've tried to test even Pentagon, but finding a problem related to "zero_divisor" divisor method, which is the reason why I duplicated the .imp files.
+// I used this and div_by_zero_pentagon.imp to feed NumericalAnalysesTest.
+class div_by_zero {
+
+    // -------------------------------------------------------------------------
+    // 1. SAFE DIVISION: divisor is always positive --> no warning
+    //
+    // Real-world: splitting a fixed bill among a known number of users.
+    // The number of users is a compile-time constant - the analysis proves
+    // the divisor is [4,4], safely non-zero.
+    // -------------------------------------------------------------------------
+    safe_payment_split() {
+        def total = 120;
+        def users = 4;
+        def share = total / users;  // [120,120] / [4,4] = [30,30] — OK
+        return share;
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. DEFINITE DIVISION BY ZERO: divisor = 0 --> DEFINITE warning
+    //
+    // Real-world: a "free tier" rate accidentally left at 0.
+    // Any division using this rate crashes at runtime with ArithmeticException.
+    // The analysis detects divisor = [0,0] and emits a DEFINITE warning.
+    // -------------------------------------------------------------------------
+    zero_divisor() {
+        def amount = 500;
+        def rate = 0;               // [0, 0]
+        def monthly = amount / rate;  // divisor [0,0] --> DEFINITE warning
+        return monthly;
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. POSSIBLE DIVISION BY ZERO: divisor may be 0 depending on the branch
+    //
+    // Real-world: computing a transaction average when there may be no
+    // transactions. If has_transactions is false, count stays 0 and the
+    // division crashes. The analysis sees count in [0,10] — includes 0 -->
+    // POSSIBLE warning. The developer must add a guard before dividing.
+    //
+    //    then branch: count = 10  --> [10, 10]
+    //    else branch: count = 0   --> [0, 0]
+    //    join:        count in [0, 10] --> includes 0 --> POSSIBLE
+    // -------------------------------------------------------------------------
+    conditional_divisor(has_transactions) {
+        def count = 0;
+        def total = 1000;
+        if (has_transactions) {
+            count = 10;
+        }
+        def average = total / count;  // count in [0,10]: possible div by zero
+        return average;
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. GUARDED DIVISION: branch guarantees divisor > 0 --> no warning
+    //
+    // Real-world: defensive programming pattern used in financial systems —
+    // always check the denominator before dividing. The analysis infers
+    // n in [1, +inf] inside the true branch via assume semantics --> no warning.
+    // This is the correct fix for conditional_divisor (case 3 above).
+    // -------------------------------------------------------------------------
+    guarded_division(n) {
+        def result = 0;
+        if (n > 0) {
+            def total = 100;
+            result = total / n;  // n in [1, +inf] in this branch --> no warning
+        }
+        return result;
+    }
+}

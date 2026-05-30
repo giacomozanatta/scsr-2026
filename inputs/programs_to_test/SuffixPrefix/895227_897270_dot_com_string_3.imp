@@ -1,0 +1,18 @@
+class PhishingFilter {
+
+    checkRedirect() {
+        
+        def maliciousUrl = "http://secure-login-update.com";
+        def isSafe = 0;
+
+        
+        this.logRedirect(maliciousUrl, isSafe);
+
+        return 1;
+    }
+
+    logRedirect(url, status) {
+        // Simulazione di una funzione interna
+        return 0;
+    }
+}

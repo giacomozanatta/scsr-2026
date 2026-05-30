@@ -1,0 +1,71 @@
+// ================================================================
+//  THREE-LEVEL TAINT TEST SUITE
+//  Target checker: TaintThreeLevelsChecker
+//
+//  Real-world inspiration: REST API backend for a medical portal.
+//  Patient data entered via web forms flows through validation
+//  layers before being stored in the database or sent to partners.
+//  Improper handling of tainted input can leak sensitive data or
+//  enable injection attacks.
+//
+//  Sources:     getUserInput, GetRequest
+//  Sanitizers:  sanitizeInput, escapeHtml
+//  Sinks:       runQueryDB, renderHtml, sendEmail
+//
+//  Taint lattice:
+//    TAINT     definitely tainted  (DEFINITE warning)
+//    TOP       may be tainted      (POSSIBLE warning)
+//    CLEAN    definitely clean    (no warning)
+// ================================================================
+
+class MedicalPortal {
+
+    getUserInput() {
+        return "patient_data";
+    }
+
+    sanitizeInput(input) {
+        return "sanitized";
+    }
+
+    runQueryDB(query) {
+    }
+
+    renderHtml(content) {
+    }
+
+    sendEmail(body) {
+    }
+
+    lookupPatient() {
+        def patientId = this.getUserInput();   // SOURCE: tainted
+        def query = patientId;
+        this.runQueryDB(query);               // DEFINITE: tainted -> sink
+    }
+
+    storePatientSafe() {
+        def record = this.getUserInput();      // SOURCE: tainted
+        def safe = this.sanitizeInput(record); // SANITIZER: clean
+        this.runQueryDB(safe);                 // SAFE: clean -> sink
+    }
+
+    sendReport(isAdmin) {
+        def data = this.getUserInput();        // SOURCE: tainted
+        def body = 0;
+        if (isAdmin) {
+            body = data;                       // tainted path
+        } else {
+            body = this.sanitizeInput(data);   // clean path
+        }
+        this.sendEmail(body);                  // POSSIBLE: TOP at join
+    }
+
+    renderSearch() {
+        def term = this.GetRequest();          // SOURCE: tainted
+        this.renderHtml(term);                 // DEFINITE: tainted -> sink
+    }
+
+    GetRequest() {
+        return "<script>alert(1)</script>";
+    }
+}

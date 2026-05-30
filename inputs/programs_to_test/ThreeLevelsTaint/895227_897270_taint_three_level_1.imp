@@ -1,0 +1,17 @@
+class CleanTaintTest {
+
+    
+    sink(query) {
+        return 0;
+    }
+
+    testCleanSafe() {
+        
+        def safeQuery = "SELECT * FROM public_data";
+
+        
+        this.sink(safeQuery);
+
+        return 1;
+    }
+}

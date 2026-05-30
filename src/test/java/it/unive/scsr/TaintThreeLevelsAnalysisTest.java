@@ -21,21 +21,58 @@ import static it.unive.lisa.DefaultConfiguration.*;
 
 public class TaintThreeLevelsAnalysisTest {
     
-    String[] nameSource = {"source1", "GetRequest"};
-	String[] nameSanitizers = {"sanitizer1"};
-	String[] nameSinks = {"sink1", "runQueryDB"};
+    //String[] nameSource = {"source1", "GetRequest"};
+	//String[] nameSanitizers = {"sanitizer1"};
+	//String[] nameSinks = {"sink1", "runQueryDB"};
+
+	//872966_TaintThreeLevels.imp
+	//String[] nameSource = {"source1", "GetRequest", "getUserInput", "getExternalRequest", "getInternalToken"};
+	//String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize", "advancedEncrypt"};
+	//String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand", "db_execute", "log_to_public_file"};
 	
+	//880119-890558-taint-three-levels-2.imp
+	//String[] nameSource = {"source1", "GetRequest", "getUserInput", "getExternalRequest", "getInternalToken"};
+	//String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize", "advancedEncrypt", "strip1", "strip2"};
+	//String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand", "db_execute", "log_to_public_file", "system"};
 	
+	//894004_taint.imp
+	//String[] nameSource = {"source1", "GetRequest", "getUserInput", "getExternalRequest", "getInternalToken", "sourceSerializedObject"};
+	//String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize", "advancedEncrypt", "strip1", "strip2", "sanitizeJob"};
+	//String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand", "db_execute", "log_to_public_file", "system", "deserializePathJob"};
+
+	//1003406_three_taint_1.imp
+	//String[] nameSource = {"source1", "GetRequest", "getUserInput", "getExternalRequest", "getInternalToken", "sourceSerializedObject"};
+	//String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize", "advancedEncrypt", "strip1", "strip2", "sanitizeJob"};
+	//String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand", "db_execute", "log_to_public_file", "system", "deserializePathJob"};
+
+	String[] nameSource = {"source1", "GetRequest", "getUserInput", "getExternalRequest", "getInternalToken"};
+	String[] nameSanitizers = {"sanitizer1", "sanitizeInput", "escapeHtml", "sanitizeParam", "basicSanitize", "advancedEncrypt", "strip1", "strip2"};
+	String[] nameSinks = {"sink1", "runQueryDB", "renderHtml", "sendEmail", "executeSystemCommand", "db_execute", "log_to_public_file", "system"};
+
+
     @Test
     public void testTaintAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/taint.imp");
+        //Program program = IMPFrontend.processFile("inputs/taint.imp");
+
+		Program program = IMPFrontend.processFile("inputs/programs_to_test/ThreeLevelsTaint/1003406_three_taint_1.imp");
+
+		/*
+		
+		
+		
+		
+		
+		
+		
+		*/
+
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();
 
         // we specify where we want files to be generated
-        conf.workdir = "outputs/threetaint-eval";
+        conf.workdir = "outputs/taintThreeLevels";
 
         // we specify the visual format of the analysis results
         //conf.outputs.add(new HtmlInputs(true));

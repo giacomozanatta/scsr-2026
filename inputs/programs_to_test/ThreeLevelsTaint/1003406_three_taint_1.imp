@@ -1,0 +1,256 @@
+// ================================================================
+//  OS COMMAND INJECTION SCENARIO
+//
+//  CVE: CVE-2014-6271 and CWE-78
+//
+//  Context:
+//  Shellshock exploited the fact that Bash parsed environment
+//  variables before executing commands. CGI scripts passed
+//  HTTP headers (e.g. User-Agent, Referer) as environment
+//  variables to Bash sub-processes. An attacker could embed
+//  a function definition followed by arbitrary commands: User-Agent: () { :; }; /bin/rm -rf /
+//  Bash evaluated the trailing commands on startup.
+//
+//  More generally (CWE-78), any application that appends
+//  user inputted strings to shell-command strings and
+//  passes them to a system execution API without sanitization
+//  is vulnerable to command injection via metacharacters
+//  (;, |, &&, backticks, $(...), newlines).
+//
+//  Root cause: tainted user input reaching a command execution
+//  sink (executeSystemCommand) before shell metacharacters
+//  are neutralized.
+//
+//  Sources :
+//  - getExternalRequest (HTTP request / env variable)
+//  - getUserInput (interactive user prompt)
+//
+//  Sanitizers :
+//  - sanitizeParam (escape / reject shell metacharacters)
+//  - basicSanitize (allowlist-based argument validation)
+//
+//  Sink : executeSystemCommand (passes string to shell / exec())
+// ================================================================
+
+class CommandInjectionScenario {
+
+    // source: value of an HTTP header forwarded as an env variable
+    getExternalRequest() {
+        return "() { :; }; /bin/cat /etc/shadow";
+    }
+
+    // source: interactive input from the local user (CLI tool for example)
+    getUserInput() {
+        return "report.pdf; rm -rf /home";
+    }
+
+    // sanitizer: removes/escapes shell metacharacters (; | & ` $ \n)
+    sanitizeParam(rawArg) {
+        return "safe_argument";
+    }
+
+    // sanitizer: validates argument against a list of known-safe filenames / identifiers that are allowed
+    basicSanitize(rawArg) {
+        return "validated_argument";
+    }
+
+    // sink: executes a shell command constructed from the argument
+    executeSystemCommand(cmd) {
+    }
+
+    // -------------------------------------------------------
+    //  runReportUnsafe
+    //
+    //  A CGI wrapper reads a filename from the HTTP request
+    //  and passes it to an external conversion tool.
+    //  This mirrors the Shellshock attack surface: User-Agent is
+    //  stored in REQUEST_HEADER and forwarded to a Bash script.
+    //
+    //  header  <- getExternalRequest() -> TAINT
+    //  cmd = "convert " + header -> TAINT (arithmetic propagates taint)
+    //  executeSystemCommand(cmd) -> TAINT reaches sink
+    //
+    //  EXPECT: definite warning on executeSystemCommand(cmd)
+    // -------------------------------------------------------
+    runReportUnsafe() {
+        def header = this.getExternalRequest();
+        def cmd = "convert " + header;
+        this.executeSystemCommand(cmd);
+    }
+
+    // -------------------------------------------------------
+    //  runReportSafe
+    //
+    //  The header is sanitized (metacharacters stripped) before
+    //  being embedded in the command string.
+    //
+    //  raw = getExternalRequest() : TAINT
+    //  safe = sanitizeParam(raw) : CLEAN
+    //  cmd = "convert " + safe : CLEAN
+    //  executeSystemCommand(cmd) : CLEAN reaches sink
+    //
+    //  EXPECT: no warning
+    // -------------------------------------------------------
+    runReportSafe() {
+        def raw  = this.getExternalRequest();
+        def safe = this.sanitizeParam(raw);
+        def cmd  = "convert " + safe;
+        this.executeSystemCommand(cmd);
+    }
+
+    // -------------------------------------------------------
+    //  runReportConditionalSanitize
+    //
+    //  Sanitization is only applied when running in
+    //  "restricted" mode. Admins can bypass it for convenience.
+    //  After the branch join: TAINT lub CLEAN = TOP.
+    //
+    //  executeSystemCommand(arg) -> TOP reaches sink
+    //
+    //  EXPECT: possible warning on executeSystemCommand(arg)
+    // -------------------------------------------------------
+    runReportConditionalSanitize(isAdminMode) {
+        def raw = this.getExternalRequest();
+        def arg = raw;
+        if (isAdminMode)
+            arg = raw;
+        else
+            arg = this.sanitizeParam(raw);
+        this.executeSystemCommand(arg);
+    }
+
+    // -------------------------------------------------------
+    //  runReportAfterReTaint
+    //
+    //  Argument is sanitized, then overwritten by a second
+    //  user-supplied value before the command is executed.
+    //  The sanitization is undone by the reassignment.
+    //
+    //  raw1 = getExternalRequest() -> TAINT
+    //  arg = sanitizeParam(raw1) -> CLEAN
+    //  arg = getUserInput() -> TAINT  (re-tainted)
+    //  executeSystemCommand(arg) -> TAINT reaches sink
+    //
+    //  EXPECT: definite warning on executeSystemCommand(arg)
+    // -------------------------------------------------------
+    runReportAfterReTaint() {
+        def raw1 = this.getExternalRequest();
+        def arg = this.sanitizeParam(raw1);
+        arg = this.getUserInput();
+        this.executeSystemCommand(arg);
+    }
+
+    // -------------------------------------------------------
+    //  buildCommand (helper method)
+    //
+    //  Constructs a shell command by concatenating the tool
+    //  name with a user-supplied argument.  The helper does
+    //  NOT sanitize, so taint passes through its return.
+    // -------------------------------------------------------
+    buildCommand(toolName, argument) {
+        def cmd = toolName + " " + argument;
+        return cmd;
+    }
+
+    // -------------------------------------------------------
+    //  runViaHelper
+    //
+    //  Interprocedural: user input flows through buildCommand
+    //  (no sanitization) and the resulting command string
+    //  reaches executeSystemCommand.
+    //
+    //  arg = getUserInput() -> TAINT
+    //  cmd = buildCommand("ls", arg) -> TAINT (helper propagates)
+    //  executeSystemCommand(cmd) -> TAINT reaches sink
+    //
+    //  EXPECT: definite warning on executeSystemCommand(cmd)
+    // -------------------------------------------------------
+    runViaHelper() {
+        def arg = this.getUserInput();
+        def cmd = this.buildCommand("ls", arg);
+        this.executeSystemCommand(cmd);
+    }
+
+    // -------------------------------------------------------
+    //  runViaHelperSafe
+    //
+    //  Same helper chain but the argument is sanitized before
+    //  being passed to buildCommand.
+    //
+    //  raw = getUserInput() -> TAINT
+    //  safe = basicSanitize(raw) -> CLEAN
+    //  cmd = buildCommand("ls", safe) -> CLEAN
+    //  executeSystemCommand(cmd) -> CLEAN reaches sink
+    //
+    //  EXPECT: no warning
+    // -------------------------------------------------------
+    runViaHelperSafe() {
+        def raw = this.getUserInput();
+        def safe = this.basicSanitize(raw);
+        def cmd = this.buildCommand("ls", safe);
+        this.executeSystemCommand(cmd);
+    }
+
+    // -------------------------------------------------------
+    //  batchProcessUnsafe
+    //
+    //  A job scheduler processes a queue of user-submitted
+    //  commands in a loop, executing each without validation.
+    //  Models automated pipelines where user-controlled job
+    //  parameters are passed to shell scripts.
+    //
+    //  On each iteration: cmd is TAINT.
+    //  executeSystemCommand(cmd) : TAINT reaches sink each time.
+    //
+    //  EXPECT: definite warning on executeSystemCommand(cmd) inside the loop
+    // -------------------------------------------------------
+    batchProcessUnsafe(numJobs) {
+        def i = 0;
+        while (i < numJobs) {
+            def cmd = this.getUserInput();
+            this.executeSystemCommand(cmd);
+            i = i + 1;
+        }
+    }
+
+    // -------------------------------------------------------
+    //  batchProcessSafe
+    //
+    //  Same scheduler but sanitization occurs inside the loop
+    //  before each command is executed.
+    //
+    //  EXPECT: no warning on executeSystemCommand(safeCmd) inside the loop
+    // -------------------------------------------------------
+    batchProcessSafe(numJobs) {
+        def i = 0;
+        while (i < numJobs) {
+            def raw = this.getUserInput();
+            def safeCmd = this.sanitizeParam(raw);
+            this.executeSystemCommand(safeCmd);
+            i = i + 1;
+        }
+    }
+
+    // -------------------------------------------------------
+    //  runWithTwoSources
+    //
+    //  Two different user-controlled sources contribute to the
+    //  command string : one from an HTTP header (TAINT), one
+    //  from a local user prompt that is sanitized (CLEAN).
+    //  The concatenation of TAINT and CLEAN is still TAINT (TAINT propagates)
+    //
+    //  envArg = getExternalRequest() -> TAINT
+    //  userArg = basicSanitize(getUserInput()) -> CLEAN
+    //  cmd = envArg + " " + userArg -> TAINT (TAINT dominates)
+    //  executeSystemCommand(cmd) -> TAINT reaches sink
+    //
+    //  EXPECT: definite warning on executeSystemCommand(cmd)
+    // -------------------------------------------------------
+    runWithTwoSources() {
+        def envArg = this.getExternalRequest();
+        def rawUser = this.getUserInput();
+        def userArg = this.basicSanitize(rawUser);
+        def cmd = envArg + " " + userArg;
+        this.executeSystemCommand(cmd);
+    }
+}

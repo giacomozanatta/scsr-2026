@@ -1,0 +1,58 @@
+// ================================================================
+//  PREFIX / SUFFIX TEST SUITE
+//  Target checkers: PrefixChecker (detects "https://")
+//                   SuffixChecker (detects ".log")
+//
+//  Real-world inspiration: cloud storage file manager.
+//  A system uploads files and fetches remote resources. Files
+//  destined for remote storage must use HTTPS URLs; log files
+//  must be identified by their ".log" extension before rotation.
+//
+//  Warning levels:
+//    PREFIX WARNING    argument starts with "https://"
+//    SUFFIX WARNING    argument ends with ".log"
+//    SAFE              neither condition holds
+// ================================================================
+
+class FileManager {
+
+    uploadToCloud() {
+        def url = "https://storage.example.com/bucket";
+        def result = this.uploadFile(url);   // WARNING [PREFIX]: "https://"
+        return result;
+    }
+
+    uploadFile(url) {
+        return url;
+    }
+
+    rotateLogs() {
+        def filename = "app_2026_05.log";
+        def result = this.rotateFile(filename);   // WARNING [SUFFIX]: ".log"
+        return result;
+    }
+
+    rotateFile(filename) {
+        return filename;
+    }
+
+    fetchRemoteLog() {
+        def remoteLog = "https://logs.example.com/system.log";
+        def result = this.fetchRemote(remoteLog);  // WARNING [PREFIX] + [SUFFIX]
+        return result;
+    }
+
+    fetchRemote(url) {
+        return url;
+    }
+
+    loadConfig() {
+        def path = "config/settings.json";
+        def result = this.readFile(path);    // SAFE: no prefix, no .log suffix
+        return result;
+    }
+
+    readFile(path) {
+        return path;
+    }
+}

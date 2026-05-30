@@ -56,7 +56,6 @@ public class IntervalAnalysisTest {
         conf.analysis = simpleDomain(defaultHeapDomain(), new Interval(), defaultTypeDomain());
         conf.interproceduralAnalysis = new ContextBasedAnalysis<>();
         // added checker to the analysis
-        conf.semanticChecks.add(new OverflowIntervalChecker<>(-128, 127)); //interval range added for testing the overflow
         // we instantiate LiSA with our configuration
         LiSA lisa = new LiSA(conf);
 

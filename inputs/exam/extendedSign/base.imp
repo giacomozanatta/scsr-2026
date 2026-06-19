@@ -1,0 +1,179 @@
+class base {
+
+	fConstants() {
+		def neg_ExpectedNeg = -5;
+		def zero_ExpectedZero = 0;
+		def pos_ExpectedPos = 5;
+
+		return;
+	}
+
+	fAddition() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def add_Neg_Neg_ExpectedNeg = neg + neg;
+		def add_Pos_Pos_ExpectedPos = pos + pos;
+		def add_Neg_Zero_ExpectedNeg = neg + zero;
+		def add_Pos_Zero_ExpectedPos = pos + zero;
+		def add_Zero_Zero_ExpectedZero = zero + zero;
+		def add_Neg_Pos_ExpectedTop = neg + pos;
+
+		return;
+	}
+
+	fSubtraction() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def sub_Neg_Pos_ExpectedNeg = neg - pos;
+		def sub_Pos_Neg_ExpectedPos = pos - neg;
+		def sub_Pos_Zero_ExpectedPos = pos - zero;
+		def sub_Neg_Zero_ExpectedNeg = neg - zero;
+		def sub_Zero_Pos_ExpectedNeg = zero - pos;
+		def sub_Zero_Neg_ExpectedPos = zero - neg;
+		def sub_Pos_Pos_ExpectedTop = pos - pos;
+		def sub_Neg_Neg_ExpectedTop = neg - neg;
+
+		return;
+	}
+
+	fMultiplication() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def mul_Neg_Neg_ExpectedPos = neg * neg;
+		def mul_Pos_Pos_ExpectedPos = pos * pos;
+		def mul_Neg_Pos_ExpectedNeg = neg * pos;
+		def mul_Pos_Neg_ExpectedNeg = pos * neg;
+		def mul_Zero_Neg_ExpectedZero = zero * neg;
+		def mul_Zero_Pos_ExpectedZero = zero * pos;
+		def mul_Zero_Zero_ExpectedZero = zero * zero;
+
+		return;
+	}
+
+	fDivision() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def div_Neg_Neg_ExpectedPos = neg / neg;
+		def div_Pos_Pos_ExpectedPos = pos / pos;
+		def div_Neg_Pos_ExpectedNeg = neg / pos;
+		def div_Pos_Neg_ExpectedNeg = pos / neg;
+		def div_Zero_Pos_ExpectedZero = zero / pos;
+		def div_Zero_Neg_ExpectedZero = zero / neg;
+		def div_Pos_Zero_ExpectedBottom = pos / zero;
+
+		return;
+	}
+
+	fJoins() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def topSeed = neg + pos;
+
+		def zeroNeg_ExpectedZeroNeg = 0;
+
+		if (topSeed == zero) {
+			zeroNeg_ExpectedZeroNeg = neg;
+		} else {
+			zeroNeg_ExpectedZeroNeg = zero;
+		}
+
+		def zeroPos_ExpectedZeroPos = 0;
+
+		if (topSeed == zero) {
+			zeroPos_ExpectedZeroPos = pos;
+		} else {
+			zeroPos_ExpectedZeroPos = zero;
+		}
+
+		def notZero_ExpectedNotZero = 0;
+
+		if (topSeed == zero) {
+			notZero_ExpectedNotZero = neg;
+		} else {
+			notZero_ExpectedNotZero = pos;
+		}
+
+		def topJoin_ExpectedTop = 0;
+
+		if (topSeed == zero) {
+			topJoin_ExpectedTop = neg;
+		} else {
+			topJoin_ExpectedTop = zeroPos_ExpectedZeroPos;
+		}
+
+		return;
+	}
+
+	fOperationsOnJoinedValues() {
+		def neg = -5;
+		def zero = 0;
+		def pos = 5;
+
+		def topSeed = neg + pos;
+
+		def zeroNeg = 0;
+
+		if (topSeed == zero) {
+			zeroNeg = neg;
+		} else {
+			zeroNeg = zero;
+		}
+
+		def zeroPos = 0;
+
+		if (topSeed == zero) {
+			zeroPos = pos;
+		} else {
+			zeroPos = zero;
+		}
+
+		def notZero = 0;
+
+		if (topSeed == zero) {
+			notZero = neg;
+		} else {
+			notZero = pos;
+		}
+
+		def add_ZeroNeg_Neg_ExpectedNeg = zeroNeg + neg;
+		def add_ZeroPos_Pos_ExpectedPos = zeroPos + pos;
+		def add_ZeroNeg_ZeroPos_ExpectedTop = zeroNeg + zeroPos;
+
+		def sub_ZeroPos_Pos_ExpectedTop = zeroPos - pos;
+		def sub_ZeroNeg_Neg_ExpectedTop = zeroNeg - neg;
+
+		def mul_ZeroNeg_Pos_ExpectedZeroNeg = zeroNeg * pos;
+		def mul_ZeroPos_Neg_ExpectedZeroNeg = zeroPos * neg;
+		def mul_ZeroNeg_Neg_ExpectedZeroPos = zeroNeg * neg;
+		def mul_ZeroPos_Pos_ExpectedZeroPos = zeroPos * pos;
+
+		def div_ZeroNeg_Pos_ExpectedZeroNeg = zeroNeg / pos;
+		def div_ZeroPos_Neg_ExpectedZeroNeg = zeroPos / neg;
+		def div_NotZero_NotZero_ExpectedNotZero = notZero / notZero;
+
+		return;
+	}
+
+	fLoopWideningLikeJoin() {
+		def x = 0;
+		def one = 1;
+
+		while (x < 3) {
+			x = x + one;
+		}
+
+		def afterLoop_ExpectedZeroPos = x;
+
+		return;
+	}
+}

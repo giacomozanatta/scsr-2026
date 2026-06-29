@@ -1,0 +1,155 @@
+class WarehouseBilling {
+
+	calculateBulkOrderInvoice(expressShipping) {
+		// A large order invoice can overflow because quantity and unit price are high.
+		def unitPrice = 45000;
+		def quantity = 80000;
+		def subtotal = unitPrice * quantity;
+
+		// The shipping mode changes the final invoice.
+		// Express shipping adds a very large extra cost.
+		def shippingCost = 0;
+
+		if (expressShipping) {
+			shippingCost = 1200000000;
+		} else {
+			shippingCost = 100;
+		}
+
+		def invoiceTotal = subtotal + shippingCost;
+
+		// Normal discount, used as a safe computation inside the same action.
+		def discount = 1000;
+		def finalInvoice = invoiceTotal - discount;
+
+		return finalInvoice;
+	}
+
+
+	settleCustomerAccount(refundMode, useDebt) {
+		// The account already starts with a large negative balance.
+		def balance = 0 - 1500000000;
+		def correction = 1200000000;
+		def correctedBalance = balance - correction;
+
+		// A refund branch can make the account even more negative.
+		def adjustment = 0;
+
+		if (refundMode) {
+			adjustment = 0 - 1500000000;
+		} else {
+			adjustment = 200;
+		}
+
+		def finalAccount = correctedBalance + adjustment;
+
+		// The account can also be represented as either debt or credit.
+		// Multiplying after the branch can move the value outside both bounds.
+		def signedAmount = 0;
+
+		if (useDebt) {
+			signedAmount = 0 - 1600000000;
+		} else {
+			signedAmount = 1600000000;
+		}
+
+		def doubledAmount = signedAmount * 2;
+		def accountSummary = finalAccount + doubledAmount;
+
+		return accountSummary;
+	}
+
+
+	computeYearlyStorageInvoice(months) {
+		// Fixed large monthly fees accumulated directly.
+		def january = 900000000;
+		def february = 900000000;
+		def march = 900000000;
+		def firstQuarter = january + february + march;
+
+		// Repeated monthly fee accumulation.
+		// This stresses loops and widening.
+		def monthlyFee = 800000000;
+		def loopTotal = 0;
+		def i = 0;
+
+		while (i < months) {
+			loopTotal = loopTotal + monthlyFee;
+			i = i + 1;
+		}
+
+		def yearlyInvoice = firstQuarter + loopTotal;
+		return yearlyInvoice;
+	}
+
+
+	reconcileWarehouseStock(stockA, stockB, damagedItems) {
+		// Two unknown warehouse stock counters are merged.
+		def mergedStock = stockA + stockB;
+
+		// Damaged items are removed from the merged stock.
+		// Since the inputs are unknown, this can move the result in both directions.
+		def correctedStock = mergedStock - damagedItems;
+
+		// Safe small shipment computation inside the same stock action.
+		def boxes = 12;
+		def costPerBox = 25;
+		def shipmentCost = boxes * costPerBox;
+
+		def finalStockValue = correctedStock + shipmentCost;
+		return finalStockValue;
+	}
+
+
+	computeLateDeliveryPenalty(delayedDays, cappedMode) {
+		// Unknown number of delayed days multiplied by a large daily penalty.
+		def dailyPenalty = 1000000;
+		def basePenalty = delayedDays * dailyPenalty;
+
+		// Branch-dependent cap logic.
+		// One branch keeps a value related to delayedDays, the other creates a fixed large value.
+		def effectiveDays = 0;
+
+		if (cappedMode) {
+			effectiveDays = delayedDays - 1;
+		} else {
+			effectiveDays = 3000000;
+		}
+
+		def cappedPenalty = effectiveDays * dailyPenalty;
+		def totalPenalty = basePenalty + cappedPenalty;
+
+		return totalPenalty;
+	}
+
+
+	estimateInternationalShipment(extraInsurance, airTransport) {
+		// Several large costs are combined before insurance is applied.
+		def baseCost = 700000000;
+		def customsFee = 600000000;
+		def transportFee = 500000000;
+
+		def subtotal = baseCost + customsFee;
+		def total = subtotal + transportFee;
+
+		// Transport mode changes the risk.
+		def transportMultiplier = 1;
+
+		if (airTransport) {
+			transportMultiplier = 2;
+		} else {
+			transportMultiplier = 1;
+		}
+
+		def transportTotal = total * transportMultiplier;
+		def insuredTotal = transportTotal * extraInsurance;
+
+		// Safe average computation inside the shipment action.
+		def totalWeight = 240;
+		def boxes = 12;
+		def averageWeight = totalWeight / boxes;
+
+		def finalShipmentCost = insuredTotal + averageWeight;
+		return finalShipmentCost;
+	}
+}

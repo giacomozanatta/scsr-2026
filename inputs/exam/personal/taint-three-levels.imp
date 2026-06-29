@@ -1,0 +1,202 @@
+class WebApplicationTaintTest {
+
+    // -------------------------
+    // Sources
+    // -------------------------
+
+    readHttpRequestParam() {
+        return "request-value";
+    }
+
+    readCookieValue() {
+        return "cookie-value";
+    }
+
+    readUploadedFileName() {
+        return "uploaded-file";
+    }
+
+    readAdminConsoleInput() {
+        return "admin-input";
+    }
+
+
+    // -------------------------
+    // Sanitizers
+    // -------------------------
+
+    sanitizeSqlIdentifier(value) {
+        return value;
+    }
+
+    escapeHtml(value) {
+        return value;
+    }
+
+    validateRedirectPath(value) {
+        return value;
+    }
+
+    maskForAudit(value) {
+        return value;
+    }
+
+
+    // -------------------------
+    // Sinks
+    // -------------------------
+
+    executeSqlQuery(query) {
+        return;
+    }
+
+    renderHtmlPage(content) {
+        return;
+    }
+
+    redirectToUrl(url) {
+        return;
+    }
+
+    writeAuditLog(entry) {
+        return;
+    }
+
+    sendNotification(subject, body) {
+        return;
+    }
+
+
+    // -------------------------
+    // Test scenarios
+    // -------------------------
+
+    buildLoginQuery() {
+        // Direct source-to-sink flow: definite warning.
+        def username = this.readHttpRequestParam();
+        def unsafeQuery = "SELECT * FROM users WHERE name = '" + username + "'";
+        this.executeSqlQuery(unsafeQuery);
+
+        // Sanitized value before the sink: no warning expected.
+        def cleanUsername = this.sanitizeSqlIdentifier(username);
+        def safeQuery = "SELECT * FROM users WHERE name = '" + cleanUsername + "'";
+        this.executeSqlQuery(safeQuery);
+
+        return;
+    }
+
+    renderProfilePage(showNickname) {
+        // User-controlled cookie value.
+        def nickname = this.readCookieValue();
+        def pageContent = "";
+
+        // One branch is tainted, the other branch is clean.
+        // After the join, the value is possibly tainted.
+        if (showNickname) {
+            pageContent = "<h1>" + nickname + "</h1>";
+        } else {
+            pageContent = "<h1>Guest</h1>";
+        }
+
+        this.renderHtmlPage(pageContent);
+
+        // Sanitized rendering: no warning expected.
+        def cleanNickname = this.escapeHtml(nickname);
+        def safeContent = "<h1>" + cleanNickname + "</h1>";
+        this.renderHtmlPage(safeContent);
+
+        return;
+    }
+
+    processUploadAndAudit(publicUpload) {
+        // Uploaded file names are external data.
+        def uploadedName = this.readUploadedFileName();
+        def auditEntry = "";
+
+        // Branch-dependent taint.
+        if (publicUpload) {
+            auditEntry = "public upload: " + uploadedName;
+        } else {
+            auditEntry = "internal upload completed";
+        }
+
+        this.writeAuditLog(auditEntry);
+
+        // Sanitized audit entry.
+        def maskedName = this.maskForAudit(uploadedName);
+        def safeAudit = "uploaded file: " + maskedName;
+        this.writeAuditLog(safeAudit);
+
+        return;
+    }
+
+    redirectAfterLogin(useReturnUrl) {
+        // The redirect target comes from a request parameter.
+        def returnUrl = this.readHttpRequestParam();
+        def target = "";
+
+        // If useReturnUrl is true, the redirect uses tainted data.
+        // Otherwise, it uses a safe local path.
+        if (useReturnUrl) {
+            target = returnUrl;
+        } else {
+            target = "/home";
+        }
+
+        this.redirectToUrl(target);
+
+        // Validated redirect: no warning expected.
+        def safeTarget = this.validateRedirectPath(returnUrl);
+        this.redirectToUrl(safeTarget);
+
+        return;
+    }
+
+    processBatchRequests(attempts, includeExternal) {
+        // Loop-based propagation of tainted data.
+        // Each iteration builds a query or a safe maintenance message.
+        def i = 0;
+        def currentValue = "";
+
+        while (i < attempts) {
+            if (includeExternal) {
+                currentValue = this.readAdminConsoleInput();
+            } else {
+                currentValue = "system-maintenance";
+            }
+
+            def batchQuery = "UPDATE jobs SET owner = '" + currentValue + "'";
+            this.executeSqlQuery(batchQuery);
+
+            i = i + 1;
+        }
+
+        return;
+    }
+
+    notifySupportTeam(sendRawData) {
+        // Multi-parameter sink.
+        // The checker should inspect all parameters passed to the sink.
+        def ticketId = this.readHttpRequestParam();
+        def cookie = this.readCookieValue();
+
+        def subject = "Support ticket";
+        def body = "";
+
+        if (sendRawData) {
+            body = "ticket=" + ticketId + "; cookie=" + cookie;
+        } else {
+            body = "ticket created";
+        }
+
+        this.sendNotification(subject, body);
+
+        // Sanitized notification body.
+        def cleanTicket = this.sanitizeSqlIdentifier(ticketId);
+        def cleanCookie = this.escapeHtml(cookie);
+        def safeBody = "ticket=" + cleanTicket + "; cookie=" + cleanCookie;
+        this.sendNotification(subject, safeBody);
+
+        return;
+    }
+}

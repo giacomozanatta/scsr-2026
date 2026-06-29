@@ -1,0 +1,137 @@
+class HospitalDivisionAnalysis {
+
+	calculateDailyPatientRatios(emergencyMode, closedWards) {
+		// This function computes daily hospital ratios.
+
+		// Definite division by zero:
+		// the denominator is exactly 0.
+		def totalPatients = 120;
+		def brokenRatio = totalPatients / closedWards;
+
+		// Safe division:
+		// the denominator is a positive constant.
+		def workingDays = 30;
+		def dailyAverage = totalPatients / workingDays;
+
+		// Safe division with a negative denominator:
+		// zero is not included in the divisor.
+		def correction = 0 - 240;
+		def negativeDivisor = 0 - 4;
+		def correctedRatio = correction / negativeDivisor;
+
+		// Branch-dependent divisor:
+		// one branch gives a positive value, the other gives 0.
+		// After the join, the divisor may be zero.
+		def activeUnits = 0;
+
+		if (emergencyMode) {
+			activeUnits = 12;
+		} else {
+			activeUnits = 0;
+		}
+
+		def patientsPerUnit = totalPatients / activeUnits;
+
+		return dailyAverage;
+	}
+
+
+	computeDoctorWorkload(totalVisits, availableDoctors) {
+		// This function computes how many visits are assigned to doctors.
+
+		// Unknown parameter as divisor:
+		// availableDoctors comes from outside, so it may be zero.
+		def rawWorkload = totalVisits / availableDoctors;
+
+		// Guarded division:
+		// inside this branch, availableDoctors is known to be greater than 0.
+		def guardedWorkload = 0;
+
+		if (availableDoctors > 0) {
+			guardedWorkload = totalVisits / availableDoctors;
+		}
+
+		return guardedWorkload;
+	}
+
+
+	allocateFreeBeds(totalPatients, occupiedBeds, totalBeds) {
+		// This function computes how many patients can be assigned
+		// to each free bed group.
+
+		// Interesting relational case:
+		// if occupiedBeds < totalBeds, then:
+		//
+		// totalBeds - occupiedBeds > 0
+		//
+		// A relational domain such as Pentagon can use this relation.
+		// A plain interval domain may lose the relation between the two variables.
+		if (occupiedBeds < totalBeds) {
+			def freeBeds = totalBeds - occupiedBeds;
+			def patientsPerFreeBed = totalPatients / freeBeds;
+			return patientsPerFreeBed;
+		}
+
+		return 0;
+	}
+
+
+	processLaboratoryBatches(samples, batchCount) {
+		// This function models repeated batch processing.
+
+		// The denominator decreases inside the loop.
+		// Since batchCount is unknown, the analyzer may consider that
+		// remainingBatches can become zero.
+		def remainingBatches = batchCount;
+		def processed = 0;
+
+		while (processed < batchCount) {
+			def samplesPerBatch = samples / remainingBatches;
+			remainingBatches = remainingBatches - 1;
+			processed = processed + 1;
+		}
+
+		return remainingBatches;
+	}
+
+
+	computeEmergencyBudgetShare(useNightShift) {
+		// This function models budget division across emergency teams.
+
+		def budget = 50000;
+		def teams = 0;
+
+		// Possible division by zero:
+		// one branch assigns 5, the other assigns 0.
+		if (useNightShift) {
+			teams = 5;
+		} else {
+			teams = 0;
+		}
+
+		def budgetPerTeam = budget / teams;
+
+		return budgetPerTeam;
+	}
+
+
+	computeSafeHospitalStatistics() {
+		// This function contains only safe divisions.
+		// It is useful because the checker should not warn here.
+
+		def totalBeds = 240;
+		def floors = 12;
+		def bedsPerFloor = totalBeds / floors;
+
+		def totalNurses = 80;
+		def departments = 10;
+		def nursesPerDepartment = totalNurses / departments;
+
+		def monthlyCost = 120000;
+		def months = 12;
+		def averageMonthlyCost = monthlyCost / months;
+
+		def result = bedsPerFloor + nursesPerDepartment + averageMonthlyCost;
+		return result;
+	}
+}

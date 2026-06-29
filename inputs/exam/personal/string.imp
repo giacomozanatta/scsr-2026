@@ -1,0 +1,145 @@
+class StringCheckerTest {
+
+    sendToExternalService(destination) {
+        return;
+    }
+
+    handleDirectExternalDestinations() {
+        // Prefix-only case.
+        def httpStatus = "http://legacy-api.company.internal/status";
+        this.sendToExternalService(httpStatus);
+
+        // Suffix-only case.
+        def paymentDomain = "payments.example.com";
+        this.sendToExternalService(paymentDomain);
+
+        // Combined prefix and suffix case.
+        def secureLogin = "https://login.provider.com";
+        this.sendToExternalService(secureLogin);
+
+        // Safe local case.
+        def localService = "internal-service.local";
+        this.sendToExternalService(localService);
+
+        return;
+    }
+
+    buildDestinationsByConcatenation(host, tenant) {
+        // Prefix introduced through concatenation.
+        def scheme = "https://";
+        def statusPath = "/v1/status";
+        def apiUrl = scheme + host + statusPath;
+        this.sendToExternalService(apiUrl);
+
+        // Suffix introduced through concatenation.
+        def tenantDomain = tenant + ".com";
+        this.sendToExternalService(tenantDomain);
+
+        // Combined prefix and suffix introduced through concatenation.
+        def fullExternalEndpoint = scheme + tenant + ".com";
+        this.sendToExternalService(fullExternalEndpoint);
+
+        // Safe value built through concatenation.
+        def internalEndpoint = "service-" + tenant + ".internal";
+        this.sendToExternalService(internalEndpoint);
+
+        return;
+    }
+
+    routeUserBasedDestinations(userA, userB, userC, suspiciousUser) {
+        // This function simulates receiving a small list of users.
+        // The loop selects one user at each iteration.
+        def i = 0;
+        def selectedUser = "";
+
+        while (i < 3) {
+            if (i == 0) {
+                selectedUser = userA;
+            } else {
+                if (i == 1) {
+                    selectedUser = userB;
+                } else {
+                    selectedUser = userC;
+                }
+            }
+
+            // If the selected user is considered suspicious,
+            // the system routes the request to an external .com HTTPS service.
+            // Otherwise, it routes it to an internal local service.
+            if (suspiciousUser) {
+                def externalProfile = "https://" + selectedUser + ".com";
+                this.sendToExternalService(externalProfile);
+            } else {
+                def internalProfile = "profile.internal/" + selectedUser;
+                this.sendToExternalService(internalProfile);
+            }
+
+            i = i + 1;
+        }
+
+        return;
+    }
+
+    routeBackendWithRetries(useBackup) {
+        // The backend is selected inside a loop.
+        // Both branches keep the same interesting prefix and suffix.
+        def attempt = 0;
+
+        while (attempt < 2) {
+            def backend = "";
+
+            if (useBackup) {
+                backend = "https://backup.payment-provider.com";
+            } else {
+                backend = "https://primary.payment-provider.com";
+            }
+
+            this.sendToExternalService(backend);
+            attempt = attempt + 1;
+        }
+
+        return;
+    }
+
+    handleSecuritySensitiveFlows(customerId, useMetadataService, useCommercialCollector) {
+        // Branch-dependent SSRF-like metadata request.
+        if (useMetadataService) {
+            def metadataHost = "http://169.254.169.254";
+            def metadataPath = "/latest/meta-data/";
+            def metadataTarget = metadataHost + metadataPath + customerId;
+            this.sendToExternalService(metadataTarget);
+        } else {
+            def internalAudit = "audit-service.internal/events";
+            this.sendToExternalService(internalAudit);
+        }
+
+        // Branch-dependent collector.
+        // One branch is both HTTPS and .com, the other is HTTPS but not .com.
+        if (useCommercialCollector) {
+            def collector = "https://collector.attacker.com";
+            this.sendToExternalService(collector);
+        } else {
+            def trustedCollector = "https://collector.university.edu";
+            this.sendToExternalService(trustedCollector);
+        }
+
+        return;
+    }
+
+    handleSafeInternalDestinations() {
+        // These destinations should not trigger either checker.
+        def ftpResource = "ftp://archive.company.internal/releases/app.tar.gz";
+        this.sendToExternalService(ftpResource);
+
+        def universityDomain = "api.university.edu";
+        this.sendToExternalService(universityDomain);
+
+        def relativePath = "/static/assets/logo.png";
+        this.sendToExternalService(relativePath);
+
+        def localHost = "internal-service.local";
+        this.sendToExternalService(localHost);
+
+        return;
+    }
+}

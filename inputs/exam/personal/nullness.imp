@@ -1,0 +1,184 @@
+class NullnessWebServerTest {
+
+	/*
+	 * Real-world scenario:
+	 * This class models a small web server.
+	 *
+	 * Convention used in the test:
+	 * - null means missing resource/object
+	 * - 1, 2, 3 represent valid non-null object references
+	 *
+	 * The checker should warn only when the RECEIVER of an instance call
+	 * is null or may be null.
+	 */
+
+	// =========================
+	// Mock server actions
+	// =========================
+
+	loadUserProfile() {
+		return;
+	}
+
+	executeQuery(query) {
+		return;
+	}
+
+	sendHttpResponse(body) {
+		return;
+	}
+
+	writeAuditLog(event) {
+		return;
+	}
+
+	// =========================
+	// Test scenarios
+	// =========================
+
+	handleAuthenticatedRequest(authenticated, maintenanceMode) {
+		/*
+		 * Scenario:
+		 * A user sends a request to a protected endpoint.
+		 * The server must load the user profile and then write an audit log.
+		 */
+
+		def session = null;
+		def auditLogger = 1;
+
+		if (authenticated) {
+			session = 1;
+		} else {
+			session = null;
+		}
+
+		if (maintenanceMode) {
+			auditLogger = null;
+		} else {
+			auditLogger = 1;
+		}
+
+		session.loadUserProfile();
+		// EXPECTED: [POSSIBLE_NPE]
+		// Reason: session is non-null only if authenticated is true.
+
+		auditLogger.writeAuditLog("protected endpoint accessed");
+		// EXPECTED: [POSSIBLE_NPE]
+		// Reason: auditLogger becomes null when maintenanceMode is true.
+
+		return;
+	}
+
+	processOrderCheckout(paymentEnabled, primaryDbAvailable) {
+		/*
+		 * Scenario:
+		 * A checkout request needs a database connection and a response object.
+		 * The database has a fallback path, but the response object is always valid.
+		 */
+
+		def db = null;
+		def response = 1;
+		def body = null;
+
+		if (primaryDbAvailable) {
+			db = 1;
+		} else {
+			db = 2;
+		}
+
+		if (paymentEnabled) {
+			db.executeQuery("INSERT INTO orders VALUES (...)");
+			// EXPECTED: OK
+			// Reason: db is non-null in both branches of primaryDbAvailable.
+
+			response.sendHttpResponse(body);
+			// EXPECTED: OK
+			// Reason: response is non-null.
+			// The argument body is null, but the checker should not warn on null arguments.
+		} else {
+			response.sendHttpResponse("payment disabled");
+			// EXPECTED: OK
+			// Reason: response is definitely non-null.
+		}
+
+		return;
+	}
+
+	processAdminReport(admin, reportCacheHit) {
+		/*
+		 * Scenario:
+		 * An admin endpoint uses a cached report if available.
+		 * If the cache misses, the report database is accidentally left null.
+		 */
+
+		def reportDb = null;
+		def auditLogger = 1;
+
+		if (admin) {
+			if (reportCacheHit) {
+				reportDb = 1;
+			} else {
+				reportDb = null;
+			}
+
+			reportDb.executeQuery("SELECT * FROM admin_report");
+			// EXPECTED: [POSSIBLE_NPE]
+			// Reason: reportDb is null when admin is true and reportCacheHit is false.
+
+			auditLogger.writeAuditLog("admin report requested");
+			// EXPECTED: OK
+			// Reason: auditLogger is always non-null.
+		} else {
+			auditLogger.writeAuditLog("unauthorized admin report access");
+			// EXPECTED: OK
+			// Reason: auditLogger is always non-null.
+		}
+
+		return;
+	}
+
+	refreshSessionAfterLogout(logoutRequested) {
+		/*
+		 * Scenario:
+		 * A user session starts valid, but a logout request may invalidate it.
+		 * The server then mistakenly tries to use the session again.
+		 */
+
+		def session = 1;
+
+		if (logoutRequested) {
+			session = null;
+		} else {
+			session = 1;
+		}
+
+		session.loadUserProfile();
+		// EXPECTED: [POSSIBLE_NPE]
+		// Reason: session is null if logoutRequested is true.
+
+		return;
+	}
+
+	cleanupExpiredConnections(limit) {
+		/*
+		 * Scenario:
+		 * A cleanup loop may close and remove the database connection.
+		 * After the loop, the server tries to use the same connection.
+		 */
+
+		def db = 1;
+		def i = 0;
+
+		while (i < limit) {
+			db = null;
+			i = i + 1;
+		}
+
+		db.executeQuery("DELETE FROM expired_tokens");
+		// EXPECTED: [POSSIBLE_NPE]
+		// Reason: if the loop executes at least once, db becomes null.
+		// If the loop does not execute, db remains non-null.
+
+		return;
+	}
+}

@@ -16,15 +16,13 @@ import it.unive.lisa.checks.semantic.SemanticCheck;
 import it.unive.lisa.checks.semantic.SemanticTool;
 import it.unive.lisa.lattices.SimpleAbstractState;
 import it.unive.lisa.program.cfg.CFG;
-import it.unive.lisa.program.cfg.CodeMemberDescriptor;
-import it.unive.lisa.program.cfg.NativeCFG;
 import it.unive.lisa.program.cfg.statement.Expression;
 import it.unive.lisa.program.cfg.statement.Statement;
 import it.unive.lisa.program.cfg.statement.VariableRef;
-import it.unive.lisa.program.cfg.statement.call.CFGCall;
 import it.unive.lisa.program.cfg.statement.call.Call;
 import it.unive.lisa.program.cfg.statement.call.Call.CallType;
-import it.unive.lisa.program.cfg.statement.call.NativeCall;
+import it.unive.lisa.program.cfg.statement.call.MultiCall;
+import it.unive.lisa.program.cfg.statement.call.TruncatedParamsCall;
 import it.unive.lisa.program.cfg.statement.call.UnresolvedCall;
 import it.unive.lisa.symbolic.value.Identifier;
 import it.unive.lisa.type.Type;
@@ -33,6 +31,13 @@ public class NullDereferenceChecker<H extends HeapValue<H>, T extends TypeValue<
     SemanticCheck<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> {
 
   private final Set<String> emittedWarnings = new HashSet<>();
+
+  private enum NullnessStatus {
+    DEFINITELY_NULL,
+    MAYBE_NULL,
+    DEFINITELY_NOT_NULL,
+    UNKNOWN
+  }
 
   @Override
   public boolean visit(
@@ -50,18 +55,7 @@ public class NullDereferenceChecker<H extends HeapValue<H>, T extends TypeValue<
     for (var res : results) {
       try {
         Call resolved = tool.getResolvedVersion(uc, res);
-
-        if (resolved instanceof NativeCall nc) {
-          for (NativeCFG n : nc.getTargetedConstructs())
-            process(tool, uc, resolved, n.getDescriptor(), res);
-
-        } else if (resolved instanceof CFGCall cfg) {
-          for (CFG n : cfg.getTargetedCFGs())
-            process(tool, uc, resolved, n.getDescriptor(), res);
-
-        } else {
-          process(tool, uc, resolved, null, res);
-        }
+        process(tool, uc, resolved, res);
 
       } catch (SemanticException e) {
         e.printStackTrace();
@@ -75,88 +69,164 @@ public class NullDereferenceChecker<H extends HeapValue<H>, T extends TypeValue<
       SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> tool,
       UnresolvedCall uc,
       Call resolved,
-      CodeMemberDescriptor descriptor,
       AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> res) {
 
-    if (uc.getCallType() != CallType.INSTANCE || uc.getParameters().length == 0)
+    if (!mayDereferenceReceiver(uc, resolved) || uc.getParameters().length == 0)
       return;
 
     Expression receiverExpression = uc.getParameters()[0];
-
-    if (!(receiverExpression instanceof VariableRef receiver))
-      return;
+    String receiverName = receiverExpression.toString();
 
     try {
       AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> pre = res
           .getAnalysisStateBefore(uc);
 
-      ValueEnvironment<NullnessLattice> values = pre.getExecutionState().valueState;
-      TypeEnvironment<T> types = pre.getExecutionState().typeState;
+      NullnessStatus status = receiverExpression instanceof VariableRef receiver
+          ? statusOfVariable(pre, receiver)
+          : statusOfExpression(tool, res, receiverExpression);
 
-      NullnessLattice value = null;
-      for (Identifier id : values.getKeys())
-        if (id.getName().equals(receiver.getName())) {
-          value = values.getState(id);
-          break;
-        }
-
-      T typeValue = null;
-      for (Identifier id : types.getKeys())
-        if (id.getName().equals(receiver.getName())) {
-          typeValue = types.getState(id);
-          break;
-        }
-
-      if (value != null && value.isDefinitelyNull()) {
-        warnOnce(tool, uc, "[NPE] '" + receiver.getName() + "' is definitely null here.");
-        return;
-      }
-
-      if (typeValue != null) {
-        if (typeValue.isTop()) {
-          warnOnce(tool, uc,
-              "[POSSIBLE_NPE] '" + receiver.getName()
-                  + "' may be null here, depending on the execution path.");
-          return;
-        }
-
-        if (!typeValue.isBottom()) {
-          boolean hasNull = false;
-          boolean hasNonNull = false;
-
-          for (Type type : typeValue.getRuntimeTypes()) {
-            if (type.isNullType()
-                || (type.isPointerType() && type.asPointerType().getInnerType().isNullType()))
-              hasNull = true;
-            else
-              hasNonNull = true;
-          }
-
-          if (hasNull && !hasNonNull) {
-            warnOnce(tool, uc, "[NPE] '" + receiver.getName() + "' is definitely null here.");
-            return;
-          }
-
-          if (hasNull) {
-            warnOnce(tool, uc,
-                "[POSSIBLE_NPE] '" + receiver.getName()
-                    + "' may be null here, depending on the execution path.");
-            return;
-          }
-
-          if (hasNonNull)
-            return;
-        }
-      }
-
-      if (value != null && value.isMaybeNull())
+      if (status == NullnessStatus.DEFINITELY_NULL)
+        warnOnce(tool, uc, "[NPE] '" + receiverName + "' is definitely null here.");
+      else if (status == NullnessStatus.MAYBE_NULL)
         warnOnce(tool, uc,
-            "[POSSIBLE_NPE] '" + receiver.getName()
+            "[POSSIBLE_NPE] '" + receiverName
                 + "' may be null here, depending on the execution path.");
 
     } catch (SemanticException e) {
       e.printStackTrace();
     }
+  }
+
+  private boolean mayDereferenceReceiver(UnresolvedCall uc, Call resolved) {
+    if (uc.getCallType() == CallType.INSTANCE)
+      return true;
+
+    if (uc.getCallType() != CallType.UNKNOWN)
+      return false;
+
+    if (resolved instanceof TruncatedParamsCall)
+      return false;
+
+    if (resolved instanceof MultiCall multi) {
+      for (Call call : multi.getCalls())
+        if (mayDereferenceReceiver(uc, call))
+          return true;
+
+      return false;
+    }
+
+    return resolved.getCallType() != CallType.STATIC;
+  }
+
+  private NullnessStatus statusOfVariable(
+      AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> state,
+      VariableRef receiver) {
+
+    ValueEnvironment<NullnessLattice> values = state.getExecutionState().valueState;
+    TypeEnvironment<T> types = state.getExecutionState().typeState;
+    Identifier id = receiver.getVariable();
+
+    boolean hasValueInformation = values.isTop() || values.knowsIdentifier(id);
+    NullnessStatus valueStatus = hasValueInformation
+        ? statusOfValue(values.getState(id))
+        : NullnessStatus.UNKNOWN;
+
+    boolean hasTypeInformation = types.isTop() || types.knowsIdentifier(id);
+    NullnessStatus typeStatus = hasTypeInformation
+        ? statusOfType(types.getState(id))
+        : NullnessStatus.UNKNOWN;
+
+    return combineDomainStatuses(valueStatus, typeStatus);
+  }
+
+  private NullnessStatus statusOfExpression(
+      SemanticTool<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>, SimpleAbstractDomain<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> tool,
+      AnalyzedCFG<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> res,
+      Expression receiverExpression)
+      throws SemanticException {
+
+    AnalysisState<SimpleAbstractState<HeapEnvironment<H>, ValueEnvironment<NullnessLattice>, TypeEnvironment<T>>> receiverState = res
+        .getAnalysisStateAfter(receiverExpression);
+
+    NullnessStatus result = NullnessStatus.UNKNOWN;
+    for (var expr : receiverState.getExecutionExpressions()) {
+      NullnessStatus valueStatus = NullnessStatus.UNKNOWN;
+      if (expr instanceof Identifier id) {
+        ValueEnvironment<NullnessLattice> values = receiverState.getExecutionState().valueState;
+        if (values.isTop() || values.knowsIdentifier(id))
+          valueStatus = statusOfValue(values.getState(id));
+      }
+
+      NullnessStatus typeStatus = statusOfRuntimeTypes(
+          tool.getAnalysis().getRuntimeTypesOf(receiverState, expr, receiverExpression));
+      result = combineAlternativeStatuses(result, combineDomainStatuses(valueStatus, typeStatus));
+    }
+
+    return result;
+  }
+
+  private NullnessStatus statusOfValue(NullnessLattice value) {
+    if (value.isDefinitelyNull())
+      return NullnessStatus.DEFINITELY_NULL;
+    if (value.isMaybeNull())
+      return NullnessStatus.MAYBE_NULL;
+    if (value.isDefinitelyNotNull())
+      return NullnessStatus.DEFINITELY_NOT_NULL;
+    return NullnessStatus.UNKNOWN;
+  }
+
+  private NullnessStatus statusOfType(T typeValue) {
+    if (typeValue.isTop())
+      return NullnessStatus.MAYBE_NULL;
+    if (typeValue.isBottom())
+      return NullnessStatus.UNKNOWN;
+    return statusOfRuntimeTypes(typeValue.getRuntimeTypes());
+  }
+
+  private NullnessStatus statusOfRuntimeTypes(Set<Type> runtimeTypes) {
+    if (runtimeTypes == null || runtimeTypes.isEmpty())
+      return NullnessStatus.UNKNOWN;
+
+    boolean hasNull = false;
+    boolean hasNonNull = false;
+
+    for (Type type : runtimeTypes) {
+      if (isNullType(type))
+        hasNull = true;
+      else
+        hasNonNull = true;
+    }
+
+    if (hasNull && !hasNonNull)
+      return NullnessStatus.DEFINITELY_NULL;
+    if (hasNull)
+      return NullnessStatus.MAYBE_NULL;
+    if (hasNonNull)
+      return NullnessStatus.DEFINITELY_NOT_NULL;
+    return NullnessStatus.UNKNOWN;
+  }
+
+  private boolean isNullType(Type type) {
+    return type.isNullType()
+        || (type.isPointerType() && type.asPointerType().getInnerType().isNullType());
+  }
+
+  private NullnessStatus combineDomainStatuses(NullnessStatus valueStatus, NullnessStatus typeStatus) {
+    if (valueStatus == NullnessStatus.DEFINITELY_NULL || typeStatus == NullnessStatus.DEFINITELY_NULL)
+      return NullnessStatus.DEFINITELY_NULL;
+    if (valueStatus == NullnessStatus.MAYBE_NULL || typeStatus == NullnessStatus.MAYBE_NULL)
+      return NullnessStatus.MAYBE_NULL;
+    if (valueStatus == NullnessStatus.DEFINITELY_NOT_NULL || typeStatus == NullnessStatus.DEFINITELY_NOT_NULL)
+      return NullnessStatus.DEFINITELY_NOT_NULL;
+    return NullnessStatus.UNKNOWN;
+  }
+
+  private NullnessStatus combineAlternativeStatuses(NullnessStatus first, NullnessStatus second) {
+    if (first == NullnessStatus.UNKNOWN)
+      return second;
+    if (second == NullnessStatus.UNKNOWN || first == second)
+      return first;
+    return NullnessStatus.MAYBE_NULL;
   }
 
   private void warnOnce(

@@ -130,6 +130,13 @@ public class IntervalFloatLattice
 		// Note: the following code does work as before, but code that
 		// does tiny increments (e.g. +0.0000001) could still trick
 		// it into thinking that it doesn't go to infinity
+		// -> the actual correct way to do this is to do an approximation to the next index (i.e. 1.1 to 2.0),
+		//    then, if you have again a round integer you set it to +\infy (i.e. 2.0 to +\infty)
+		//
+		// This SHOULD be correct, given that with a single increment it overapproximates a bit, while with
+		// a loop it should overapproximate correctly (e.g. with a loop that adds smaller and smaller values
+		// that would converge, we would still be overaproximating, same deal if the summed values go from 
+		// small to big ones)
 
 		MathNumber u1 = this.i.getHigh();
 		MathNumber u2 = other.i.getHigh();

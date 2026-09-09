@@ -57,10 +57,9 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
     }
 
     public Satisfiability eq(ExtendedSignLattice other) {
-        if (this.isBottom() || other.isBottom())
-            return Satisfiability.BOTTOM;
-        if (this.isTop() || other.isTop())
-            return Satisfiability.UNKNOWN;
+        if (this.isBottom() || other.isBottom()) return Satisfiability.BOTTOM;
+        if (this.isTop() || other.isTop()) return Satisfiability.UNKNOWN;
+
         if (this.equals(ZERO) && other.equals(ZERO))
             return Satisfiability.SATISFIED;
         try {
@@ -80,7 +79,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         if ((this.equals(ZERO) || this.equals(NON_NEG)) && other.equals(NEG)) return Satisfiability.SATISFIED;
 
         if ((this.equals(NEG) || this.equals(ZERO)) && (other.equals(ZERO) || other.equals(POS) || other.equals(NON_NEG))) return Satisfiability.NOT_SATISFIED;
-        if (this.equals(NON_POS) && other.equals(POS)) return Satisfiability.NOT_SATISFIED;
+        if (this.equals(NON_POS) && (other.equals(POS) || other.equals(ZERO) || other.equals(NON_NEG))) return Satisfiability.NOT_SATISFIED;
 
         return Satisfiability.UNKNOWN;
     }
@@ -93,6 +92,16 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
     @Override
     public ExtendedSignLattice bottom() {
         return BOTTOM;
+    }
+
+    @Override
+    public boolean isTop() {
+        return this.equals(TOP);
+    }
+
+    @Override
+    public boolean isBottom() {
+        return this.equals(BOTTOM);
     }
 
     @Override

@@ -28,10 +28,8 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         this.element = element;
     }
 
-
     @Override
     public ExtendedSignLattice lubAux(ExtendedSignLattice other) throws SemanticException {
-        if (this.equals(other)) return this;
         if ((this.equals(ZERO) && other.equals(POS)) || (this.equals(POS) && other.equals(ZERO))) return NON_NEG;
         if ((this.equals(ZERO) && other.equals(NEG)) || (this.equals(NEG) && other.equals(ZERO))) return NON_POS;
         if ((this.equals(POS) && other.equals(NEG)) || (this.equals(NEG) && other.equals(POS))) return NON_ZERO;
@@ -42,18 +40,16 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
 
     @Override
     public ExtendedSignLattice glbAux(ExtendedSignLattice other) throws SemanticException {
-        if (this.equals(other)) return this;
-        if (this.lessOrEqualAux(other)) return this;
-        if (other.lessOrEqualAux(this)) return other;
         if ((this.equals(NON_POS) && other.equals(NON_NEG)) || (this.equals(NON_NEG) && other.equals(NON_POS))) return ZERO;
         if ((this.equals(NON_POS) && other.equals(NON_ZERO)) || (this.equals(NON_ZERO) && other.equals(NON_POS))) return NEG;
         if ((this.equals(NON_NEG) && other.equals(NON_ZERO)) || (this.equals(NON_ZERO) && other.equals(NON_NEG))) return POS;
+        if (this.lessOrEqualAux(other)) return this;
+        if (other.lessOrEqualAux(this)) return other;
         return BOTTOM;
     }
 
     @Override
     public boolean lessOrEqualAux(ExtendedSignLattice other) throws SemanticException {
-        if (this.equals(other)) return true;
         if (this.equals(ZERO)) return other.equals(NON_NEG) || other.equals(NON_POS);
         if (this.equals(NEG)) return other.equals(NON_POS) || other.equals(NON_ZERO);
         if (this.equals(POS)) return other.equals(NON_NEG) || other.equals(NON_ZERO);

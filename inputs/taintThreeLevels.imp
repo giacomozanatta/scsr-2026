@@ -1,0 +1,99 @@
+// AI-generated program for testing taint with three levels checker
+// Model: Claude Sonnet 4.6 | Manufacturer: Anthropic
+// Prompt: "Now I need to do this assignment: To create (at least 3) meaningful
+// programs to test the following checker: taint with three levels checker.
+// Please write a meaningful program that could be found in real life, since
+// trivial programs are not allowed. Write it first in C language and then
+// translate it in IMP language. If you need clarifications about the syntax
+// of IMP, please ask me. Please put a comment in the program, stating that
+// it is made using AI, include your model and version, your manufacturer and
+// this prompt I'm giving you."
+//
+// Description: Simulates a hospital patient record system. A patient ID and
+// a doctor's note arrive as untrusted external input (e.g. from a web form
+// or an external referral system) and must be validated/normalized before
+// being used in database queries, displayed to staff, or written to the
+// audit log. Tests all three taint levels: tainted external input, values
+// sanitized through validation, and clean hardcoded/internal values.
+
+class hospitalRecords {
+
+    // sources: annotated as tainted in the test class ("readInput", "source1")
+    readInput() {
+        return 1001; // patient ID coming from an external web form
+    }
+
+    source1() {
+        return -7; // doctor's note ID coming from an external referral system
+    }
+
+    // sanitizers: annotated as clean in the test class ("cleanData", "sanitizer1")
+    cleanData(v) {
+        return v; // normalizes/validates the patient ID (e.g. format check)
+    }
+
+    sanitizer1(v) {
+        return v; // strips/escapes unsafe characters from the doctor's note
+    }
+
+    // sinks: annotated as sinks in the test class ("runQueryDB", "printSensitive", "sink1")
+    runQueryDB(v) {
+    }
+
+    printSensitive(v) {
+    }
+
+    sink1(v) {
+    }
+
+    // test 1: tainted patient ID flows directly into a DB query — should warn
+    test1() {
+        def patientId = this.readInput();
+        this.runQueryDB(patientId);
+    }
+
+    // test 2: patient ID validated before the query — should NOT warn
+    test2() {
+        def rawId = this.readInput();
+        def validId = this.cleanData(rawId);
+        this.runQueryDB(validId);
+    }
+
+    // test 3: internal, hardcoded record ID — should NOT warn
+    test3() {
+        def internalId = 42;
+        this.runQueryDB(internalId);
+    }
+
+    // test 4: unvalidated doctor's note displayed to staff — should warn
+    test4() {
+        def note = this.source1();
+        this.printSensitive(note);
+    }
+
+    // test 5: two tainted sources combined before being logged — should warn
+    test5() {
+        def id = this.readInput();
+        def noteRef = this.source1();
+        def combined = id + noteRef;
+        this.sink1(combined);
+    }
+
+    // test 6: sanitized note, then further processed, then displayed — should NOT warn
+    test6() {
+        def rawNote = this.source1();
+        def safeNote = this.sanitizer1(rawNote);
+        def formatted = safeNote + 0;
+        this.printSensitive(formatted);
+    }
+
+    // test 7: conditional flow — patient ID comes from input only on one branch
+    // should report POSSIBLE taint (Top), since one path is clean and one is tainted
+    test7(useExternalSource) {
+        def id = 42;
+        if (useExternalSource) {
+            id = this.readInput();
+        }
+        this.runQueryDB(id);
+    }
+}

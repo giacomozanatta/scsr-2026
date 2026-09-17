@@ -28,6 +28,7 @@ public class ExtendedSignLattice implements BaseLattice<ExtendedSignLattice> {
         this.element = element;
     }
 
+
     @Override
     public ExtendedSignLattice lubAux(ExtendedSignLattice other) throws SemanticException {
         if ((this.equals(ZERO) && other.equals(POS)) || (this.equals(POS) && other.equals(ZERO))) return NON_NEG;

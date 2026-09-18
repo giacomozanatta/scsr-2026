@@ -1,0 +1,42 @@
+class extended {
+
+    testNonZero(cond) {
+        def x = -1;
+        if (cond)
+            x = 1;
+
+        def a = x * x;
+        def b = x + x;
+    }
+
+    testNonNeg(cond) {
+        def x = 0;
+        if (cond)
+            x = 1;
+
+        def a = x + 1;
+        def b = x * 1;
+        def c = x - 1;
+    }
+
+    testNonPos(cond) {
+        def x = 0;
+        if (cond)
+            x = -1;
+
+        def a = x - 1;
+        def b = x * 1;
+        def c = x + 1;
+    }
+
+    testDivision(cond) {
+        def x = -1;
+        if (cond)
+            x = 1;
+
+        def a = 10 / x;
+        def b = x / x;
+    }
+
+
+}

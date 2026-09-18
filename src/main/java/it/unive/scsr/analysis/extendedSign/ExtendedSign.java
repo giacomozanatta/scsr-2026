@@ -3,12 +3,12 @@ package it.unive.scsr.analysis.extendedSign;
 import it.unive.lisa.analysis.SemanticException;
 import it.unive.lisa.analysis.SemanticOracle;
 import it.unive.lisa.analysis.nonrelational.value.BaseNonRelationalValueDomain;
+import it.unive.lisa.analysis.nonrelational.value.ValueEnvironment;
+import it.unive.lisa.lattices.Satisfiability;
 import it.unive.lisa.program.cfg.ProgramPoint;
-import it.unive.lisa.symbolic.value.BinaryExpression;
-import it.unive.lisa.symbolic.value.Constant;
-import it.unive.lisa.symbolic.value.UnaryExpression;
+import it.unive.lisa.symbolic.value.*;
 import it.unive.lisa.symbolic.value.operator.*;
-import it.unive.lisa.symbolic.value.operator.binary.BinaryOperator;
+import it.unive.lisa.symbolic.value.operator.binary.*;
 import it.unive.lisa.symbolic.value.operator.unary.NumericNegation;
 
 public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLattice> {
@@ -128,4 +128,74 @@ public class ExtendedSign implements BaseNonRelationalValueDomain<ExtendedSignLa
         return ExtendedSignLattice.TOP;
 
     }
+    @Override
+    public Satisfiability satisfiesBinaryExpression(BinaryExpression expression, ExtendedSignLattice left, ExtendedSignLattice right, ProgramPoint pp, SemanticOracle oracle) {
+        BinaryOperator operator = expression.getOperator();
+        if (operator == ComparisonEq.INSTANCE) return left.eq(right);
+        else if (operator == ComparisonGe.INSTANCE) return left.eq(right).or(left.gt(right));
+        else if (operator == ComparisonGt.INSTANCE) return left.gt(right);
+        else if (operator == ComparisonLe.INSTANCE) return left.gt(right).negate();// e1 <= e2 == !(e1 > e2)
+        else if (operator == ComparisonLt.INSTANCE) return left.gt(right).or(left.eq(right)).negate();// e1 < e2 == !(e1 >= e2)
+        else if (operator == ComparisonNe.INSTANCE) return left.eq(right).negate();
+        else return Satisfiability.UNKNOWN;
+    }
+
+
+    @Override
+    public ValueEnvironment<ExtendedSignLattice> assumeBinaryExpression(ValueEnvironment<ExtendedSignLattice> environment, BinaryExpression expression, ProgramPoint src, ProgramPoint dest, SemanticOracle oracle) throws SemanticException {
+
+        Satisfiability sat = satisfies(environment, expression, src, oracle);
+        if (sat == Satisfiability.NOT_SATISFIED) return environment.bottom();
+        if (sat == Satisfiability.SATISFIED) return environment;
+        Identifier id;
+        ExtendedSignLattice eval;
+        boolean rightIsExpr;
+
+        BinaryOperator operator = expression.getOperator();
+        ValueExpression left = (ValueExpression) expression.getLeft();
+        ValueExpression right = (ValueExpression) expression.getRight();
+
+        if (left instanceof Identifier) {
+            id = (Identifier) left;
+            eval = eval(environment, right, src, oracle);
+            rightIsExpr = true;
+        } else if (right instanceof Identifier) {
+            id = (Identifier) right;
+            eval = eval(environment, left, src, oracle);
+            rightIsExpr = false;
+        } else
+            return environment;
+
+        ExtendedSignLattice starting = environment.getState(id);
+
+        if (eval.isBottom() || starting.isBottom()) return environment.bottom();
+
+        ExtendedSignLattice[] all = new ExtendedSignLattice[]{
+                ExtendedSignLattice.NEG,
+                ExtendedSignLattice.ZERO,
+                ExtendedSignLattice.POS
+        };
+
+        ExtendedSignLattice update = null;
+
+        for (ExtendedSignLattice candidate : all) {
+            Satisfiability candidateSat;
+            if (rightIsExpr) {
+                candidateSat = satisfiesBinaryExpression(expression, candidate, eval, src, oracle);
+            } else {
+                candidateSat = satisfiesBinaryExpression(expression, eval, candidate, src, oracle);
+            }
+
+            if (candidateSat != Satisfiability.NOT_SATISFIED) {
+                ExtendedSignLattice refined = starting.glb(candidate);
+
+                if (!refined.isBottom()) {update = update == null ? refined : update.lub(refined);}
+            }
+        }
+
+        if (update == null || update.isBottom()) return environment.bottom();
+
+        return environment.putState(id, update);
+    }
+
 }

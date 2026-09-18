@@ -1,0 +1,64 @@
+class inventorySystem {
+
+    // test 1: unit price * quantity for a bulk order exceeds INT_MAX
+    // expected: certain overflow
+    test1() {
+        def unitPriceCents = 100000;
+        def quantity = 50000;
+        def totalCents = unitPriceCents * quantity; // 5,000,000,000 > 2,147,483,647
+    }
+
+    // test 2: summing two large stock adjustments exceeds INT_MAX
+    // expected: certain overflow
+    test2() {
+        def stockA = 2000000000;
+        def stockB = 2000000000;
+        def combinedStock = stockA + stockB; // 4,000,000,000 > INT_MAX
+    }
+
+    // test 3: large refund subtracted from an already very negative balance
+    // expected: certain underflow
+    test3() {
+        def balance = -2000000000;
+        def refund = 2000000000;
+        def newBalance = balance - refund; // -4,000,000,000 < INT_MIN
+    }
+
+    // test 4: ordinary small order, well within representable range
+    // expected: no warning
+    test4() {
+        def price = 25;
+        def qty = 4;
+        def total = price * qty; // 100, safe
+    }
+
+    // test 5: splitting a total into shares, safe division
+    // expected: no warning
+    test5() {
+        def total = 1000;
+        def parts = 4;
+        def share = total / parts; // 250, safe
+    }
+
+    // test 6: conditional restock — only the high-demand branch overflows
+    // expected: possible overflow (merged interval straddles INT_MAX)
+    test6(highDemand) {
+        def base = 2147483600; // very close to INT_MAX (2147483647)
+        if (highDemand) {
+            base = base + 100; // 2147483700 > INT_MAX on this path only
+        }
+        def finalStock = base + 0;
+    }
+
+    // test 7: repeated addition in a loop, gradually overflowing
+    // expected: certain overflow (widening will push the interval past bounds)
+    test7() {
+        def acc = 0;
+        def step = 500000000;
+        def i = 0;
+        while (i < 10) {
+            acc = acc + step;
+            i = i + 1;
+        }
+    }
+}

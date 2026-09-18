@@ -1,0 +1,42 @@
+    class loopTaintTests {
+
+        // source: annotated as tainted in the test class ("readInput")
+        readInput() {
+            return 1001; // e.g. an untrusted numeric value from external input
+        }
+
+        // test 1: tainted variable, no upper bound before the loop — should warn
+        unboundedTainted(externalValue) {
+            def input = externalValue;
+            while (input > 0) {
+                input = input - 1;
+            }
+        }
+
+        // test 2: baseline, no taint at all — should NOT warn regardless of range
+        noTaintLoop() {
+            def i = 0;
+            while (i < 100) {
+                i = i + 1;
+            }
+        }
+
+        // test 3: structural control — tainted variable in an if, NOT a loop;
+        // isLoopGuard must exclude this before taint/interval are even checked
+        taintedIfNotLoop() {
+            def input = this.readInput();
+            if (input > 0) {
+                input = input - 1;
+            }
+        }
+
+        // test 4: taint propagated through arithmetic before reaching the guard
+        // — should warn, verifies taint propagation through binary operators
+        taintedThroughArithmetic() {
+            def input = this.readInput();
+            def derived = input * 2;
+            while (derived > 0) {
+                derived = derived - 1;
+            }
+        }
+    }

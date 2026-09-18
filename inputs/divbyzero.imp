@@ -1,0 +1,78 @@
+
+class orderAnalytics {
+
+    // test 1: literal zero denominator
+    // expected: definite division by zero
+    test1() {
+        def totalRevenue = 1000;
+        def orderCount = 0;
+        def averageOrderValue = totalRevenue / orderCount;
+    }
+
+    // test 2: denominator computed as zero (not a literal), e.g. orders
+    // placed minus orders cancelled that exactly cancel out
+    // expected: definite division by zero
+    test2() {
+        def ordersPlaced = 5;
+        def ordersCancelled = 5;
+        def netOrders = ordersPlaced - ordersCancelled; // = 0
+        def totalRevenue = 10000;
+        def averageOrderValue = totalRevenue / netOrders;
+    }
+
+    // test 3: ordinary safe division with a constant, non-zero denominator
+    // expected: no warning
+    test3() {
+        def totalRevenue = 5000;
+        def transactions = 20;
+        def averageTransaction = totalRevenue / transactions;
+    }
+
+    // test 4: denominator built from arithmetic that always stays positive
+    // expected: no warning
+    test4() {
+        def baseCustomers = 10;
+        def newSignups = 5;
+        def totalCustomers = baseCustomers + newSignups; // always 15
+        def totalRevenue = 3000;
+        def averagePerCustomer = totalRevenue / totalCustomers;
+    }
+
+    // test 5: order count is zero only on one branch (e.g. a day with no
+    // orders at all) — merging the two branches yields an interval that
+    // includes zero without being exactly zero
+    // expected: possible division by zero
+    test5(noOrdersToday) {
+        def orderCount = 10;
+        if (noOrdersToday) {
+            orderCount = 0;
+        }
+        def totalRevenue = 2000;
+        def averageOrderValue = totalRevenue / orderCount;
+    }
+
+    // test 6: divisor comes directly from an unconstrained parameter
+    // (e.g. a user-supplied batch size from an external API call)
+    // expected: possible division by zero (interval is unbounded/top)
+    test6(userSuppliedBatchSize) {
+        def totalRevenue = 5000;
+        def averagePerBatch = totalRevenue / userSuppliedBatchSize;
+    }
+
+    // test 7: remaining stock decreases in a loop (e.g. simulating daily
+    // sales) until it can reach zero or go negative, then it's used as a
+    // divisor for a per-unit price recalculation
+    // expected: possible division by zero (widening produces an interval
+    // that includes zero)
+    test7() {
+        def remainingStock = 5;
+        def dailySales = 1;
+        def day = 0;
+        while (day < 10) {
+            remainingStock = remainingStock - dailySales;
+            day = day + 1;
+        }
+        def totalRevenue = 1000;
+        def perUnitValue = totalRevenue / remainingStock;
+    }
+}

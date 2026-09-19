@@ -30,7 +30,7 @@ public class TaintThreeLevelsAnalysisTest {
     @Test
     public void testTaintAnalysisThreeLevels() throws ParsingException, AnalysisException {
         // 1. Parsing del file .imp (assicurati che il file esista in quella cartella)
-        Program program = IMPFrontend.processFile("inputs/taintThreeLevels.imp");
+        Program program = IMPFrontend.processFile("inputs/Other/Taint/880119_2.imp");
 
         // 2. Configurazione di LiSA
         LiSAConfiguration conf = new DefaultConfiguration();

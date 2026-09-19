@@ -1,0 +1,194 @@
+//LLM used:
+//To generate this test file I used the GitHub Copilot extension for VScode (with the Claude sonnet 4.6 agent).
+
+//LLM context: 
+//Since this was the fourth file generated after “876957-overflow.imp” ,“876957-div_by_zero.imp” and  “876957-strings.imp”
+//the chat had already a lot of context on the LiSA structure so i just usedTaintThreeLevels checker and the TaintAnalysisTest class as context.
+//Prompts and code generations:
+//I wanted to test the IMP file generation with a more specific requirement: 
+
+//FIRST PROMPT:
+
+//“ora puoi creare un file di test meaningful per il quesito:
+//To create (atleast3) meaningfulprogramsto test the following checkers: taint with threelevelschecker
+//come esempio realistico potresti usare quello delle sql injection”
+
+//PROMPT RESULT:
+
+//This prompt generated without too much trouble the whole file and test classes writing in the code comments the real world example of the problem.
+
+//It also provided new sink(unQueryDB, renderHtml, sendEmail), sanitizers(sanitizeInput, escapeHtml) and source (GetRequest, getUserInput ) names to provide a more meaningful code description.
+
+//Note: these additions are required to reproduce the expected results and must be added in the java test configuration.
+// Without them, all custom methods would be treated as unknown by the checker and the analysis would produce different output.
+
+
+
+
+// ================================================================
+//  TAINT ANALYSIS TEST SUITE  (TaintThreeLevelsChecker)
+//
+//  Sources, sanitizers and sinks are identified by function name
+//  in the Java test configuration:
+//    add these to String[] nameSource    -> GetRequest, getUserInput 
+//    add these to tring[] nameSanitizers -> sanitizeInput, escapeHtml
+//    add these to String[] nameSinks    -> runQueryDB, renderHtml, sendEmail
+// if you don't add these new names to the list results won't be the same
+//  The three-level lattice is:
+//    TAINT  -> value is definitely tainted  (DEFINITE warning)
+//    TOP    -> value may or may not be tainted (POSSIBLE warning)
+//    CLEAN  -> value is definitely clean    (no warning)
+//    BOTTOM -> unreachable
+//
+//  Each class documents the expected warning level per call site.
+// ================================================================
+
+
+// ----------------------------------------------------------------
+//  TEST 1 - SQL Injection
+//
+//  Real-world inspiration: CVE-2008-4106 (WordPress SQL injection).
+//  A user-supplied search term is read from an HTTP request and
+//  concatenated directly into a SQL query string, which is then
+//  executed via the database sink. This is the canonical
+//  SQL injection vulnerability.
+//
+//  testDirectInjection:   user input flows directly into query  -> DEFINITE
+//  testSanitizedQuery:    input is sanitized before use          -> SAFE
+//  testMixedQuery:        branch: sanitized in one path, raw in other -> POSSIBLE
+// ----------------------------------------------------------------
+class SqlInjection {
+
+    GetRequest() {
+        return "malicious'; DROP TABLE users; --";
+    }
+
+    sanitizeInput(input) {
+        return "safe_input";
+    }
+
+    runQueryDB(query) {
+    }
+
+    testDirectInjection() {
+        def userInput = this.GetRequest();
+        def query = userInput;
+        this.runQueryDB(query);   // DEFINITE: tainted input directly in sink
+    }
+
+    testSanitizedQuery() {
+        def userInput = this.GetRequest();
+        def safe = this.sanitizeInput(userInput);
+        this.runQueryDB(safe);    // SAFE: sanitized before sink
+    }
+
+    testMixedQuery(isAdmin) {
+        def userInput = this.GetRequest();
+        def query = 0;
+        if (isAdmin) {
+            query = this.sanitizeInput(userInput);
+        } else {
+            query = userInput;
+        }
+        this.runQueryDB(query);   // POSSIBLE: tainted in one branch, clean in other
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 2 - Cross-Site Scripting (XSS)
+//
+//  Real-world inspiration: CVE-2021-34473 (Microsoft Exchange XSS).
+//  A user-supplied value read from an HTTP request is embedded
+//  directly into an HTML response without escaping. This allows
+//  the attacker to inject JavaScript that executes in the victim's
+//  browser.
+//
+//  testDirectXss:      raw user input rendered in HTML  -> DEFINITE
+//  testEscapedOutput:  input escaped before rendering   -> SAFE
+//  testPartialEscape:  only escaped in one branch       -> POSSIBLE
+// ----------------------------------------------------------------
+class XssVulnerability {
+
+    getUserInput() {
+        return "<script>alert('xss')</script>";
+    }
+
+    escapeHtml(input) {
+        return "escaped_content";
+    }
+
+    renderHtml(content) {
+    }
+
+    testDirectXss() {
+        def userInput = this.getUserInput();
+        this.renderHtml(userInput);              // DEFINITE: raw tainted input in sink
+    }
+
+    testEscapedOutput() {
+        def userInput = this.getUserInput();
+        def safe = this.escapeHtml(userInput);
+        this.renderHtml(safe);                   // SAFE: escaped before rendering
+    }
+
+    testPartialEscape(isTrustedUser) {
+        def userInput = this.getUserInput();
+        def content = 0;
+        if (isTrustedUser) {
+            content = userInput;
+        } else {
+            content = this.escapeHtml(userInput);
+        }
+        this.renderHtml(content);                // POSSIBLE: raw in one branch
+    }
+}
+
+
+// ----------------------------------------------------------------
+//  TEST 3 - Email Header Injection
+//
+//  Real-world inspiration: CWE-93 (Improper Neutralization of
+//  CRLF Sequences). An attacker injects newline characters into
+//  a user-supplied email address to add arbitrary headers to an
+//  outgoing email (e.g., BCC field to redirect mail to attacker).
+//
+//  testDirectInjection:    raw address used in email sink -> DEFINITE
+//  testSanitizedEmail:     address sanitized first        -> SAFE
+//  testConditionalSanitize: sanitized only for new users  -> POSSIBLE
+// ----------------------------------------------------------------
+class EmailService {
+
+    getUserInput() {
+        return "victim@example.com\r\nBCC: attacker@evil.com";
+    }
+
+    sanitizeInput(input) {
+        return "clean@example.com";
+    }
+
+    sendEmail(address) {
+    }
+
+    testDirectInjection() {
+        def address = this.getUserInput();
+        this.sendEmail(address);                 // DEFINITE: tainted address in sink
+    }
+
+    testSanitizedEmail() {
+        def address = this.getUserInput();
+        def safe = this.sanitizeInput(address);
+        this.sendEmail(safe);                    // SAFE: sanitized before sink
+    }
+
+    testConditionalSanitize(isNewUser) {
+        def address = this.getUserInput();
+        def finalAddress = 0;
+        if (isNewUser) {
+            finalAddress = this.sanitizeInput(address);
+        } else {
+            finalAddress = address;
+        }
+        this.sendEmail(finalAddress);            // POSSIBLE: tainted in one branch
+    }
+}

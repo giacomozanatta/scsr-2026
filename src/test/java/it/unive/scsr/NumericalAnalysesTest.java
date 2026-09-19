@@ -26,7 +26,7 @@ public class NumericalAnalysesTest {
     @Test
     public void testDivByZeroIntervalAnalysis() throws ParsingException, AnalysisException {
         // we parse the program to get the CFG representation of the code in it
-        Program program = IMPFrontend.processFile("inputs/divbyzero.imp");
+        Program program = IMPFrontend.processFile("inputs/Other/DivByZero/913849_2.imp");
 
         // we build a new configuration for the analysis
         LiSAConfiguration conf = new DefaultConfiguration();

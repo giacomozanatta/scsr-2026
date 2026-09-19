@@ -1,0 +1,24 @@
+// Calculation of price changes.
+// This can result in a division by zero if
+// the result price is free.
+//
+// 913849 -- Quinn Robertson
+class prices {
+    price;
+    old_price;
+    old_price_ratio;
+
+    ~prices(){
+        this.price = 10000;
+    }
+
+    update() {
+        return this.old_price / this.price;
+    }
+
+    reduce_price(reduction){
+        this.old_price = this.price;
+        this.price = this.price - reduction;
+        this.update();
+    }
+}

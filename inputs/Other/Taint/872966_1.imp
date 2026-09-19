@@ -1,0 +1,121 @@
+/*
+    Test Program: Enterprise Data Pipeline
+
+    Features:
+        1. Taint is stored in class fields and passed via 'this'.
+        2. Taint is propagated through an arra like structure (buffer).
+        3. Logic that skips sanitization for "internal" flags.
+        4. Testing if Level 1 (Raw) becomes Level 2 (safe).
+
+    Target Checker: Three Taint Analysis
+
+    Author: Gianmaria Pizzo 872966
+*/
+
+class DataPacket {
+    payload;
+    origin;
+    isEncrypted;
+
+    ~DataPacket(p, o) {
+        this.payload = p;
+        this.origin = o;
+        this.isEncrypted = false;
+    }
+}
+
+class SecurityGateway {
+
+    // SOURCES (Level 1, aka Untrusted)
+    getExternalRequest() {
+        return "USER_INPUT_DATA_123; DROP TABLE Users;";
+    }
+
+    getInternalToken() {
+        return "INTERNAL_SESSION_TOKEN_99";
+    }
+
+    // SANITIZERS (Level 2, aka Validated/Safe)
+    basicSanitize(data) {
+        // Remove special SQL characters
+        return "cleansed_data";
+    }
+
+    advancedEncrypt(data) {
+        // Transforms data into an hash (not readable)
+        return "HASH_0x55AF2";
+    }
+
+    // SINKS
+    db_execute(query) {
+        // Triggers warning if query is Tainted
+    }
+
+    log_to_public_file(msg) {
+        // Logs info to a low-security file
+    }
+
+    // Processing Logic
+    processIncomingData(priorityLevel, bypassShield) {
+        // Fetch Tainted Data
+        def raw = this.getExternalRequest();
+        
+        // Wrap (Field-based Taint)
+        def packet = new DataPacket(raw, "WEB_PORTAL");
+
+        // Loop-based Taint Propagation
+        // Static analyzers tracks that 'transformed' remains tainted
+        def transformed = "";
+        for (def i = 0; i < 3; i = i + 1) {
+            transformed = transformed + packet.payload;
+        }
+
+        // Branch logic (bypass vulnerability)
+        if (bypassShield == true) {
+            // VULNERABILITY: Tainted data reaches sink without sanitization
+            // Logic error: assuming priorityLevel 10 is always safe
+            if (priorityLevel > 10) {
+                this.db_execute(transformed); // <--- WARNING EXPECTED
+            }
+        } else {
+            // 5. Multi-Stage Sanitization
+            def level2 = this.basicSanitize(transformed);
+            
+            // Check if checker recognizes 'level2' as now SAFE
+            if (priorityLevel < 5) {
+                this.db_execute(level2); // <--- SHOULD BE SAFE
+            } else {
+                // 6. Escalation to level 3 (Encryption)
+                def level3 = this.advancedEncrypt(level2);
+                this.db_execute(level3); // <--- DEFINITELY SAFE
+            }
+        }
+    }
+
+    // 7. Data Leak via Inter-Object Transfer
+    testDataLeak() {
+        def secret = this.getInternalToken();
+        def publicData = this.getExternalRequest();
+        
+        // Mixing Clean and Tainted data
+        def mixed = secret + " | " + publicData;
+        
+        // Passing to a sink
+        this.log_to_public_file(mixed); // <--- WARNING EXPECTED: Taint is contagious
+    }
+}
+
+class Main {
+    entry() {
+        def gateway = new SecurityGateway();
+        
+        // Test 1, direct threat
+        gateway.processIncomingData(15, true);
+        
+        // Test 2, secure path
+        gateway.processIncomingData(3, false);
+        
+        // Test 3, data leak
+        gateway.testDataLeak();
+    }
+}

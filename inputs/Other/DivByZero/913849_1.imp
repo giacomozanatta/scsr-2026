@@ -1,0 +1,15 @@
+// Calculating pressure of 10x10 box with h height
+// at 100 Kelvin of 1 mole
+// Leaving the h unknown gives it the possibility of zero
+// This in turn should throw a DivByZero error
+//
+// 913849 -- Quinn Robertson
+class pressure {
+    calculate_volume(l,w,h) {
+        return l * w * h;
+    }
+
+    calculate_pressure(h) {
+        return (1 * 8.314462 * 100) / this.calculate_volume(10,10,h);
+    }
+}

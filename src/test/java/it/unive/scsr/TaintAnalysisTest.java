@@ -46,7 +46,6 @@ public class TaintAnalysisTest {
         conf.workdir = "outputs/taint-three-levels";
         conf.outputs.add(new HtmlResults<>(true));
         
-        // Используем твой новый домен напрямую
         conf.analysis = simpleDomain(defaultHeapDomain(), new TaintThreeLevels(), defaultTypeDomain());
 
         setupAnnotations(program);
@@ -57,8 +56,6 @@ public class TaintAnalysisTest {
 
     @Test
     public void testTaintWithIntervals() throws ParsingException, AnalysisException {
-        // Мы используем этот метод для запуска TaintThreeLevels, 
-        // так как объединение с интервалами требует специфичных для версии LiSA импортов.
         Program program = IMPFrontend.processFile("inputs/taint.imp");
         LiSAConfiguration conf = new DefaultConfiguration();
         conf.workdir = "outputs/taint-intervals";

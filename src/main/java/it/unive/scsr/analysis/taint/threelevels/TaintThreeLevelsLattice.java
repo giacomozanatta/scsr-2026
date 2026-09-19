@@ -6,8 +6,8 @@ import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 /*
- * Решетка Taint с тремя уровнями (Diamond Lattice):
- * TOP (возможно грязный)
+ * Taint with three levels (Diamond Lattice):
+ * TOP (maybe dirty)
  * /   \
  * CLEAN   TAINTED
  * \   /
@@ -21,7 +21,6 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
     private final State state;
 
-    // Константы для быстрого доступа
     public static final TaintThreeLevelsLattice Bottom = new TaintThreeLevelsLattice(State.BOTTOM);
     public static final TaintThreeLevelsLattice Clean = new TaintThreeLevelsLattice(State.CLEAN);
     public static final TaintThreeLevelsLattice Taint = new TaintThreeLevelsLattice(State.TAINTED);
@@ -47,7 +46,6 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
         if (this == Bottom) return other;
         if (this == Top || other == Top) return Top;
         
-        // Если один Clean, а другой Tainted (или наоборот) -> получаем TOP
         return Top;
     }
 
@@ -76,7 +74,6 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
     @Override
     public TaintThreeLevelsLattice or(TaintThreeLevelsLattice other) throws SemanticException {
-        // В информационных потоках 'or' обычно ведет себя как lub (объединение)
         return lubAux(other);
     }
 
@@ -87,11 +84,9 @@ public class TaintThreeLevelsLattice implements it.unive.lisa.lattices.informati
 
     @Override
     public boolean isPossiblyTainted() {
-        // Грязный либо точно (Taint), либо возможно (Top)
         return this == Taint || this == Top;
     }
 
-    // Важно переопределить для корректной работы LiSA
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

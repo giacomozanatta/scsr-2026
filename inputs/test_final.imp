@@ -1,0 +1,8 @@
+main() {
+    def a = 10.0;
+    def b = 0.0;
+    def c = a / b; // Чекер должен поймать Division by Zero
+    
+    def secret = source();
+    sink(secret); // Чекер Taint должен поймать утечку
+}

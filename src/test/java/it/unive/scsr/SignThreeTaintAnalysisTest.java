@@ -22,9 +22,9 @@ import org.junit.Test;
 import static it.unive.lisa.DefaultConfiguration.*;
 
 public class SignThreeTaintAnalysisTest {
-    private final String[] sources = {"source1", "GetRequest", "readInput"};
-    private final String[] sanitizers = {"sanitizer1", "cleanData"};
-    private final String[] sinks = {"sink1", "runQueryDB", "printSensitive"};
+    private final String[] nameSources = {"source1", "GetRequest", "readInput"};
+    private final String[] nameSanitizers = {"sanitizer1", "cleanData"};
+    private final String[] nameSinks = {"sink1", "runQueryDB", "printSensitive"};
 
     @Test
     public void testSignThreeTaint() throws ParsingException, AnalysisException {
@@ -66,7 +66,7 @@ public class SignThreeTaintAnalysisTest {
     }
 
     private boolean isSource(String name) {
-        for (String source : sources)
+        for (String source : nameSources)
             if (source.equals(name))
                 return true;
 
@@ -74,7 +74,7 @@ public class SignThreeTaintAnalysisTest {
     }
 
     private boolean isSanitizer(String name) {
-        for (String sanitizer : sanitizers)
+        for (String sanitizer : nameSanitizers)
             if (sanitizer.equals(name))
                 return true;
 
@@ -82,7 +82,7 @@ public class SignThreeTaintAnalysisTest {
     }
 
     private boolean isSink(String name) {
-        for (String sink : sinks)
+        for (String sink : nameSinks)
             if (sink.equals(name))
                 return true;
 

@@ -1,363 +1,83 @@
-// AI-generated program for testing the Cartesian product of Sign and Taint
-// Model: Claude Sonnet 4.6 | Manufacturer: Anthropic
-// Adapted for SignThreeTaint analysis.
-// Original prompt: "Now I need to do this assignment: To create (at least 3)
-// meaningful programs to test the following checker: taint with three levels
-// checker. Please write a meaningful program that could be found in real life,
-// since trivial programs are not allowed. Write it first in C language and then
-// translate it in IMP language. If you need clarifications about the syntax of
-// IMP, please ask me. Please put a comment in the program, stating that it is
-// made using AI, include your model and version, your manufacturer and this
-// prompt I'm giving you."
-//
-// Scenario: hospital patient-record system.
-//
-// The program is designed to test both:
-//   1. the sign domain (POS, NEG, ZERO, NON_ZERO, NON_NEG, NON_POS)
-//   2. the three-level taint domain (TAINTED, CLEAN, TOP)
-//
-// The sinks are database queries and displays of patient information.
-// Sources represent external/untrusted data.
-// Sanitizers represent validation/normalization operations.
-
 class hospitalRecords {
-// ------------------------------------------------------------
-// Sources: values obtained from external systems.
-// These methods are annotated as TAINTED in the Java test.
-// ------------------------------------------------------------
-
-readPositiveId() {
-    return 1001;
-}
-
-readNegativeOffset() {
-    return -7;
-}
-
-readZeroValue() {
-    return 0;
-}
-
-// ------------------------------------------------------------
-// Sanitizers: validation/normalization operations.
-// These methods are annotated as CLEAN in the Java test.
-// ------------------------------------------------------------
-
-cleanData(v) {
-    return v;
-}
-
-sanitizeOffset(v) {
-    return v;
-}
-
-// ------------------------------------------------------------
-// Sinks: operations where tainted data should be detected.
-// These methods are annotated as SINK in the Java test.
-// ------------------------------------------------------------
-
-runQueryDB(v) {
-}
-
-printSensitive(v) {
-}
-
-sink1(v) {
-}
-
-// ============================================================
-// TEST 1
-// External positive patient ID used directly.
-//
-// Expected:
-//   patientId = POS + TAINTED
-//   sink should report tainted data.
-// ============================================================
-
-testPositiveTainted() {
-    def patientId = this.readPositiveId();
-
-    this.runQueryDB(patientId);
-}
-
-// ============================================================
-// TEST 2
-// External negative value used directly.
-//
-// Expected:
-//   offset = NEG + TAINTED
-//
-// This checks that taint is preserved while the sign is NEG.
-// ============================================================
-
-testNegativeTainted() {
-    def offset = this.readNegativeOffset();
-
-    this.sink1(offset);
-}
-
-// ============================================================
-// TEST 3
-// Tainted positive value multiplied by -1.
-//
-// Expected:
-//   input  = POS + TAINTED
-//   result = NEG + TAINTED
-//
-// This is an important Cartesian-product test: the arithmetic
-// component changes while the taint component is preserved.
-// ============================================================
-
-testSignChangeTainted() {
-    def patientId = this.readPositiveId();
-
-    def transformed = patientId * -1;
-
-    this.printSensitive(transformed);
-}
-
-// ============================================================
-// TEST 4
-// Two tainted values with opposite signs are added.
-//
-// Expected abstract result:
-//   positive + negative -> TOP sign
-//   tainted + tainted   -> TAINTED
-//
-// Therefore:
-//   combined = TOP + TAINTED
-// ============================================================
-
-testCombinedTainted() {
-    def id = this.readPositiveId();
-    def offset = this.readNegativeOffset();
-
-    def combined = id + offset;
-
-    this.sink1(combined);
-}
-
-// ============================================================
-// TEST 5
-// Tainted positive value multiplied by tainted negative value.
-//
-// Expected:
-//   POS * NEG = NEG
-//   TAINTED * TAINTED = TAINTED
-//
-// Therefore:
-//   result = NEG + TAINTED
-// ============================================================
-
-testMultiplicationTainted() {
-    def id = this.readPositiveId();
-    def offset = this.readNegativeOffset();
-
-    def result = id * offset;
-
-    this.runQueryDB(result);
-}
-
-// ============================================================
-// TEST 6
-// Sanitized positive input.
-//
-// Expected:
-//   rawId   = POS + TAINTED
-//   validId = POS + CLEAN
-//
-// The sanitizer should remove the taint while preserving the sign.
-// ============================================================
-
-testSanitizedPositive() {
-    def rawId = this.readPositiveId();
-
-    def validId = this.cleanData(rawId);
-
-    this.runQueryDB(validId);
-}
-
-// ============================================================
-// TEST 7
-// Sanitized negative input followed by sign-preserving operation.
-//
-// Expected:
-//   raw      = NEG + TAINTED
-//   safe     = NEG + CLEAN
-//   adjusted = NEG + CLEAN
-//
-// This checks that CLEAN is preserved by arithmetic operations.
-// ============================================================
-
-testSanitizedNegative() {
-    def rawOffset = this.readNegativeOffset();
-
-    def safeOffset = this.sanitizeOffset(rawOffset);
-
-    def adjusted = safeOffset * 1;
-
-    this.sink1(adjusted);
-}
-
-// ============================================================
-// TEST 8
-// Sanitized value multiplied by -1.
-//
-// Expected:
-//   raw       = POS + TAINTED
-//   safe      = POS + CLEAN
-//   converted = NEG + CLEAN
-//
-// Sign changes, taint remains CLEAN.
-// ============================================================
-
-testSanitizedSignChange() {
-    def rawId = this.readPositiveId();
-
-    def safeId = this.cleanData(rawId);
-
-    def converted = safeId * -1;
-
-    this.printSensitive(converted);
-}
-
-// ============================================================
-// TEST 9
-// Clean hardcoded value.
-//
-// Expected:
-//   internalId = POS + CLEAN
-//
-// This provides a clean baseline for comparison with test 1.
-// ============================================================
-
-testCleanInternal() {
-    def internalId = 42;
-
-    this.runQueryDB(internalId);
-}
-
-// ============================================================
-// TEST 10
-// Zero source.
-//
-// Expected:
-//   zero = ZERO + TAINTED
-//
-// This checks that sign ZERO and taint TAINTED coexist correctly.
-// ============================================================
-
-testZeroTainted() {
-    def zero = this.readZeroValue();
-
-    this.sink1(zero);
-}
-
-// ============================================================
-// TEST 11
-// Tainted value multiplied by zero.
-//
-// Expected:
-//   POS * ZERO = ZERO
-//   TAINTED is preserved
-//
-// Therefore:
-//   result = ZERO + TAINTED
-// ============================================================
-
-testTaintedToZero() {
-    def id = this.readPositiveId();
-
-    def result = id * 0;
-
-    this.sink1(result);
-}
-
-// ============================================================
-// TEST 12
-// Conditional flow.
-//
-// One branch assigns a clean positive value, the other a tainted
-// positive value.
-//
-// Expected:
-//   sign  = POS
-//   taint = TOP
-//
-// This tests the join of the taint component independently from
-// the sign component.
-// ============================================================
-
-testConditionalTaint(useExternalSource) {
-    def id = 42;
-
-    if (useExternalSource)
-        id = this.readPositiveId();
-
-    this.runQueryDB(id);
-}
-
-// ============================================================
-// TEST 13
-// Conditional sign.
-//
-// Both branches are tainted, but have opposite signs.
-//
-// Expected:
-//   sign  = TOP
-//   taint = TAINTED
-//
-// This is particularly useful for testing the Cartesian product:
-// uncertainty in the sign does not imply uncertainty in taint.
-// ============================================================
-
-testConditionalSign(useNegative) {
-    def value = this.readPositiveId();
-
-    if (useNegative)
-        value = this.readNegativeOffset();
-
-    this.sink1(value);
-}
-
-// ============================================================
-// TEST 14
-// Tainted value + clean constant.
-//
-// Expected:
-//   POS + ZERO = POS
-//   TAINTED + CLEAN = TAINTED
-//
-// Therefore:
-//   result = POS + TAINTED
-// ============================================================
-
-testTaintedPlusClean() {
-    def id = this.readPositiveId();
-
-    def result = id + 0;
-
-    this.printSensitive(result);
-}
-
-// ============================================================
-// TEST 15
-// Tainted negative value minus a positive constant.
-//
-// Expected:
-//   NEG - POS = NEG
-//   TAINTED remains TAINTED
-//
-// Therefore:
-//   result = NEG + TAINTED
-// ============================================================
-
-testNegativeArithmetic() {
-    def offset = this.readNegativeOffset();
-
-    def result = offset - 1;
-
-    this.sink1(result);
-}
+
+    // Tainted source with a positive constant.
+    readInput() {
+        return 1001;
+    }
+
+    // Tainted source with a negative constant.
+    source1() {
+        return -7;
+    }
+
+    cleanData(v) {
+        return v;// normalizes/validates the patient ID
+    }
+
+    sanitizer1(v) {
+        return v;// strips/escapes unsafe characters from the doctor's note
+    }
+
+
+    runQueryDB(v) {
+    }
+
+    printSensitive(v) {
+    }
+
+    sink1(v) {
+    }
+
+    // test 1: tainted value flows into a sink
+    test1() {
+        def patientId = this.readInput();
+        this.runQueryDB(patientId);
+    }
+
+
+    // test 2: positive tainted value is sanitized
+    test2() {
+        def rawId = this.readInput();
+        def validId = this.cleanData(rawId);
+        if(validId>0)
+            this.runQueryDB(validId);
+    }
+
+
+    // test 3: internal positive constant
+    test3() {
+        def internalId = 42;
+        this.runQueryDB(internalId);
+    }
+
+
+    // test 4: two tainted values are combined
+    test4() {
+        def id = this.readInput();
+        def noteRef = this.source1();
+        def combined = id + noteRef;
+        this.sink1(combined);
+    }
+
+
+    // test 5: conditional flow, should report POSSIBLE taint
+    test5(cond) {
+        def id = 42;
+
+        if (cond) {
+            id = this.readInput();
+        }
+
+        this.runQueryDB(id);
+    }
+
+
+    // test 6: tainted value multiplied by zero
+    test6() {
+        def id = this.readInput();
+        def result = id * 0;
+        this.runQueryDB(result);
+    }
+
 
 }

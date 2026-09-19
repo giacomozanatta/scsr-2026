@@ -8,31 +8,34 @@ import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 import java.util.Objects;
 
+// This class represents the different possible states of a number's sign
 public class SignLattice implements BaseLattice<SignLattice> {
     
     private final int element;
     
-    public static final SignLattice TOP = new SignLattice(0);      // Z
-    public static final SignLattice GEQ_ZERO = new SignLattice(1); // Z >= 0
-    public static final SignLattice NOT_ZERO = new SignLattice(2); // Z != 0
-    public static final SignLattice LEQ_ZERO = new SignLattice(3); // Z <= 0
-    public static final SignLattice POS = new SignLattice(4);      // Z > 0
-    public static final SignLattice ZERO = new SignLattice(5);     // Z = 0
-    public static final SignLattice NEG = new SignLattice(6);      // Z < 0
-    public static final SignLattice BOTTOM = new SignLattice(7);   // Empty
+    // Define all the possible sign states
+    public static final SignLattice TOP = new SignLattice(0);      // Unknown (can be anything)
+    public static final SignLattice GEQ_ZERO = new SignLattice(1); // Greater than or equal to 0
+    public static final SignLattice NOT_ZERO = new SignLattice(2); // Not equal to 0
+    public static final SignLattice LEQ_ZERO = new SignLattice(3); // Less than or equal to 0
+    public static final SignLattice POS = new SignLattice(4);      // Positive (> 0)
+    public static final SignLattice ZERO = new SignLattice(5);     // Exactly 0
+    public static final SignLattice NEG = new SignLattice(6);      // Negative (< 0)
+    public static final SignLattice BOTTOM = new SignLattice(7);   // Empty (unreachable code)
 
     public SignLattice(int e) { this.element = e; }
 
     @Override public SignLattice top() { return TOP; }
     @Override public SignLattice bottom() { return BOTTOM; }
 
+    // Merges two sign states into a wider state (Least Upper Bound)
     @Override
     public SignLattice lubAux(SignLattice other) throws SemanticException {
         if (this == other || other == BOTTOM) return this;
         if (this == BOTTOM) return other;
         if (this == TOP || other == TOP) return TOP;
         
-        // Объединение по решетке из PDF
+        // Merging rules based on the lattice diagram
         if (this == ZERO) {
             if (other == POS || other == GEQ_ZERO) return GEQ_ZERO;
             if (other == NEG || other == LEQ_ZERO) return LEQ_ZERO;
@@ -46,9 +49,10 @@ public class SignLattice implements BaseLattice<SignLattice> {
             if (other == POS || other == NOT_ZERO) return NOT_ZERO;
         }
         
-        return TOP;
+        return TOP; // If states conflict too much, return Unknown
     }
 
+    // Checks if this sign state is more specific than or equal to the 'other' state
     @Override
     public boolean lessOrEqualAux(SignLattice other) throws SemanticException {
         if (this == other || other == TOP || this == BOTTOM) return true;
@@ -58,7 +62,9 @@ public class SignLattice implements BaseLattice<SignLattice> {
         return false;
     }
 
-    // ТЕ САМЫЕ МЕТОДЫ, КОТОРЫХ НЕ ХВАТАЛО:
+    // REQUIRED METHODS FOR COMPARISON:
+    
+    // Checks if this state is equal to the 'other' state
     public Satisfiability eq(SignLattice other) {
         if (this == BOTTOM || other == BOTTOM) return Satisfiability.BOTTOM;
         if (this == TOP || other == TOP) return Satisfiability.UNKNOWN;
@@ -68,6 +74,7 @@ public class SignLattice implements BaseLattice<SignLattice> {
         return Satisfiability.UNKNOWN;
     }
 
+    // Checks if this state is strictly greater than the 'other' state
     public Satisfiability gt(SignLattice other) {
         if (this == BOTTOM || other == BOTTOM) return Satisfiability.BOTTOM;
         if (this == TOP || other == TOP) return Satisfiability.UNKNOWN;
@@ -88,6 +95,7 @@ public class SignLattice implements BaseLattice<SignLattice> {
     @Override
     public int hashCode() { return Objects.hash(element); }
 
+    // Generates the display text for the HTML results
     @Override
     public StructuredRepresentation representation() {
         if (this == BOTTOM) return Lattice.bottomRepresentation();

@@ -6,17 +6,18 @@ import it.unive.lisa.util.representation.StringRepresentation;
 import it.unive.lisa.util.representation.StructuredRepresentation;
 
 /*
- * Lattice of Taint Domain 
- * * T (Tainted)
+ * Standard 2-level Taint Domain Lattice:
+ * T (Tainted - Dirty data)
  * |
- * C (Clean)
+ * C (Clean - Safe data)
  * |
- * BOTTOM
+ * BOTTOM (Unreachable code)
  */
 public class TaintLattice implements it.unive.lisa.lattices.informationFlow.TaintLattice<TaintLattice> {
 
     Boolean element;
 
+    // Define the basic states
     static public TaintLattice Taint = new TaintLattice(true);
     static public TaintLattice Clean = new TaintLattice(false);
     static public TaintLattice Bottom = new TaintLattice(null);
@@ -25,16 +26,19 @@ public class TaintLattice implements it.unive.lisa.lattices.informationFlow.Tain
         this.element = e;
     }
 
+    // The highest, most general state is Taint
     @Override
     public TaintLattice top() {
         return Taint;
     }
 
+    // The lowest, impossible state is Bottom
     @Override
     public TaintLattice bottom() {
         return Bottom;
     }
 
+    // Generates the 'T' or 'C' letters for the HTML graphs
     @Override
     public StructuredRepresentation representation() {
         if (this == Bottom)
@@ -43,24 +47,26 @@ public class TaintLattice implements it.unive.lisa.lattices.informationFlow.Tain
         return this == Taint ? new StringRepresentation("T") : new StringRepresentation("C");
     }
 
+    // Merges two paths in the code (e.g., if one path is Clean and one is Taint, the result is Taint)
     @Override
     public TaintLattice lubAux(TaintLattice other) throws SemanticException {
-        // Если равны — возвращаем любой
+        // If they are the same, return any of them
         if (this == other) return this;
-        // Если один из них Bottom — возвращаем другой
+        // If one is unreachable (Bottom), return the other
         if (this == Bottom) return other;
         if (other == Bottom) return this;
-        // В любом другом случае (T + C) результат будет Taint (верхний элемент)
+        // In any other case (mixing Clean and Tainted), assume the worst: it's Tainted
         return Taint;
     }
 
+    // Checks the strict order of states (Bottom -> Clean -> Taint)
     @Override
     public boolean lessOrEqualAux(TaintLattice other) throws SemanticException {
-        // Bottom меньше или равен всему
+        // Bottom is smaller than everything
         if (this == Bottom) return true;
-        // Все меньше или равно самому себе
+        // Everything is equal to itself
         if (this == other) return true;
-        // Clean меньше чем Taint
+        // Clean is smaller (safer) than Taint
         if (this == Clean && other == Taint) return true;
         
         return false;
@@ -76,6 +82,7 @@ public class TaintLattice implements it.unive.lisa.lattices.informationFlow.Tain
         return TaintLattice.Clean;
     }
 
+    // Simulates an OR operation between taints (essentially takes the worst case)
     @Override
     public TaintLattice or(TaintLattice other) throws SemanticException {
         if (this == Bottom || other == Bottom)
